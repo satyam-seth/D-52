@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{% static 'core/images/favicon/home.ico' %}">
+    <link rel="stylesheet" href="{% static 'core/css/bootstrap.min.css' %}">
+    {% block css %}
+        <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    {% endblock css %}
+    <title>{% block title %}D-52{% endblock title %}</title>
+</head>
+
+<body>
+    
+    {% include 'core/navbar.html' %}
+    {% block content %}{% endblock content %}
+    {% include 'core/footer.html' %}
+
+    <script src="{% static 'core/js/jquery.js' %}"></script>
+    <script src="{% static 'core/js/popper.js' %}"></script>
+    <script src="{% static 'core/js/all.min.js' %}"></script>
+    <script src="{% static 'core/js/bootstrap.min.js' %}"></script>
+</body>
+
+</html>

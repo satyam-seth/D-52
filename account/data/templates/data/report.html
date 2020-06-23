@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'data/css/style.css' %}">
+{% endblock %}
+{% block title %}D-52 Progress Report{% endblock title %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid report mt-5">
+    <div class="container py-5 text-light">
+        <div>
+            <h1 class="display-2">Progress Reports</h1>
+        </div>
+        <div class="lead">
+            <p>See all reports carefully.</p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

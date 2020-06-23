@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'data/css/style.css' %}">
+{% endblock %}
+{% block title %}D-52 Download{% endblock title %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid download mt-5">
+    <div class="container py-5 text-dark">
+        <div>
+            <h1 class="display-2">Download</h1>
+        </div>
+        <div class="lead">
+            <p class="pl-1">Thank you for visiting.</p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

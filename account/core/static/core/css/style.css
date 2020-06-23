@@ -1,0 +1,21 @@
+.home {
+    background-image: url("../images/home.jpg");
+    background-color: dimgrey;
+    background-size: cover;
+    height: 100%;
+    text-shadow: 2px 2px black;
+}
+.about {
+    background-image: url("../images/about.jpg");
+    background-color: dimgrey;
+    background-size: cover;
+    height: 100%;
+    text-shadow: 2px 2px black;
+}
+.feed {
+    background-image: url("../images/feedback.jpg");
+    background-color: dimgrey;
+    background-size: cover;
+    height: 100%;
+    text-shadow: 2px 2px black;
+}
