@@ -35,28 +35,28 @@
     text-shadow: 2px 2px black;
 }
 .satyam {
-    background-image: url("../images/detailed.jpg");
+    background-image: url("../images/satyam.jpg");
     background-color: dimgrey;
     background-size: cover;
     height: 100%;
     text-shadow: 2px 2px black;
 }
 .ankit {
-    background-image: url("../images/detailed.jpg");
+    background-image: url("../images/ankit.png");
     background-color: dimgrey;
     background-size: cover;
     height: 100%;
     text-shadow: 2px 2px black;
 }
-.ganag {
-    background-image: url("../images/detailed.jpg");
+.ganga {
+    background-image: url("../images/ganga.png");
     background-color: dimgrey;
     background-size: cover;
     height: 100%;
     text-shadow: 2px 2px black;
 }
 .prashant {
-    background-image: url("../images/detailed.jpg");
+    background-image: url("../images/prashant.png");
     background-color: dimgrey;
     background-size: cover;
     height: 100%;
