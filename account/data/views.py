@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Sum
 from .forms import RecordFrom,WaterFrom
 from .models import Record,Water
 
@@ -67,7 +68,50 @@ def detailed_view(request,var):
     return render(request,'data/detailed.html',{'records':data,'var':var})
 
 def report(request):
-    context={'report_active':'active','report_disabled':'disabled'}
+    record=Record.objects.all()
+    t_items=len(record)
+    t_price=record.aggregate(Sum('price'))['price__sum']
+    p_price=t_price/4
+
+    satyam_record=Record.objects.filter(name='Satyam Seth')
+    st_items=len(satyam_record)
+    st_price=satyam_record.aggregate(Sum('price'))['price__sum']
+    sd_price=p_price-st_price
+
+    ankit_record=Record.objects.filter(name='Ankit Kumar Gupta')
+    at_items=len(ankit_record)
+    at_price=ankit_record.aggregate(Sum('price'))['price__sum']
+    ad_price=p_price-at_price
+
+    ganga_record=Record.objects.filter(name='Ganga Sagar Bharti')
+    gt_items=len(ganga_record)
+    gt_price=ganga_record.aggregate(Sum('price'))['price__sum']
+    gd_price=p_price-gt_price
+
+    prashant_record=Record.objects.filter(name='Prashant Kumar Yadav')
+    pt_items=len(prashant_record)
+    pt_price=prashant_record.aggregate(Sum('price'))['price__sum']
+    pd_price=p_price-pt_price
+
+    context={
+        'report_active':'active',
+        'report_disabled':'disabled',
+        't_items':t_items,
+        't_price':t_price,
+        'p_price':p_price,
+        'st_items':st_items,
+        'st_price':st_price,
+        'sd_price':sd_price,
+        'at_items':at_items,
+        'at_price':at_price,
+        'ad_price':ad_price,
+        'gt_items':gt_items,
+        'gt_price':gt_price,
+        'gd_price':gd_price,
+        'pt_items':pt_items,
+        'pt_price':pt_price,
+        'pd_price':pd_price
+        }
     return render(request,'data/report.html',context)
 
 def download(request):

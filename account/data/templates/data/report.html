@@ -23,12 +23,12 @@
         <div class="col-md-6">
             <div class="card-body text-center pt-4">
                 <h4 class="alert alert-secondary">Overall Items Report</h4>
-                <h2>Total <span class="text-danger">25</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total <span class="text-danger">{{t_items}}</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
                 <h2>Total 
                     <i class="fas fa-rupee-sign"></i>
-                    <span class="text-danger">15405/-</span>
+                    <span class="text-danger">{{t_price|stringformat:".2f"}}/-</span>
                 </h2>
-                <h3>(250 per person)</h3>                
+                <h3>({{p_price|stringformat:".2f"}} per person)</h3>                
             </div>
         </div>
     </div>
@@ -41,14 +41,14 @@
         <div class="col-md-6">
             <div class="card-body text-center pt-4">
                 <h4 class="alert alert-secondary">Satyam Seth Report</h4>
-                <h2>Total <span class="text-danger">25</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total <span class="text-danger">{{st_items}}</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
                 <h2>Spent 
                     <i class="fas fa-rupee-sign"></i>
-                    <span class="text-danger">15405/-</span>
+                    <span class="text-danger">{{st_price|stringformat:".2f"}}/-</span>
                 </h2>
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
-                    <span class="text-danger">1425/-</span>
+                    <span class="text-danger">{{sd_price|stringformat:".2f"}}/-</span>
                 </h2>
             </div>
         </div>
@@ -62,14 +62,14 @@
         <div class="col-md-6">
             <div class="card-body text-center pt-4">
                 <h4 class="alert alert-secondary">Ankit Gupta Report</h4>
-                <h2>Total <span class="text-danger">25</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total <span class="text-danger">{{at_items}}</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
                 <h2>Spent 
                     <i class="fas fa-rupee-sign"></i>
-                    <span class="text-danger">15405/-</span>
+                    <span class="text-danger">{{at_price|stringformat:".2f"}}/-</span>
                 </h2>
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
-                    <span class="text-danger">1425/-</span>
+                    <span class="text-danger">{{ad_price|stringformat:".2f"}}/-</span>
                 </h2>
             </div>
         </div>
@@ -83,14 +83,14 @@
         <div class="col-md-6">
             <div class="card-body text-center pt-4">
                 <h4 class="alert alert-secondary">Ganaga Sagar Report</h4>
-                <h2>Total <span class="text-danger">25</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total <span class="text-danger">{{gt_items}}</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
                 <h2>Spent 
                     <i class="fas fa-rupee-sign"></i>
-                    <span class="text-danger">15405/-</span>
+                    <span class="text-danger">{{gt_price|stringformat:".2f"}}/-</span>
                 </h2>
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
-                    <span class="text-danger">1425/-</span>
+                    <span class="text-danger">{{gd_price|stringformat:".2f"}}/-</span>
                 </h2>
             </div>
         </div>
@@ -104,14 +104,14 @@
         <div class="col-md-6">
             <div class="card-body text-center pt-4">
                 <h4 class="alert alert-secondary">Prashant Yadav Report</h4>
-                <h2>Total <span class="text-danger">25</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total <span class="text-danger">{{pt_items}}</span> Items <i class="fas fa-cart-arrow-down"></i></h2>
                 <h2>Spent 
                     <i class="fas fa-rupee-sign"></i>
-                    <span class="text-danger">15405/-</span>
+                    <span class="text-danger">{{pt_price|stringformat:".2f"}}/-</span>
                 </h2>
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
-                    <span class="text-danger">1425/-</span>
+                    <span class="text-danger">{{pd_price|stringformat:".2f"}}/-</span>
                 </h2>
             </div>
         </div>
