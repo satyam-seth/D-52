@@ -128,6 +128,10 @@ def download(request):
 
 # ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date','Entery Time']
 # ('date', 'item', 'price', 'name','id','datetime')
+<<<<<<< HEAD
+=======
+
+>>>>>>> 669bf979bde6c0bf1fd666c9861672c6ff204fb5
 def overall_xls(request):
     records = Record.objects.all().order_by('date')
     data=[]
