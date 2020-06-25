@@ -9,4 +9,6 @@ urlpatterns=[
     path('detailed/<str:var>/',views.detailed_view,name='detailed'),
     path('report/',views.report,name='report'),
     path('download/',views.download,name='download'),
+    path('overall_xls/',views.overall_xls,name='overall_xls'),
+    path('<str:user>/',views.user_xls,name='user_xls'),
 ]

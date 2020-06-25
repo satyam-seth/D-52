@@ -60,7 +60,11 @@ def home(request):
     return render(request,'core/index.html',context)
 
 def about(request):
-    return render(request,'core/about.html')
+    context={
+        'about_active':'active',
+        'about_disabled':'disabled'
+        }
+    return render(request,'core/about.html',context)
 
 def feedback(request):
     if request.method=='POST':
@@ -76,4 +80,10 @@ def feedback(request):
         return redirect('home')
     else:
         fm=FeedbackFrom()
-    return render(request,'core/feedback.html',{'form':fm})
+    
+    context={
+        'feedback_active':'active',
+        'feedback_disabled':'disabled',
+        'form':fm
+        }
+    return render(request,'core/feedback.html',context)
