@@ -128,7 +128,6 @@ def download(request):
 
 # ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date','Entery Time']
 # ('date', 'item', 'price', 'name','id','datetime')
-
 def overall_xls(request):
     records = Record.objects.all().order_by('date')
     data=[]
@@ -136,23 +135,25 @@ def overall_xls(request):
         temp=[record.date.strftime("%d-%m-%Y"),record.item,record.price,record.name,record.id,record.datetime.strftime("%d-%m-%Y"),record.datetime.strftime("%H:%M:%S %p")]
         data.append(temp)
     
-    response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="Overall_Items_Records.xls"'
-    wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet('Overall_Items_Records')
-    row_num = 0
-    font_style = xlwt.XFStyle()
-    font_style.font.bold = True
-    columns = ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date','Entery Time']
-    for col_num in range(len(columns)):
-        ws.write(row_num, col_num, columns[col_num], font_style)
-    font_style = xlwt.XFStyle()
-    for row in data:
-        row_num += 1
-        for col_num in range(len(row)):
-            ws.write(row_num, col_num, row[col_num], font_style)
-    wb.save(response)
-    return response
+    file_name='Overall Items Records.xls'
+    with open(file_name, 'wb') as f:
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename='+file_name
+        wb = xlwt.Workbook(encoding='utf-8')
+        ws = wb.add_sheet('Overall Items Records')
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+        columns = ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date','Entery Time']
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+        font_style = xlwt.XFStyle()
+        for row in data:
+            row_num += 1
+            for col_num in range(len(row)):
+                ws.write(row_num, col_num, row[col_num], font_style)
+        wb.save(response)
+        return response
 
 def user_xls(request,user):
     records = Record.objects.filter(name=user).order_by('date')
@@ -161,28 +162,22 @@ def user_xls(request,user):
         temp=[record.date.strftime("%d-%m-%Y"),record.item,record.price,record.id,record.datetime.strftime("%d-%m-%Y"),record.datetime.strftime("%H:%M:%S %p")]
         data.append(temp)
     
-    response = HttpResponse(content_type='application/ms-excel')
-    if user=='Satyam Seth':
-        response['Content-Disposition'] = 'attachment; filename="Satyam_Items_Records.xls"'
-    elif user=='Ankit Kumar Gupta':
-        response['Content-Disposition'] = 'attachment; filename="Ankit_Items_Records.xls"'
-    elif user=='Ganga Sagar Bharti':
-        response['Content-Disposition'] = 'attachment; filename="Ganga_Items_Records.xls"'
-    elif user=='Prashant Kumar Yadav':
-        response['Content-Disposition'] = 'attachment; filename="Prashant_Items_Records.xls"'
-
-    wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet(f'{user} Records')
-    row_num = 0
-    font_style = xlwt.XFStyle()
-    font_style.font.bold = True
-    columns = ['Date', 'Item Name', 'Price','Entery ID','Entery Date','Entery Time']
-    for col_num in range(len(columns)):
-        ws.write(row_num, col_num, columns[col_num], font_style)
-    font_style = xlwt.XFStyle()
-    for row in data:
-        row_num += 1
-        for col_num in range(len(row)):
-            ws.write(row_num, col_num, row[col_num], font_style)
-    wb.save(response)
-    return response
+    file_name=user+' Items Records.xls'
+    with open(file_name, 'wb') as f:
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename='+file_name
+        wb = xlwt.Workbook(encoding='utf-8')
+        ws = wb.add_sheet(f'{user} Records')
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+        columns = ['Date', 'Item Name', 'Price','Entery ID','Entery Date','Entery Time']
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+        font_style = xlwt.XFStyle()
+        for row in data:
+            row_num += 1
+            for col_num in range(len(row)):
+                ws.write(row_num, col_num, row[col_num], font_style)
+        wb.save(response)
+        return response
