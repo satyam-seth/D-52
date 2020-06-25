@@ -46,10 +46,17 @@
                     <i class="fas fa-rupee-sign"></i>
                     <span class="text-danger">{{st_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% if sd_price > 0 %}
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{sd_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% else %}
+                    <h2>Extra 
+                        <i class="pl-1 fas fa-rupee-sign"></i>
+                        <span class="text-danger">{{sd_price|stringformat:".2f"|slice:"1:"}}/-</span>
+                    </h2>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -67,10 +74,17 @@
                     <i class="fas fa-rupee-sign"></i>
                     <span class="text-danger">{{at_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% if ad_price > 0 %}
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{ad_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% else %}
+                    <h2>Extra 
+                        <i class="pl-1 fas fa-rupee-sign"></i>
+                        <span class="text-danger">{{ad_price|stringformat:".2f"|slice:"1:"}}/-</span>
+                    </h2>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -88,10 +102,17 @@
                     <i class="fas fa-rupee-sign"></i>
                     <span class="text-danger">{{gt_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% if gd_price > 0 %}
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{gd_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% else %}
+                    <h2>Extra 
+                        <i class="pl-1 fas fa-rupee-sign"></i>
+                        <span class="text-danger">{{gd_price|stringformat:".2f"|slice:"1:"}}/-</span>
+                    </h2>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -109,10 +130,17 @@
                     <i class="fas fa-rupee-sign"></i>
                     <span class="text-danger">{{pt_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% if pd_price > 0 %}
                 <h2>Due 
                     <i class="pl-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{pd_price|stringformat:".2f"}}/-</span>
                 </h2>
+                {% else %}
+                    <h2>Extra 
+                        <i class="pl-1 fas fa-rupee-sign"></i>
+                        <span class="text-danger">{{pd_price|stringformat:".2f"|slice:"1:"}}/-</span>
+                    </h2>
+                {% endif %}
             </div>
         </div>
     </div>
