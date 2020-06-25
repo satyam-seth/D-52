@@ -19,7 +19,10 @@
                     <a class="nav-link {{records_disabled}}" href="{% url 'records' %}">See Records</a>
                 </li>
                 <li class="nav-item {{report_active}}">
-                    <a class="nav-link {{report_disabled}}" href="{% url 'report' %}">Progress Report</a>
+                    <a class="nav-link {{report_disabled}}" href="{% url 'report' %}">Progress Reports</a>
+                </li>
+                <li class="nav-item {{about_active}}">
+                    <a class="nav-link {{about_disabled}}" href="{% url 'about' %}">About</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -27,10 +30,9 @@
                         More
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{% url 'download' %}">Download Excel Sheet</a>
+                        <a class="dropdown-item {{download_disabled}}" href="{% url 'download' %}">Download Excel Sheet</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'about' %}">About</a>
-                        <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
+                        <a class="dropdown-item {{feedback_disabled}}" href="{% url 'feedback' %}">Feedback</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" target="_blank" href="/admin">Admin Panel</a>
                     </div>
