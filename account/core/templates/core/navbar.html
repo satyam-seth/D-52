@@ -10,7 +10,8 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item {{home_active}}">
-                    <a class="nav-link {{home_disabled}}" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link {{home_disabled}}" href="{% url 'home' %}">Home <span
+                            class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item {{add_active}}">
                     <a class="nav-link {{add_disabled}}" href="{% url 'add' %}">Add Data</a>
@@ -30,7 +31,8 @@
                         More
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item {{download_disabled}}" href="{% url 'download' %}">Download Excel Sheet</a>
+                        <a class="dropdown-item {{download_disabled}}" href="{% url 'download' %}">Download Excel
+                            Sheet</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item {{feedback_disabled}}" href="{% url 'feedback' %}">Feedback</a>
                         <div class="dropdown-divider"></div>
@@ -39,7 +41,8 @@
                 </li>
             </ul>
             <form method="get" action="{% url 'search' %}" class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search item" aria-label="Search" name='query'>
+                <input class="form-control mr-sm-2" type="search" placeholder="Search item" aria-label="Search"
+                    name='query'>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </form>
         </div>

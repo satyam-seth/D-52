@@ -9,13 +9,13 @@
     <link rel="icon" type="image/png" href="{% static 'core/images/favicon/home.ico' %}">
     <link rel="stylesheet" href="{% static 'core/css/bootstrap.min.css' %}">
     {% block css %}
-        <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
     {% endblock css %}
     <title>{% block title %}D-52{% endblock title %}</title>
 </head>
 
 <body>
-    
+
     {% include 'core/navbar.html' %}
     {% block content %}{% endblock content %}
     {% include 'core/footer.html' %}

@@ -16,14 +16,14 @@
 </div>
 <div class="container-fluid">
     {% if messages %}
-      {% for message in messages %}
+    {% for message in messages %}
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <strong>{{message}}</strong>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+        <strong>{{message}}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
-      {% endfor %}
+    {% endfor %}
     {% endif %}
 </div>
 <div class="container-fluid">
@@ -34,9 +34,11 @@
                 <h3 class="card-title">Satyam Seth</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{st_items}}</span> Items <i
                         class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger"> {{st_price|stringformat:".2f"}}/-</span>
+                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
+                        {{st_price|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'satyam' %}" role="button">Detailed View <i class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'detailed' 'satyam' %}" role="button">Detailed View <i
+                        class="far fa-eye"></i></a>
             </div>
         </div>
         <div class="card shadow-lg mb-4" style="width: 18rem;">
@@ -45,9 +47,11 @@
                 <h3 class="card-title">Ankit Kumar Gupta</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{at_items}}</span> Items <i
                         class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger"> {{at_price|stringformat:".2f"}}/-</span>
+                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
+                        {{at_price|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'ankit' %}" role="button">Detailed View <i class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'detailed' 'ankit' %}" role="button">Detailed View <i
+                        class="far fa-eye"></i></a>
             </div>
         </div>
         <div class="card shadow-lg mb-4" style="width: 18rem;">
@@ -56,9 +60,11 @@
                 <h3 class="card-title">Ganga Sagar</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{gt_items}}</span> Items <i
                         class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger"> {{gt_price|stringformat:".2f"}}/-</span>
+                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
+                        {{gt_price|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'ganga' %}" role="button">Detailed View <i class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'detailed' 'ganga' %}" role="button">Detailed View <i
+                        class="far fa-eye"></i></a>
             </div>
         </div>
         <div class="card shadow-lg mb-4" style="width: 18rem;">
@@ -67,9 +73,11 @@
                 <h3 class="card-title text-center">Prashant Yadav</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{pt_items}}</span> Items <i
                         class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger"> {{pt_price|stringformat:".2f"}}/-</span>
+                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
+                        {{pt_price|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'prashant' %}" role="button">Detailed View <i class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'detailed' 'prashant' %}" role="button">Detailed View <i
+                        class="far fa-eye"></i></a>
             </div>
         </div>
     </div>
@@ -87,8 +95,8 @@
                     <span class="text-danger">{{electricity.price}}</span>
                     <span>({{e_pp}} per person)</span>
                 </h1>
-                <h2 class="pt-2">Payment Due Date <span
-                        class="text-danger">{{electricity.due_date|date:"j-M-Y"}}</span></p>
+                <h2 class="pt-2">Payment Due Date <span class="text-danger">{{electricity.due_date|date:"j-M-Y"}}</span>
+                    </p>
             </div>
         </div>
     </div>
@@ -107,7 +115,8 @@
                     <span>({{w_pp}} per person)</span>
                 </h1>
                 <h2>Total <span class="text-danger">{{w_sum}}</span> water gallons.</h2>
-                <a class="mt-2 btn btn-outline-dark" href="{% url 'detailed' 'water' %}" role="button">Detailed View <i class="far fa-eye"></i></a>
+                <a class="mt-2 btn btn-outline-dark" href="{% url 'detailed' 'water' %}" role="button">Detailed View <i
+                        class="far fa-eye"></i></a>
             </div>
         </div>
     </div>
@@ -127,7 +136,7 @@
                     <span>({{m_pp}} per person)</span>
                 </h1>
                 <h2>Payment Due Date <span class="text-danger">{{maid.due_date|date:"j-M-Y"}}</span></p>
-                <h3>(<span class="text-danger">{{days_left}}</span> days left to pay)</p>
+                    <h3>(<span class="text-danger">{{days_left}}</span> days left to pay)</p>
             </div>
         </div>
     </div>

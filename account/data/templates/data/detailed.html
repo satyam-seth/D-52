@@ -6,80 +6,80 @@
 {% block title %}D-52 Detailed View{% endblock title %}
 {% block content %}
 <div class="jumbotron jumbotron-fluid {{var}} mt-5">
-    <div class="container py-5 text-light">
-        <div>
-            <h1 class="display-2">{{var|title}} Records</h1>
-        </div>
-        <div class="lead">
-            <p class="pl-2">See all records carefully.</p>
-        </div>
+  <div class="container py-5 text-light">
+    <div>
+      <h1 class="display-2">{{var|title}} Records</h1>
     </div>
+    <div class="lead">
+      <p class="pl-2">See all records carefully.</p>
+    </div>
+  </div>
 </div>
 {% if var == 'water' %}
 <div class="container shadow-lg p-4 mb-5 rounded border">
   <h1 class="text-center alert alert-secondary">Water Records</h1>
-    {% if records %}
-    <div class="table-responsive">
-      <table class="table table-hover table-striped border">
-          <thead>
-            <tr>
-              <th scope="col">S. No.</th>
-              <th scope="col">Date</th>
-              <th scope="col" class="d-none d-sm-block">Day</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Entery ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for record in records %}
-            <tr>
-              <th scope="row">{{forloop.counter}}</th>
-              <td>{{record.date|date:"d M Y"}}</td>
-              <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
-              <td>{{record.quantity}}</td>
-              <td>{{record.id}}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-        <h4 class="text-center alert alert-warning">No Records Found</h4>
-      {% endif %}
+  {% if records %}
+  <div class="table-responsive">
+    <table class="table table-hover table-striped border">
+      <thead>
+        <tr>
+          <th scope="col">S. No.</th>
+          <th scope="col">Date</th>
+          <th scope="col" class="d-none d-sm-block">Day</th>
+          <th scope="col">Quantity</th>
+          <th scope="col">Entery ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <th scope="row">{{forloop.counter}}</th>
+          <td>{{record.date|date:"d M Y"}}</td>
+          <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
+          <td>{{record.quantity}}</td>
+          <td>{{record.id}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <h4 class="text-center alert alert-warning">No Records Found</h4>
+  {% endif %}
 </div>
 {% else %}
 <div class="container shadow-lg p-4 mb-5 rounded border">
-    <h1 class="text-center alert alert-secondary">Item Records</h1>
-      {% if records %}
-      <div class="table-responsive">
-        <table class="table table-hover table-striped border">
-            <thead>
-              <tr>
-                <th scope="col">S. No.</th>
-                <th scope="col">Date</th>
-                <th scope="col" class="d-none d-sm-block">Day</th>
-                <th scope="col">Item Name</th>
-                <th scope="col">Price</th>
-                <th scope="col">Entery ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for record in records %}
-              <tr>
-                <th scope="row">{{forloop.counter}}</th>
-                <td>{{record.date|date:"d M Y"}}</td>
-                <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
-                <td>{{record.item|capfirst}}</td>
-                <td>{{record.price}}</td>
-                <td>{{record.id}}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-          <h4 class="text-center alert alert-warning">No Records Found</h4>
-        {% endif %}
+  <h1 class="text-center alert alert-secondary">Item Records</h1>
+  {% if records %}
+  <div class="table-responsive">
+    <table class="table table-hover table-striped border">
+      <thead>
+        <tr>
+          <th scope="col">S. No.</th>
+          <th scope="col">Date</th>
+          <th scope="col" class="d-none d-sm-block">Day</th>
+          <th scope="col">Item Name</th>
+          <th scope="col">Price</th>
+          <th scope="col">Entery ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <th scope="row">{{forloop.counter}}</th>
+          <td>{{record.date|date:"d M Y"}}</td>
+          <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
+          <td>{{record.item|capfirst}}</td>
+          <td>{{record.price}}</td>
+          <td>{{record.id}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
+  {% else %}
+  <h4 class="text-center alert alert-warning">No Records Found</h4>
+  {% endif %}
+</div>
 {% endif %}
 {% endblock content %}

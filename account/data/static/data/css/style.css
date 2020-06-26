@@ -1,64 +1,64 @@
 .add {
-    background-image: url("../images/add.jpg");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    color: rgb(245, 156, 115);
-    text-shadow: 1px 1px black;
+  background-image: url("../images/add.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  color: rgb(245, 156, 115);
+  text-shadow: 1px 1px black;
 }
 .records {
-    background-image: url("../images/records.jpg");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/records.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }
 .report {
-    background-image: url("../images/report.jpg");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/report.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }
 .download {
-    background-image: url("../images/download.jpg");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 1px 1px black;
+  background-image: url("../images/download.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 1px 1px black;
 }
 .water {
-    background-image: url("../images/water.jpg");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/water.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }
 .satyam {
-    background-image: url("../images/satyam.jpg");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/satyam.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }
 .ankit {
-    background-image: url("../images/ankit.png");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/ankit.png");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }
 .ganga {
-    background-image: url("../images/ganga.png");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/ganga.png");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }
 .prashant {
-    background-image: url("../images/prashant.png");
-    background-color: dimgrey;
-    background-size: cover;
-    height: 100%;
-    text-shadow: 2px 2px black;
+  background-image: url("../images/prashant.png");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
 }

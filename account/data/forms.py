@@ -15,7 +15,7 @@ class RecordFrom(forms.ModelForm):
                 'value':localtime(now()).date()
                 }),
             'item':forms.TextInput(attrs={'class':'form-control','placeholder':'Enter item name'}),
-            'price':forms.NumberInput(attrs={'class':'form-control','min':'0','max':'5000','placeholder':'Enter price'})
+            'price':forms.NumberInput(attrs={'class':'form-control','min':'0','max':'5000','placeholder':'Enter item price'})
             }
 
 class WaterFrom(forms.ModelForm):
