@@ -19,3 +19,10 @@
     height: 100%;
     text-shadow: 2px 2px black;
 }
+.search {
+    background-image: url("../images/search.jpg");
+    background-color: dimgrey;
+    background-size: cover;
+    height: 100%;
+    text-shadow: 1px 1px gray;
+}

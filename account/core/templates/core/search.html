@@ -1,0 +1,50 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 See Records{% endblock title %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid search mt-5">
+    <div class="container py-5 text-light">
+        <div>
+            <h1 class="display-2">Search</h1>
+        </div>
+        <div class="lead pl-2">
+            <p>See all search results.</p>
+        </div>
+    </div>
+</div>
+<div class="container shadow-lg p-4 mb-5 rounded border">
+  <h1 class="text-center alert alert-secondary">Search Result</h1>
+    {% if records %}
+    <div class="table-responsive">
+      <table class="table table-hover table-striped border">
+          <thead>
+            <tr>
+              <th scope="col">S. No.</th>
+              <th scope="col">Date</th>
+              <th scope="col" class="d-none d-sm-block">Day</th>
+              <th scope="col">Item Name</th>
+              <th scope="col">Price</th>
+              <th scope="col">Purchase By</th>
+              <th scope="col" class="d-none d-sm-block">Entery ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in records %}
+            <tr>
+              <th scope="row">{{forloop.counter}}</th>
+              <td>{{record.date|date:"d M Y"}}</td>
+              <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
+              <td>{{record.item|capfirst}}</td>
+              <td>{{record.price}}</td>
+              <td>{{record.name}}</td>
+              <td class="d-none d-sm-block">{{record.id}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <h4 class="text-center alert alert-warning">No Records Found</h4>
+      {% endif %}
+</div>
+{% endblock content %}
