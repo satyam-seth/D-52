@@ -7,8 +7,6 @@ from .forms import RecordFrom,WaterFrom
 from .models import Record,Water
 from core.models import Electricity,Maid
 import xlwt
-# import csv
-# import datetime
 
 # Create your views here.
 
@@ -126,14 +124,11 @@ def download(request):
         }
     return render(request,'data/download.html',context)
 
-# ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date','Entery Time']
-# ('date', 'item', 'price', 'name','id','datetime')
-
 def overall_xls(request):
     records = Record.objects.all().order_by('date')
     data=[]
     for record in records:
-        temp=[record.date.strftime("%d-%m-%Y"),record.item,record.price,record.name,record.id,record.datetime.strftime("%d-%m-%Y"),record.datetime.strftime("%H:%M:%S %p")]
+        temp=[record.date.strftime("%d-%m-%Y"),record.item,record.price,record.name,record.id,record.datetime.strftime("%d-%m-%Y")]
         data.append(temp)
     
     file_name='Overall Items Records.xls'
@@ -145,7 +140,7 @@ def overall_xls(request):
         row_num = 0
         font_style = xlwt.XFStyle()
         font_style.font.bold = True
-        columns = ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date','Entery Time']
+        columns = ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date']
         for col_num in range(len(columns)):
             ws.write(row_num, col_num, columns[col_num], font_style)
         font_style = xlwt.XFStyle()
@@ -160,7 +155,7 @@ def user_xls(request,user):
     records = Record.objects.filter(name=user).order_by('date')
     data=[]
     for record in records:
-        temp=[record.date.strftime("%d-%m-%Y"),record.item,record.price,record.id,record.datetime.strftime("%d-%m-%Y"),record.datetime.strftime("%H:%M:%S %p")]
+        temp=[record.date.strftime("%d-%m-%Y"),record.item,record.price,record.id,record.datetime.strftime("%d-%m-%Y")]
         data.append(temp)
     
     file_name=user+' Items Records.xls'
@@ -172,7 +167,7 @@ def user_xls(request,user):
         row_num = 0
         font_style = xlwt.XFStyle()
         font_style.font.bold = True
-        columns = ['Date', 'Item Name', 'Price','Entery ID','Entery Date','Entery Time']
+        columns = ['Date', 'Item Name', 'Price','Entery ID','Entery Date']
         for col_num in range(len(columns)):
             ws.write(row_num, col_num, columns[col_num], font_style)
         font_style = xlwt.XFStyle()
