@@ -28,6 +28,8 @@ def add_item(request):
             reg=Record(date=dt,name=nm,item=it,price=pr,datetime=current_dt)
             reg.save()
             messages.success(request,'Your item record successfully added.')
+        else:
+            messages.error(request,'Please check and fill all information correctly, Your item record not added.')
         return redirect('add')
 
 def add_water(request):
@@ -40,6 +42,8 @@ def add_water(request):
             reg=Water(date=dt,quantity=qt,datetime=current_dt)
             reg.save()
             messages.success(request,'Water record successfully added.')
+        else:
+            messages.error(request,'Please check and fill all information correctly, Water record not added.')
         return redirect('add')
 
 def records(request):

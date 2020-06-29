@@ -13,7 +13,7 @@ class Feedback(models.Model):
 
 class Electricity(models.Model):
     due_date=models.DateField()
-    price=models.DecimalField(decimal_places=2,max_digits=5000)
+    price=models.DecimalField(decimal_places=2,max_digits=7)
     datetime=models.DateTimeField()
 
     def __str__(self):
@@ -21,7 +21,7 @@ class Electricity(models.Model):
 
 class Maid(models.Model):
     due_date=models.DateField()
-    price=models.DecimalField(decimal_places=2,max_digits=5000)
+    price=models.DecimalField(decimal_places=2,max_digits=7)
     datetime=models.DateTimeField()
 
     def __str__(self):
