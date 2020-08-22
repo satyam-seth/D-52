@@ -11,10 +11,13 @@ import xlwt
 # Create your views here.
 
 def add(request):
-    fm1=RecordFrom(label_suffix='')
-    fm2=WaterFrom(label_suffix='')
-    context={'add_active':'active','add_disabled':'disabled','form1':fm1,'form2':fm2}
-    return render(request,'data/add.html',context)
+    if request.user.is_authenticated:
+        fm1=RecordFrom(label_suffix='')
+        fm2=WaterFrom(label_suffix='')
+        context={'add_active':'active','add_disabled':'disabled','form1':fm1,'form2':fm2}
+        return render(request,'data/add.html',context)
+    else:
+        return redirect('login')
 
 def add_item(request):
     if request.method=='POST':

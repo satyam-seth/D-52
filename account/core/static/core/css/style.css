@@ -26,3 +26,11 @@
   height: 100%;
   text-shadow: 1px 1px gray;
 }
+.login {
+  background: url("../images/login.jpg") no-repeat center center fixed;
+  background-color: #EACDCF;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}

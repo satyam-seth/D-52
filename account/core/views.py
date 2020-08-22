@@ -2,7 +2,8 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum
-from .forms import FeedbackFrom
+from django.contrib.auth import authenticate,login,logout
+from .forms import LoginForm,FeedbackFrom
 from .models import Feedback,Electricity,Maid
 from data.models import Record,Water
 
@@ -95,3 +96,30 @@ def search(request):
     else:
         results=Record.objects.filter(item__icontains=query)
     return render(request,'core/search.html',{'records':results})
+
+def user_login(request):
+    if not request.user.is_authenticated:
+        if request.method=='POST':
+            form=LoginForm(request=request,data=request.POST)
+            if form.is_valid():
+                uname=form.cleaned_data['username']
+                upass=form.cleaned_data['password']
+                user=authenticate(username=uname,password=upass)
+                if user is not None:
+                    login(request,user)
+                messages.success(request,'Logged in Successfully !!')
+                return redirect('home')
+        else:
+            form=LoginForm()
+        context={
+            'form':form,
+            'login_active':'active',
+            'login_disabled':'disabled'
+            }
+        return render(request,'core/login.html',context)
+    else:
+        return redirect('home')
+
+def user_logout(request):
+    logout(request)
+    return redirect('home')

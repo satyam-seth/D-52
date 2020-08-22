@@ -13,9 +13,11 @@
                     <a class="nav-link {{home_disabled}}" href="{% url 'home' %}">Home <span
                             class="sr-only">(current)</span></a>
                 </li>
+                {% if request.user.is_authenticated %}
                 <li class="nav-item {{add_active}}">
                     <a class="nav-link {{add_disabled}}" href="{% url 'add' %}">Add Data</a>
                 </li>
+                {% endif %}
                 <li class="nav-item {{records_active}}">
                     <a class="nav-link {{records_disabled}}" href="{% url 'records' %}">See Records</a>
                 </li>
@@ -39,6 +41,15 @@
                         <a class="dropdown-item" target="_blank" href="/admin">Admin Panel</a>
                     </div>
                 </li>
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+                {% else %}
+                <li class="nav-item {{login_active}}">
+                    <a class="nav-link {{login_disabled}}" href="{% url 'login' %}">Login</a>
+                </li>
+                {% endif %}
             </ul>
             <form method="get" action="{% url 'search' %}" class="form-inline my-2 my-lg-0">
                 <input class="form-control mr-sm-2" type="search" placeholder="Search item" aria-label="Search"

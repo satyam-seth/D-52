@@ -23,5 +23,7 @@ urlpatterns = [
     path('search/', views.search,name='search'),
     path('about/', views.about,name='about'),
     path('feedback/', views.feedback,name='feedback'),
+    path('login/', views.user_login, name='login'),
+    path('logout/', views.user_logout, name='logout'),
     path('data/', include('data.urls')),
 ]
