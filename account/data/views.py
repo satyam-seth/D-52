@@ -28,7 +28,8 @@ def add_item(request):
             it=fm.cleaned_data['item']
             pr=fm.cleaned_data['price']
             current_dt=timezone.now()
-            reg=Record(date=dt,name=nm,item=it,price=pr,datetime=current_dt)
+            full_name=request.user.get_full_name()
+            reg=Record(date=dt,name=nm,item=it,price=pr,datetime=current_dt,added_by=full_name)
             reg.save()
             messages.success(request,'Your item record successfully added.')
         else:
@@ -42,7 +43,8 @@ def add_water(request):
             dt=fm.cleaned_data['date']
             qt=fm.cleaned_data['quantity']
             current_dt=timezone.now()
-            reg=Water(date=dt,quantity=qt,datetime=current_dt)
+            full_name=request.user.get_full_name()
+            reg=Water(date=dt,quantity=qt,datetime=current_dt,added_by=full_name)
             reg.save()
             messages.success(request,'Water record successfully added.')
         else:
@@ -184,3 +186,30 @@ def user_xls(request,user):
                 ws.write(row_num, col_num, row[col_num], font_style)
         wb.save(response)
         return response
+
+# def water_xls(request):
+#     records = Water.objects.all().order_by('date')
+#     data=[]
+#     for record in records:
+#         temp=[record.date.strftime("%d-%m-%Y"),record.quantity,record.id,record.datetime.strftime("%d-%m-%Y"),record.added_by]
+#         data.append(temp)
+    
+#     file_name='Water Records.xls'
+#     with open(file_name, 'wb') as f:
+#         response = HttpResponse(content_type='application/ms-excel')
+#         response['Content-Disposition'] = 'attachment; filename='+file_name
+#         wb = xlwt.Workbook(encoding='utf-8')
+#         ws = wb.add_sheet('Water Records')
+#         row_num = 0
+#         font_style = xlwt.XFStyle()
+#         font_style.font.bold = True
+#         columns = ['Date','Quantity','Entery ID','Entery Date','Added By']
+#         for col_num in range(len(columns)):
+#             ws.write(row_num, col_num, columns[col_num], font_style)
+#         font_style = xlwt.XFStyle()
+#         for row in data:
+#             row_num += 1
+#             for col_num in range(len(row)):
+#                 ws.write(row_num, col_num, row[col_num], font_style)
+#         wb.save(response)
+#         return response
