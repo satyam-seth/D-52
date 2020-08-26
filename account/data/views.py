@@ -14,7 +14,8 @@ def add(request):
     if request.user.is_authenticated:
         fm1=RecordFrom(label_suffix='')
         fm2=WaterFrom(label_suffix='')
-        context={'add_active':'active','add_disabled':'disabled','form1':fm1,'form2':fm2}
+        full_name=request.user.get_full_name()
+        context={'add_active':'active','add_disabled':'disabled','full_name':full_name,'form1':fm1,'form2':fm2}
         return render(request,'data/add.html',context)
     else:
         return redirect('login')
@@ -149,7 +150,7 @@ def overall_xls(request):
         row_num = 0
         font_style = xlwt.XFStyle()
         font_style.font.bold = True
-        columns = ['Date', 'Item Name', 'Price', 'Purchase By','Entery ID','Entery Date']
+        columns = ['Date', 'Item Name', 'Price', 'Purchase By','Entry ID','Entry Date']
         for col_num in range(len(columns)):
             ws.write(row_num, col_num, columns[col_num], font_style)
         font_style = xlwt.XFStyle()
@@ -176,7 +177,7 @@ def user_xls(request,user):
         row_num = 0
         font_style = xlwt.XFStyle()
         font_style.font.bold = True
-        columns = ['Date', 'Item Name', 'Price','Entery ID','Entery Date']
+        columns = ['Date', 'Item Name', 'Price','Entry ID','Entry Date']
         for col_num in range(len(columns)):
             ws.write(row_num, col_num, columns[col_num], font_style)
         font_style = xlwt.XFStyle()
@@ -203,7 +204,7 @@ def user_xls(request,user):
 #         row_num = 0
 #         font_style = xlwt.XFStyle()
 #         font_style.font.bold = True
-#         columns = ['Date','Quantity','Entery ID','Entery Date','Added By']
+#         columns = ['Date','Quantity','Entry ID','Entry Date','Added By']
 #         for col_num in range(len(columns)):
 #             ws.write(row_num, col_num, columns[col_num], font_style)
 #         font_style = xlwt.XFStyle()

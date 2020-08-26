@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% block title %}D-52 Login{% endblock title %}
 {% block content %}
 
 <div class="container-fluid login pt-5 mt-5">
@@ -7,21 +8,21 @@
     <div class="row">
         <div class="offset-4"></div>
         <div class="col-sm-4">
-            <h2 class="text-center alert alert-secondary my-3">User Login</h2>
-            <form action="" method="post" novalidate>
+            <h2 class="text-center alert alert-secondary my-3 shadow">User Login</h2>
+            <form method="post" novalidate>
                 {% csrf_token %}
                 {% if form.non_field_errors %}
                     {% for error in form.non_field_errors %}
-                        <p class="alert alert-warning my-3">{{error}}</p>
+                        <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
                     {% endfor %}
                 {% endif %}
                 {% for fm in form %}
                 <div class="form-group">
-                    {{fm.label_tag}} {{fm}} <small class="text-danger">{{fm.errors|striptags}}</small>
+                    {{fm.label_tag}} {{fm}} <small class="shadow text-danger">{{fm.errors|striptags}}</small>
                 </div>
                 {% endfor %}
-                <div class="mb-5 pb-5">
-                    <input type="submit" value="Login" class="btn btn-primary">
+                <div class="mb-5 pb-5 text-center">
+                    <input type="submit" value="Login" class="btn btn-primary shadow">
                 </div>
             </form>
         </div>
