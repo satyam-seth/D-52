@@ -5,9 +5,9 @@ from django.utils import timezone
 from django.db.models import Sum
 from .forms import RecordFrom,WaterFrom
 from .models import Record,Water
+from .notification import notify_record,notify_water
 from core.models import Electricity,Maid
 import xlwt
-
 # Create your views here.
 
 def add(request):
@@ -30,9 +30,9 @@ def add_item(request):
             pr=fm.cleaned_data['price']
             current_dt=timezone.now()
             full_name=request.user.get_full_name()
-            reg=Record(date=dt,name=nm,item=it,price=pr,datetime=current_dt,added_by=full_name)
-            reg.save()
+            reg=Record.objects.create(date=dt,name=nm,item=it,price=pr,datetime=current_dt,added_by=full_name)
             messages.success(request,'Your item record successfully added.')
+            notify_record(reg.id)
         else:
             messages.error(request,'Please check and fill all information correctly, Your item record not added.')
         return redirect('add')
@@ -45,9 +45,9 @@ def add_water(request):
             qt=fm.cleaned_data['quantity']
             current_dt=timezone.now()
             full_name=request.user.get_full_name()
-            reg=Water(date=dt,quantity=qt,datetime=current_dt,added_by=full_name)
-            reg.save()
+            reg=Water.objects.create(date=dt,quantity=qt,datetime=current_dt,added_by=full_name)
             messages.success(request,'Water record successfully added.')
+            notify_water(reg.id)
         else:
             messages.error(request,'Please check and fill all information correctly, Water record not added.')
         return redirect('add')
