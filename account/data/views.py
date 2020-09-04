@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum
+from django.core.paginator import Paginator
 from .forms import RecordFrom,WaterFrom
 from .models import Record,Water
 from .notification import notify_record,notify_water
@@ -54,12 +55,14 @@ def add_water(request):
 
 def records(request):
     records=Record.objects.all().order_by('date')
-    waters=Water.objects.all().order_by('date')
+    paginator=Paginator(records, 20, orphans=10)
+    page_number=request.GET.get('page')
+    page_obj=paginator.get_page(page_number)
     context={
         'records_active':'active',
         'records_disabled':'disabled',
-        'records':records,
-        'waters':waters}
+        'records':page_obj,
+        }
     return render(request,'data/records.html',context)
 
 def detailed_view(request,var):

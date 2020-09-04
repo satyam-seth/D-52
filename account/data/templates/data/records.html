@@ -34,7 +34,7 @@
       <tbody>
         {% for record in records %}
         <tr>
-          <th scope="row">{{forloop.counter}}</th>
+          <th scope="row">{{forloop.counter0|add:records.start_index }}</th>
           <td>{{record.date|date:"d M Y"}}</td>
           <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
           <td>{{record.item|capfirst}}</td>
@@ -45,6 +45,27 @@
         {% endfor %}
       </tbody>
     </table>
+    <div>
+      <ul class="pagination justify-content-center">
+        {% if records.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ records.previous_page_number }}">Previous</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        {% for i in records.paginator.page_range %}
+          {% if records.number == i %}
+            <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if records.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ records.next_page_number }}">Next</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </div>
   </div>
   {% else %}
   <h4 class="text-center alert alert-warning">No Records Found</h4>
