@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.views import PasswordResetCompleteView
 from .forms import LoginForm,FeedbackFrom
 from .models import Feedback,Electricity,Maid
 from data.models import Record,Water
@@ -123,3 +124,9 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('home')
+
+class MyPasswordResetCompleteView(PasswordResetCompleteView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['login_url'] = '/login/'
+        return context
