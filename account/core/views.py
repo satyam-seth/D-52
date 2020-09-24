@@ -108,7 +108,7 @@ def user_login(request):
                 user=authenticate(username=uname,password=upass)
                 if user is not None:
                     login(request,user)
-                messages.success(request,'Logged in Successfully !!')
+                messages.success(request,'Logged In Successfully !!')
                 return redirect('home')
         else:
             form=LoginForm()
@@ -122,8 +122,9 @@ def user_login(request):
         return redirect('home')
 
 def user_logout(request):
-    logout(request)
-    return redirect('home')
+	logout(request)
+	messages.success(request,'Logged Out Successfully !!')
+	return redirect('home')
 
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
     def get_context_data(self, **kwargs):
