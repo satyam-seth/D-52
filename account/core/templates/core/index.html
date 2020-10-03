@@ -82,6 +82,7 @@
         </div>
     </div>
 </div>
+{% if electricity.price %}
 <div class="card shadow-lg m-3">
     <div class="row no-gutters">
         <div class="col-md-4">
@@ -95,12 +96,19 @@
                     <span class="text-danger">{{electricity.price}}</span>
                     <span>({{e_pp}} per person)</span>
                 </h1>
-                <h2 class="pt-2">Payment Due Date <span class="text-danger">{{electricity.due_date|date:"j-M-Y"}}</span>
-                    </p>
+                <h2 class="pt-2">Payment Due Date <span class="text-danger">{{electricity.due_date|date:"j-M-Y"}}</span></h2>
+                {% if e_days_left > 0 %}
+                <h3>(<span class="text-danger">{{e_days_left}}</span> days left to pay)</h3>
+                {% elif e_days_left < 0  %}
+                <h3>(<span class="text-danger">{{e_days_left|cut:"-"  }}</span> days delay)</h3>
+                {% else %}
+                <h3>(pay <span class="text-danger">today</span> immediately)</h3>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+{% endif %}
 <div class="card shadow-lg m-3">
     <div class="row no-gutters">
         <div class="col-md-4">
@@ -135,8 +143,14 @@
                     <span class="text-danger">{{maid.price}}</span>
                     <span>({{m_pp}} per person)</span>
                 </h1>
-                <h2>Payment Due Date <span class="text-danger">{{maid.due_date|date:"j-M-Y"}}</span></p>
-                    <h3>(<span class="text-danger">{{days_left}}</span> days left to pay)</p>
+                <h2>Payment Due Date <span class="text-danger">{{maid.due_date|date:"j-M-Y"}}</span></h2>
+                {% if m_days_left > 0 %}
+                <h3>(<span class="text-danger">{{m_days_left}}</span> days left to pay)</h3>
+                {% elif m_days_left < 0  %}
+                <h3>(<span class="text-danger">{{m_days_left|cut:"-"  }}</span> days delay)</h3>
+                {% else %}
+                <h3>(pay <span class="text-danger">today</span> immediately)</h3>
+                {% endif %}
             </div>
         </div>
     </div>

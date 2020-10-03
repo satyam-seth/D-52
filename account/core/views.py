@@ -17,10 +17,11 @@ def home(request):
 
     electricity=Electricity.objects.latest('due_date')
     e_pp=electricity.price/4
+    e_days_left=(electricity.due_date-timezone.now().date()).days
     
     maid=Maid.objects.latest('due_date')
     m_pp=maid.price/4
-    days_left=(maid.due_date-timezone.now().date()).days
+    m_days_left=(maid.due_date-timezone.now().date()).days
 
     satyam_record=Record.objects.filter(name='Satyam Seth')
     st_price=satyam_record.aggregate(Sum('price'))['price__sum']
@@ -46,9 +47,10 @@ def home(request):
         'w_pp':w_pp,
         'electricity':electricity,
         'e_pp':e_pp,
+        'e_days_left':e_days_left,
         'maid':maid,
         'm_pp':m_pp,
-        'days_left':days_left,
+        'm_days_left':m_days_left,
         'st_price':st_price,
         'st_items':st_items,
         'at_price':at_price,

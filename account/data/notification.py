@@ -7,7 +7,10 @@ def notify_record(reg_id):
     data=Record.objects.get(pk=reg_id)
     s=smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls() 
-    s.login("astered.info@gmail.com", "password") 
+    try:
+        s.login("astered.info@gmail.com", "astered@12345")
+    except:
+        return 
     SUBJECT=f'D-52 Record Entry Alert {data.id}'
     TEXT=f'''!!     D-52 Record Entry Notification      !!
         Purchase Date - {data.date.strftime("%d-%m-%Y")}
@@ -27,8 +30,11 @@ def notify_record(reg_id):
 def notify_water(reg_id):
     data=Water.objects.get(pk=reg_id)
     s=smtplib.SMTP('smtp.gmail.com', 587)
-    s.starttls() 
-    s.login("astered.info@gmail.com", "astered@12345")
+    s.starttls()
+    try:
+        s.login("astered.info@gmail.com", "password")
+    except:
+        return
     SUBJECT=f'D-52 Water Entry Alert {data.id}'
     TEXT=f'''!!     D-52 Water Entry Notification       !!
         Receiving Date - {data.date.strftime("%d-%m-%Y")}
