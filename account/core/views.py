@@ -12,7 +12,7 @@ from data.models import Record,Water
 
 def home(request):
     w_sum=Water.objects.aggregate(Sum('quantity'))['quantity__sum']
-    w_price=35*w_sum
+    w_price=40*w_sum
     w_pp=w_price/4
 
     electricity=Electricity.objects.latest('due_date')
