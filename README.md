@@ -4,16 +4,16 @@ This website records the things that people have brought for the flat and to rep
 
 ## See Project
 
-visit-http://satyam1998.pythonanywhere.com/
+visit-https://satyam1998.pythonanywhere.com/
 
 ## Installation
 
-1.Use the package manager [pip](https://pip.pypa.io/en/stable/) to install all python packages on your system which is listed in **req.txt** file.
+1.Use the package manager [pip](https://pip.pypa.io/en/stable/) to install all python packages on your system which is listed in [req.txt](https://github.com/satyam-seth/D-52/blob/master/req.txt) file.
 
 2.Open cmd or terminal
 
-3.Go to file location were **manage.py** is located
+3.Go to file location were [manage.py](https://github.com/satyam-seth/D-52/blob/master/account/manage.py) is located
 
-4.Run the command **python manage.py runserver**
+4.Run the command *python manage.py runserver*
 
 5.Open your browser and open url http://127.0.0.1:8000/
