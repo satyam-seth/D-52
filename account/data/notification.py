@@ -8,7 +8,7 @@ def notify_record(reg_id):
     s=smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls() 
     try:
-        s.login("astered.info@gmail.com", "astered@12345")
+        s.login("astered.info@gmail.com", "password")
     except:
         return 
     SUBJECT=f'D-52 Record Entry Alert {data.id}'
