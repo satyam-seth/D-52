@@ -7,30 +7,45 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Record',
+            name="Record",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('datetime', models.DateTimeField()),
-                ('name', models.CharField(max_length=20)),
-                ('item', models.CharField(max_length=50)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=7)),
-                ('added_by', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                ("datetime", models.DateTimeField()),
+                ("name", models.CharField(max_length=20)),
+                ("item", models.CharField(max_length=50)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=7)),
+                ("added_by", models.CharField(max_length=50)),
             ],
         ),
         migrations.CreateModel(
-            name='Water',
+            name="Water",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('datetime', models.DateTimeField()),
-                ('quantity', models.IntegerField()),
-                ('added_by', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                ("datetime", models.DateTimeField()),
+                ("quantity", models.IntegerField()),
+                ("added_by", models.CharField(max_length=50)),
             ],
         ),
     ]
