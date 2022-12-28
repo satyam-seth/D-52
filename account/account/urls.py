@@ -14,25 +14,39 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from core import views
 
-admin.site.site_header = 'D-52 Administration'
-admin.site.index_title = 'Site Database Details'
-admin.site.site_title = 'D-52 Site Admin'
+admin.site.site_header = "D-52 Administration"
+admin.site.index_title = "Site Database Details"
+admin.site.site_title = "D-52 Site Admin"
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.home,name='home'),
-    path('search/', views.search,name='search'),
-    path('about/', views.about,name='about'),
-    path('feedback/', views.feedback,name='feedback'),
-    path('login/', views.user_login, name='login'),
-    path('logout/', views.user_logout, name='logout'),
-    path('data/', include('data.urls')),
-    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', views.MyPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path("admin/", admin.site.urls),
+    path("", views.home, name="home"),
+    path("search/", views.search, name="search"),
+    path("about/", views.about, name="about"),
+    path("feedback/", views.feedback, name="feedback"),
+    path("login/", views.user_login, name="login"),
+    path("logout/", views.user_logout, name="logout"),
+    path("data/", include("data.urls")),
+    path(
+        "password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"
+    ),
+    path(
+        "password_reset/done/",
+        auth_views.PasswordResetDoneView.as_view(),
+        name="password_reset_done",
+    ),
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset/done/",
+        views.MyPasswordResetCompleteView.as_view(),
+        name="password_reset_complete",
+    ),
 ]
