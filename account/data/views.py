@@ -1,4 +1,4 @@
-import xlwt
+import xlwt  # type: ignore
 from core.models import Electricity, Maid
 from django.contrib import messages
 from django.core.paginator import Paginator

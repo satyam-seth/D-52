@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from typing import List
 
 from django.contrib.messages import constants as message_t
 
@@ -27,7 +28,7 @@ SECRET_KEY = "9!h535_^!2=c8(q3&z=m0jw7=5)qi^ns4m@1+v1xqs_s8a&6*t"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: List[str] = []
 
 
 # Application definition
