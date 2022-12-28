@@ -4,6 +4,10 @@
         "source.fixAll": true,
         "source.organizeImports": true,
     },
+    "isort.args": [
+        "skip_glob",
+        "*/migrations/*",
+    ],
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
