@@ -1,5 +1,5 @@
+from core.models import Electricity, Feedback, Maid
 from django.contrib import admin
-from core.models import Feedback, Electricity, Maid
 
 # Register your models here.
 

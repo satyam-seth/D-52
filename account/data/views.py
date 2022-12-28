@@ -1,14 +1,15 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+import xlwt
+from core.models import Electricity, Maid
 from django.contrib import messages
-from django.utils import timezone
-from django.db.models import Sum
 from django.core.paginator import Paginator
+from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
 from .notification import notify_record, notify_water
-from core.models import Electricity, Maid
-import xlwt
 
 # Create your views here.
 

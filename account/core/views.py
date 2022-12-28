@@ -1,12 +1,13 @@
-from django.shortcuts import render, redirect
+from data.models import Record, Water
 from django.contrib import messages
-from django.utils import timezone
-from django.db.models import Sum
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
-from .forms import LoginForm, FeedbackFrom
-from .models import Feedback, Electricity, Maid
-from data.models import Record, Water
+from django.db.models import Sum
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
+from .forms import FeedbackFrom, LoginForm
+from .models import Electricity, Feedback, Maid
 
 # Create your views here.
 

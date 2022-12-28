@@ -1,4 +1,5 @@
 import smtplib
+
 from .models import Record, Water
 
 receivers = [
