@@ -55,13 +55,9 @@ def add_water(request):
     if request.method == "POST":
         fm = WaterFrom(request.POST)
         if fm.is_valid():
-            dt = fm.cleaned_data["date"]
-            qt = fm.cleaned_data["quantity"]
-            current_dt = timezone.now()
-            full_name = request.user.get_full_name()
-            reg = Water.objects.create(
-                date=dt, quantity=qt, datetime=current_dt, added_by=full_name
-            )
+            reg = fm.save(commit=False)
+            reg.adder = request.user
+            reg.save()
             messages.success(request, "Water record successfully added.")
             notify_water(reg.id)
         else:

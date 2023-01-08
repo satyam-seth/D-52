@@ -30,16 +30,17 @@ class Record(models.Model):
         return str(self.item) + " " + self.purchaser.username
 
 
+# TODO: Add price field because price of one gallon of water may change in future
 class Water(models.Model):
-    purchase_date = models.DateField()
-    modified_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
     # currently we only allow maximum 5 quantity
     # TODO: add validator for allowed max quantity is 5 for a day
     quantity = models.PositiveIntegerField(
         default=1, validators=[MaxValueValidator(5), MinValueValidator(1)]
     )
     adder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    purchase_date = models.DateField()
+    modified_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         # TODO: finalize str
