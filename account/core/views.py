@@ -13,14 +13,17 @@ from .models import Electricity, Feedback, Maid
 
 
 def home(request):
-    # w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
-    # w_price = 40 * w_sum
-    # w_pp = w_price / 4
+    # TODO: handle empty database state
+    w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
+    w_price = 40 * w_sum
+    w_pp = w_price / 4
 
+    # TODO: handle empty database state
     electricity = Electricity.objects.latest("due_date")
     e_pp = electricity.price / 4
     e_days_left = (electricity.due_date - timezone.now().date()).days
 
+    # TODO: handle empty database state
     maid = Maid.objects.latest("due_date")
     m_pp = maid.price / 4
     m_days_left = (maid.due_date - timezone.now().date()).days
@@ -48,9 +51,9 @@ def home(request):
     context = {
         "home_active": "active",
         "home_disabled": "disabled",
-        # "w_sum": w_sum,
-        # "w_price": w_price,
-        # "w_pp": w_pp,
+        "w_sum": w_sum,
+        "w_price": w_price,
+        "w_pp": w_pp,
         "electricity": electricity,
         "e_pp": e_pp,
         "e_days_left": e_days_left,

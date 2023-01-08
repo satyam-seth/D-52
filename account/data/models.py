@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 class Record(models.Model):
     item = models.CharField(max_length=50)
+    # TODO: price can't be negative or zero
     price = models.DecimalField(decimal_places=2, max_digits=7)
     purchaser = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="purchaser"
@@ -18,14 +19,17 @@ class Record(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        # TODO: finalize str
         return str(self.item) + " " + self.purchaser.username
 
 
 class Water(models.Model):
-    date = models.DateField()
-    datetime = models.DateTimeField()
-    quantity = models.IntegerField()
-    added_by = models.CharField(max_length=50)
+    purchase_date = models.DateField()
+    modified_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    quantity = models.PositiveIntegerField()
+    adder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return str(self.date)
+        # TODO: finalize str
+        return str(self.purchase_date)

@@ -20,4 +20,11 @@ class RecordAdmin(admin.ModelAdmin):
 
 @admin.register(Water)
 class WaterAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "quantity", "datetime", "added_by")
+    list_display = (
+        "id",
+        "purchase_date",
+        "modified_on",
+        "quantity",
+        "created_on",
+        "adder",
+    )
