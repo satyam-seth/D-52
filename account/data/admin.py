@@ -6,7 +6,16 @@ from django.contrib import admin
 
 @admin.register(Record)
 class RecordAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "date", "item", "price", "datetime", "added_by")
+    list_display = (
+        "id",
+        "item",
+        "price",
+        "purchaser",
+        "adder",
+        "purchase_date",
+        "created_on",
+        "modified_on",
+    )
 
 
 @admin.register(Water)
