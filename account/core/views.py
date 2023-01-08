@@ -85,12 +85,10 @@ def feedback(request):
     return render(request, "core/feedback.html", context)
 
 
+# TODO: move this to data
 def search(request):
     query = request.GET["query"]
-    if len(query) > 50 or len(query) == 0:
-        results = Record.objects.none()
-    else:
-        results = Record.objects.filter(item__icontains=query)
+    results = Record.objects.filter(item__icontains=query)
     return render(request, "core/search.html", {"records": results})
 
 

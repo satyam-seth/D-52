@@ -32,11 +32,11 @@
         {% for record in records %}
         <tr>
           <th scope="row">{{forloop.counter}}</th>
-          <td>{{record.date|date:"d M Y"}}</td>
-          <td class="d-none d-sm-block">{{record.date|date:"D"}}</td>
+          <td>{{record.purchase_date|date:"d M Y"}}</td>
+          <td class="d-none d-sm-block">{{record.purchase_date|date:"D"}}</td>
           <td>{{record.item|capfirst}}</td>
           <td>{{record.price}}</td>
-          <td>{{record.name}}</td>
+          <td>{{record.purchaser.get_full_name}}</td>
           <td class="d-none d-sm-block">{{record.id}}</td>
         </tr>
         {% endfor %}
