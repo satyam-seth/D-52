@@ -30,7 +30,9 @@
 <div class="container-fluid">
     <div class="row card-deck justify-content-center">
         <div class="card shadow-lg mb-4" style="width: 18rem;">
+            <!-- TODO: use user profile instead of hardcoded url -->
             <img src="{% static '/core/images/satyam.jpg' %}" class="card-img-top img-thumbnail" alt="satyam seth">
+            <!-- <img src="{{ request.user.profile.avatar.url }}" class="card-img-top img-thumbnail" alt="satyam seth"> -->
             <div class="card-body text-center">
                 <h3 class="card-title">Satyam Seth</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{st_items}}</span> Items <i

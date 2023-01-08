@@ -1,6 +1,18 @@
+from django.conf import settings
 from django.db import models
 
-# Create your models here.
+
+# TODO: move this model in accounts app
+class Profile(models.Model):
+    user = models.OneToOneField(
+        to=settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
+    )
+    avatar = models.ImageField(
+        default="profile_images/default.jpg", upload_to="profile_images"
+    )
+
+    def __str__(self):
+        return self.user.username
 
 
 class Feedback(models.Model):

@@ -1,10 +1,11 @@
-from data.models import Record, Water
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
+
+from data.models import Record, Water
 
 from .forms import FeedbackFrom, LoginForm
 from .models import Electricity, Feedback, Maid
@@ -28,6 +29,7 @@ def home(request):
     m_pp = maid.price / 4
     m_days_left = (maid.due_date - timezone.now().date()).days
 
+    # TODO: remove hardcoded user id
     # user id 2 is satyam
     satyam_record = Record.objects.filter(purchaser__id=2)
     st_price = satyam_record.aggregate(Sum("price"))["price__sum"]

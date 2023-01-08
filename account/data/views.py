@@ -1,11 +1,12 @@
 import xlwt  # type: ignore
-from core.models import Electricity, Maid
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+
+from core.models import Electricity, Maid
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water

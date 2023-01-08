@@ -1,7 +1,12 @@
-from core.models import Electricity, Feedback, Maid
 from django.contrib import admin
 
-# Register your models here.
+from core.models import Electricity, Feedback, Maid, Profile
+
+
+# TODO: register profile under user model
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "avatar")
 
 
 @admin.register(Feedback)
