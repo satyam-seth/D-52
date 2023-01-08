@@ -2,6 +2,7 @@ import smtplib
 
 from .models import Record, Water
 
+# TODO: use celery for notification emails
 receivers = [
     "satyam1998.1998@gmail.com",
     "ankitgupta6564@gmail.com",

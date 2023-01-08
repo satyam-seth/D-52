@@ -2,6 +2,8 @@ from django.urls import path
 
 from data import views
 
+# TODO: add namespace  'app = "data"'
+
 urlpatterns = [
     path("add/", views.add, name="add"),
     path("item/", views.add_item, name="add_item"),

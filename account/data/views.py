@@ -30,24 +30,15 @@ def add(request):
         return redirect("login")
 
 
+# TODO: use login required decorator
 def add_item(request):
+    # TODO: use require_http_methods for only post
     if request.method == "POST":
         fm = RecordFrom(request.POST)
         if fm.is_valid():
-            dt = fm.cleaned_data["date"]
-            nm = fm.cleaned_data["name"]
-            it = fm.cleaned_data["item"]
-            pr = fm.cleaned_data["price"]
-            current_dt = timezone.now()
-            full_name = request.user.get_full_name()
-            reg = Record.objects.create(
-                date=dt,
-                name=nm,
-                item=it,
-                price=pr,
-                datetime=current_dt,
-                added_by=full_name,
-            )
+            reg = fm.save(commit=False)
+            reg.adder = request.user
+            reg.save()
             messages.success(request, "Your item record successfully added.")
             notify_record(reg.id)
         else:
@@ -58,7 +49,9 @@ def add_item(request):
         return redirect("add")
 
 
+# TODO: use login required decorator
 def add_water(request):
+    # TODO: use require_http_methods for only post
     if request.method == "POST":
         fm = WaterFrom(request.POST)
         if fm.is_valid():
