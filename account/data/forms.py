@@ -13,11 +13,14 @@ class RecordFrom(forms.ModelForm):
                 attrs={
                     "type": "date",
                     "class": "form-control",
+                    # TODO: move this validator logic to models
                     "min": localtime(now() - timedelta(6)).date(),
                     "max": localtime(now()).date(),
                     "value": localtime(now()).date(),
                 }
             ),
+            # TODO: fix initial selected choice is current logged in user instead of ------
+            "purchaser": forms.Select(attrs={"class": "form-control"}),
             "item": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter item name"}
             ),

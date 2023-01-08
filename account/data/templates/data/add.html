@@ -33,18 +33,25 @@
     {% csrf_token %}
     <div class="form-row">
       <div class="form-group col-md-6">
-        {{form1.date.label_tag}}
-        {{form1.date}}
+        {{form1.purchase_date.label_tag}}
+        {{form1.purchase_date}}
       </div>
       <div class="form-group col-md-6">
+        {{form1.purchaser.label_tag}}
+        {{form1.purchaser}}
+      </div>
+      <!-- <div class="form-group col-md-6">
         <label for="inputPurchaseBy">Purchase By</label>
         <select name="name" class="form-control" id="inputPurchaseBy">
-          <option {% if full_name == 'Satyam Seth' %}selected{% endif %} value="Satyam Seth">Satyam Seth</option>
-          <option {% if full_name == 'Ankit Kumar Gupta' %}selected{% endif %} value="Ankit Kumar Gupta">Ankit Kumar Gupta</option>
-          <option {% if full_name == 'Ganga Sagar Bharti' %}selected{% endif %} value="Ganga Sagar Bharti">Ganga Sagar Bharti</option>
-          <option {% if full_name == 'Prashant Kumar Yadav' %}selected{% endif %} value="Prashant Kumar Yadav">Prashant Kumar Yadav</option>
+          <option value="Satyam Seth">Satyam Seth</option>
+          <option value="Ankit Kumar Gupta">Ankit Kumar Gupta
+          </option>
+          <option value="Ganga Sagar Bharti">Ganga Sagar
+            Bharti</option>
+          <option value="Prashant Kumar Yadav">Prashant
+            Kumar Yadav</option>
         </select>
-      </div>
+      </div> -->
     </div>
     <div class="form-row">
       <div class="form-group col-md-6">

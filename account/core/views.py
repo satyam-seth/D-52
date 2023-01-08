@@ -1,10 +1,9 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 
 from data.models import Record, Water
 

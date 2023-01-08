@@ -14,16 +14,14 @@ from .notification import notify_record, notify_water
 
 # Create your views here.
 
-
+# TODO: use login required decorator
 def add(request):
     if request.user.is_authenticated:
         fm1 = RecordFrom(label_suffix="")
         fm2 = WaterFrom(label_suffix="")
-        full_name = request.user.get_full_name()
         context = {
             "add_active": "active",
             "add_disabled": "disabled",
-            "full_name": full_name,
             "form1": fm1,
             "form2": fm2,
         }
