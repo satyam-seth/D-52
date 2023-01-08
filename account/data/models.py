@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 # Create your models here.
@@ -34,7 +34,11 @@ class Water(models.Model):
     purchase_date = models.DateField()
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    quantity = models.PositiveIntegerField()
+    # currently we only allow maximum 5 quantity
+    # TODO: add validator for allowed max quantity is 5 for a day
+    quantity = models.PositiveIntegerField(
+        default=1, validators=[MaxValueValidator(5), MinValueValidator(1)]
+    )
     adder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):

@@ -48,5 +48,9 @@ class WaterFrom(forms.ModelForm):
                     "max": localtime(now()).date(),
                     "value": localtime(now()).date(),
                 }
-            )
+            ),
+            # TODO: find out right way to infer max value from model validators if possible
+            "quantity": forms.NumberInput(
+                attrs={"class": "form-control", "min": 1, "max": 5}
+            ),
         }

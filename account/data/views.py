@@ -17,13 +17,13 @@ from .notification import notify_record, notify_water
 # TODO: use login required decorator
 def add(request):
     if request.user.is_authenticated:
-        fm1 = RecordFrom(label_suffix="")
-        fm2 = WaterFrom(label_suffix="")
+        record_form = RecordFrom(label_suffix="")
+        water_form = WaterFrom(label_suffix="")
         context = {
             "add_active": "active",
             "add_disabled": "disabled",
-            "form1": fm1,
-            "form2": fm2,
+            "record_form": record_form,
+            "water_form": water_form,
         }
         return render(request, "data/add.html", context)
     else:
