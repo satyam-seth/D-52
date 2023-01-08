@@ -17,7 +17,8 @@
 <div class="container-fluid">
     {% if messages %}
     {% for message in messages %}
-    <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %} role="alert">
+    <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+        role="alert">
         <strong>{{message}}</strong>
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
@@ -29,7 +30,9 @@
 <div class="container-fluid">
     <div class="row card-deck justify-content-center">
         <div class="card shadow-lg mb-4" style="width: 18rem;">
+            <!-- TODO: use user profile instead of hardcoded url -->
             <img src="{% static '/core/images/satyam.jpg' %}" class="card-img-top img-thumbnail" alt="satyam seth">
+            <!-- <img src="{{ request.user.profile.avatar.url }}" class="card-img-top img-thumbnail" alt="satyam seth"> -->
             <div class="card-body text-center">
                 <h3 class="card-title">Satyam Seth</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{st_items}}</span> Items <i
@@ -96,14 +99,15 @@
                     <span class="text-danger">{{electricity.price}}</span>
                     <span>({{e_pp}} per person)</span>
                 </h1>
-                <h2 class="pt-2">Payment Due Date <span class="text-danger">{{electricity.due_date|date:"j-M-Y"}}</span></h2>
+                <h2 class="pt-2">Payment Due Date <span class="text-danger">{{electricity.due_date|date:"j-M-Y"}}</span>
+                </h2>
                 {% if e_days_left > 0 %}
                 <h3>(<span class="text-danger">{{e_days_left}}</span> days left to pay)</h3>
-                {% elif e_days_left < 0  %}
-                <h3>(<span class="text-danger">{{e_days_left|cut:"-"  }}</span> days delay)</h3>
-                {% else %}
-                <h3>(pay <span class="text-danger">today</span> immediately)</h3>
-                {% endif %}
+                {% elif e_days_left < 0 %} <h3>(<span class="text-danger">{{e_days_left|cut:"-" }}</span> days delay)
+                    </h3>
+                    {% else %}
+                    <h3>(pay <span class="text-danger">today</span> immediately)</h3>
+                    {% endif %}
             </div>
         </div>
     </div>
@@ -146,11 +150,11 @@
                 <h2>Payment Due Date <span class="text-danger">{{maid.due_date|date:"j-M-Y"}}</span></h2>
                 {% if m_days_left > 0 %}
                 <h3>(<span class="text-danger">{{m_days_left}}</span> days left to pay)</h3>
-                {% elif m_days_left < 0  %}
-                <h3>(<span class="text-danger">{{m_days_left|cut:"-"  }}</span> days delay)</h3>
-                {% else %}
-                <h3>(pay <span class="text-danger">today</span> immediately)</h3>
-                {% endif %}
+                {% elif m_days_left < 0 %} <h3>(<span class="text-danger">{{m_days_left|cut:"-" }}</span> days delay)
+                    </h3>
+                    {% else %}
+                    <h3>(pay <span class="text-danger">today</span> immediately)</h3>
+                    {% endif %}
             </div>
         </div>
     </div>

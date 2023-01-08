@@ -1,10 +1,11 @@
-from data.models import Record, Water
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
+
+from data.models import Record, Water
 
 from .forms import FeedbackFrom, LoginForm
 from .models import Electricity, Feedback, Maid
@@ -13,33 +14,41 @@ from .models import Electricity, Feedback, Maid
 
 
 def home(request):
+    # TODO: handle empty database state
     w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
     w_price = 40 * w_sum
     w_pp = w_price / 4
 
+    # TODO: handle empty database state
     electricity = Electricity.objects.latest("due_date")
     e_pp = electricity.price / 4
     e_days_left = (electricity.due_date - timezone.now().date()).days
 
+    # TODO: handle empty database state
     maid = Maid.objects.latest("due_date")
     m_pp = maid.price / 4
     m_days_left = (maid.due_date - timezone.now().date()).days
 
-    satyam_record = Record.objects.filter(name="Satyam Seth")
+    # TODO: remove hardcoded user id
+    # user id 2 is satyam
+    satyam_record = Record.objects.filter(purchaser__id=2)
     st_price = satyam_record.aggregate(Sum("price"))["price__sum"]
     st_items = len(satyam_record)
 
-    ankit_record = Record.objects.filter(name="Ankit Kumar Gupta")
+    # user id 3 is ankit
+    ankit_record = Record.objects.filter(purchaser__id=3)
     at_price = ankit_record.aggregate(Sum("price"))["price__sum"]
     at_items = len(ankit_record)
 
-    ganga_record = Record.objects.filter(name="Ganga Sagar Bharti")
-    gt_price = ganga_record.aggregate(Sum("price"))["price__sum"]
-    gt_items = len(ganga_record)
-
-    prashant_record = Record.objects.filter(name="Prashant Kumar Yadav")
+    # user id 4 is pranshant
+    prashant_record = Record.objects.filter(purchaser__id=4)
     pt_price = prashant_record.aggregate(Sum("price"))["price__sum"]
     pt_items = len(prashant_record)
+
+    # user id 5 is ganga
+    ganga_record = Record.objects.filter(purchaser__id=5)
+    gt_price = ganga_record.aggregate(Sum("price"))["price__sum"]
+    gt_items = len(ganga_record)
 
     context = {
         "home_active": "active",

@@ -7,9 +7,9 @@ from .models import Record, Water
 class RecordFrom(forms.ModelForm):
     class Meta:
         model = Record
-        fields = ["date", "name", "item", "price"]
+        fields = ["purchase_date", "purchaser", "item", "price"]
         widgets = {
-            "date": forms.DateInput(
+            "purchase_date": forms.DateInput(
                 attrs={
                     "type": "date",
                     "class": "form-control",
@@ -35,9 +35,9 @@ class RecordFrom(forms.ModelForm):
 class WaterFrom(forms.ModelForm):
     class Meta:
         model = Water
-        fields = ["date", "quantity"]
+        fields = ["purchase_date", "quantity"]
         widgets = {
-            "date": forms.DateInput(
+            "purchase_date": forms.DateInput(
                 attrs={
                     "type": "date",
                     "class": "form-control",

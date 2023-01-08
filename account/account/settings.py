@@ -125,6 +125,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
+
 PASSWORD_RESET_TIMEOUT = 600000
 
 # SMTP Configration
