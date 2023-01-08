@@ -85,13 +85,6 @@ def feedback(request):
     return render(request, "core/feedback.html", context)
 
 
-# TODO: move this to data
-def search(request):
-    query = request.GET["query"]
-    results = Record.objects.filter(item__icontains=query)
-    return render(request, "core/search.html", {"records": results})
-
-
 def user_login(request):
     if not request.user.is_authenticated:
         if request.method == "POST":

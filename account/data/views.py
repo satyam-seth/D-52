@@ -161,6 +161,12 @@ def report(request):
     return render(request, "data/report.html", context)
 
 
+def search(request):
+    query = request.GET["query"]
+    results = Record.objects.filter(item__icontains=query)
+    return render(request, "data/search.html", {"records": results})
+
+
 def download(request):
     context = {"download_active": "active", "download_disabled": "disabled"}
     return render(request, "data/download.html", context)
