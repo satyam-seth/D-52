@@ -81,8 +81,10 @@ def add_water(request):
         return redirect("add")
 
 
+# TODO: user ListView paginated_by attribute
 def records(request):
-    records = Record.objects.all().order_by("date")
+    # TODO: expose only requested user group records
+    records = Record.objects.all().order_by("-purchase_date")
     paginator = Paginator(records, 20, orphans=10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
