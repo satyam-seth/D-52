@@ -2,17 +2,15 @@ import xlwt  # type: ignore
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Sum
+from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.utils import timezone
-
-from core.models import Electricity, Maid
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
 from .notification import notify_record, notify_water
 
-# Create your views here.
+User = get_user_model()
 
 # TODO: use login required decorator
 def add(request):
@@ -83,23 +81,17 @@ def records(request):
     return render(request, "data/records.html", context)
 
 
-def detailed_view(request, var):
-    if var == "satyam":
-        data = Record.objects.filter(name="Satyam Seth").order_by("date")
+# TODO: use list view with paginator
+def detailed_view(request, user_id):
+    user = User.objects.get(pk=user_id)
+    records = Record.objects.filter(purchaser__id=user_id).order_by("-purchase_date")
+    return render(request, "data/detailed.html", {"records": records, "user": user})
 
-    elif var == "ankit":
-        data = Record.objects.filter(name="Ankit Kumar Gupta").order_by("date")
 
-    elif var == "ganga":
-        data = Record.objects.filter(name="Ganga Sagar Bharti").order_by("date")
-
-    elif var == "prashant":
-        data = Record.objects.filter(name="Prashant Kumar Yadav").order_by("date")
-
-    else:
-        data = Water.objects.all().order_by("date")
-
-    return render(request, "data/detailed.html", {"records": data, "var": var})
+# TODO: use list view with paginator
+def detailed_water_view(request):
+    records = Water.objects.all().order_by("-purchase_date")
+    return render(request, "data/detailed_water.html", {"records": records})
 
 
 def report(request):
@@ -161,6 +153,7 @@ def download(request):
     return render(request, "data/download.html", context)
 
 
+# TODO: fix this view
 def overall_xls(request):
     records = Record.objects.all().order_by("date")
     data = []
