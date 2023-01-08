@@ -29,60 +29,22 @@
 </div>
 <div class="container-fluid">
     <div class="row card-deck justify-content-center">
+        {% for record in records %}
         <div class="card shadow-lg mb-4" style="width: 18rem;">
-            <!-- TODO: use user profile instead of hardcoded url -->
-            <img src="{% static '/core/images/satyam.jpg' %}" class="card-img-top img-thumbnail" alt="satyam seth">
-            <!-- <img src="{{ request.user.profile.avatar.url }}" class="card-img-top img-thumbnail" alt="satyam seth"> -->
+            <img src="{{ record.user.profile.avatar.url }}" class="card-img-top img-thumbnail"
+                alt="{{record.user.full_name}}">
             <div class="card-body text-center">
-                <h3 class="card-title">Satyam Seth</h3>
-                <h5 class="card-text">Total <span class="text-danger">{{st_items}}</span> Items <i
+                <h3 class="card-title">{{record.user.get_full_name}}</h3>
+                <h5 class="card-text">Total <span class="text-danger">{{record.user.purchaser.count}}</span> Items <i
                         class="fas fa-cart-arrow-down"></i></h5>
                 <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
-                        {{st_price|stringformat:".2f"}}/-</span>
+                        {{record.total_spent|default_if_none:0|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'satyam' %}" role="button">Detailed View <i
-                        class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'detailed' record.user.id %}" role="button">Detailed View
+                    <i class="far fa-eye"></i></a>
             </div>
         </div>
-        <div class="card shadow-lg mb-4" style="width: 18rem;">
-            <img src="{% static '/core/images/ankit.jpg' %}" class="card-img-top img-thumbnail" alt="ankit kumar gupta">
-            <div class="card-body text-center">
-                <h3 class="card-title">Ankit Kumar Gupta</h3>
-                <h5 class="card-text">Total <span class="text-danger">{{at_items}}</span> Items <i
-                        class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
-                        {{at_price|stringformat:".2f"}}/-</span>
-                </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'ankit' %}" role="button">Detailed View <i
-                        class="far fa-eye"></i></a>
-            </div>
-        </div>
-        <div class="card shadow-lg mb-4" style="width: 18rem;">
-            <img src="{% static '/core/images/ganga.jpg' %}" class="card-img-top img-thumbnail" alt="ganga sagar">
-            <div class="card-body text-center">
-                <h3 class="card-title">Ganga Sagar</h3>
-                <h5 class="card-text">Total <span class="text-danger">{{gt_items}}</span> Items <i
-                        class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
-                        {{gt_price|stringformat:".2f"}}/-</span>
-                </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'ganga' %}" role="button">Detailed View <i
-                        class="far fa-eye"></i></a>
-            </div>
-        </div>
-        <div class="card shadow-lg mb-4" style="width: 18rem;">
-            <img src="{% static '/core/images/prashant.jpg' %}" class="card-img-top img-thumbnail" alt="prashant yadav">
-            <div class="card-body text-center">
-                <h3 class="card-title text-center">Prashant Yadav</h3>
-                <h5 class="card-text">Total <span class="text-danger">{{pt_items}}</span> Items <i
-                        class="fas fa-cart-arrow-down"></i></h5>
-                <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
-                        {{pt_price|stringformat:".2f"}}/-</span>
-                </h5>
-                <a class="btn btn-outline-dark" href="{% url 'detailed' 'prashant' %}" role="button">Detailed View <i
-                        class="far fa-eye"></i></a>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 {% if electricity.price %}
