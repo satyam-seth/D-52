@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.db.models import Sum
 from django.shortcuts import redirect, render
@@ -10,7 +10,7 @@ from data.models import Record, Water
 from .forms import FeedbackFrom, LoginForm
 from .models import Electricity, Feedback, Maid
 
-# Create your views here.
+User = get_user_model()
 
 
 def home(request):
@@ -29,30 +29,21 @@ def home(request):
     m_pp = maid.price / 4
     m_days_left = (maid.due_date - timezone.now().date()).days
 
-    # TODO: remove hardcoded user id
-    # user id 2 is satyam
-    satyam_record = Record.objects.filter(purchaser__id=2)
-    st_price = satyam_record.aggregate(Sum("price"))["price__sum"]
-    st_items = len(satyam_record)
+    # TODO: remove hardcoded group name
+    users = User.objects.filter(groups__name="d52")
 
-    # user id 3 is ankit
-    ankit_record = Record.objects.filter(purchaser__id=3)
-    at_price = ankit_record.aggregate(Sum("price"))["price__sum"]
-    at_items = len(ankit_record)
-
-    # user id 4 is pranshant
-    prashant_record = Record.objects.filter(purchaser__id=4)
-    pt_price = prashant_record.aggregate(Sum("price"))["price__sum"]
-    pt_items = len(prashant_record)
-
-    # user id 5 is ganga
-    ganga_record = Record.objects.filter(purchaser__id=5)
-    gt_price = ganga_record.aggregate(Sum("price"))["price__sum"]
-    gt_items = len(ganga_record)
+    # TODO: review and optimize this logic
+    records = []
+    for user in users:
+        total_spent = Record.objects.filter(purchaser=user).aggregate(Sum("price"))[
+            "price__sum"
+        ]
+        records.append({"user": user, "total_spent": total_spent})
 
     context = {
         "home_active": "active",
         "home_disabled": "disabled",
+        "records": records,
         "w_sum": w_sum,
         "w_price": w_price,
         "w_pp": w_pp,
@@ -62,14 +53,6 @@ def home(request):
         "maid": maid,
         "m_pp": m_pp,
         "m_days_left": m_days_left,
-        "st_price": st_price,
-        "st_items": st_items,
-        "at_price": at_price,
-        "at_items": at_items,
-        "gt_price": gt_price,
-        "gt_items": gt_items,
-        "pt_price": pt_price,
-        "pt_items": pt_items,
     }
 
     return render(request, "core/index.html", context)
@@ -100,15 +83,6 @@ def feedback(request):
 
     context = {"feedback_active": "active", "feedback_disabled": "disabled", "form": fm}
     return render(request, "core/feedback.html", context)
-
-
-def search(request):
-    query = request.GET["query"]
-    if len(query) > 50 or len(query) == 0:
-        results = Record.objects.none()
-    else:
-        results = Record.objects.filter(item__icontains=query)
-    return render(request, "core/search.html", {"records": results})
 
 
 def user_login(request):

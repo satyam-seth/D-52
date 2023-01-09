@@ -33,27 +33,22 @@
     {% csrf_token %}
     <div class="form-row">
       <div class="form-group col-md-6">
-        {{form1.date.label_tag}}
-        {{form1.date}}
+        {{record_form.purchase_date.label_tag}}
+        {{record_form.purchase_date}}
       </div>
       <div class="form-group col-md-6">
-        <label for="inputPurchaseBy">Purchase By</label>
-        <select name="name" class="form-control" id="inputPurchaseBy">
-          <option {% if full_name == 'Satyam Seth' %}selected{% endif %} value="Satyam Seth">Satyam Seth</option>
-          <option {% if full_name == 'Ankit Kumar Gupta' %}selected{% endif %} value="Ankit Kumar Gupta">Ankit Kumar Gupta</option>
-          <option {% if full_name == 'Ganga Sagar Bharti' %}selected{% endif %} value="Ganga Sagar Bharti">Ganga Sagar Bharti</option>
-          <option {% if full_name == 'Prashant Kumar Yadav' %}selected{% endif %} value="Prashant Kumar Yadav">Prashant Kumar Yadav</option>
-        </select>
+        {{record_form.purchaser.label_tag}}
+        {{record_form.purchaser}}
       </div>
     </div>
     <div class="form-row">
       <div class="form-group col-md-6">
-        {{form1.item.label_tag}}
-        {{form1.item}}
+        {{record_form.item.label_tag}}
+        {{record_form.item}}
       </div>
       <div class="form-group col-md-6">
-        {{form1.price.label_tag}}
-        {{form1.price}}
+        {{record_form.price.label_tag}}
+        {{record_form.price}}
       </div>
     </div>
     <button type="reset" class="btn btn-danger">Reset
@@ -70,18 +65,12 @@
     {% csrf_token %}
     <div class="form-row">
       <div class="form-group col-md-6">
-        {{form2.date.label_tag}}
-        {{form2.date}}
+        {{water_form.purchase_date.label_tag}}
+        {{water_form.purchase_date}}
       </div>
       <div class="form-group col-md-6">
-        <label for="inputQuality">Quantity</label>
-        <select name="quantity" class="form-control" id="inputQuality">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
+        {{water_form.quantity.label_tag}}
+        {{water_form.quantity}}
       </div>
     </div>
     <button type="reset" class="btn btn-danger">Reset

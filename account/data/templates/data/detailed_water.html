@@ -5,11 +5,10 @@
 {% endblock %}
 {% block title %}D-52 Detailed View{% endblock title %}
 {% block content %}
-<!-- TODO: fix background image logic use user profile cover_image -->
-<div class="jumbotron jumbotron-fluid {{user.username}} mt-5">
+<div class="jumbotron jumbotron-fluid water mt-5">
   <div class="container py-5 text-light">
     <div>
-      <h1 class="display-2">{{user.get_full_name|title}} Records</h1>
+      <h1 class="display-2">Water Records</h1>
     </div>
     <div class="lead">
       <p class="pl-2">See all records carefully.</p>
@@ -17,7 +16,7 @@
   </div>
 </div>
 <div class="container shadow-lg p-4 mb-5 rounded border">
-  <h1 class="text-center alert alert-secondary">Item Records</h1>
+  <h1 class="text-center alert alert-secondary">Water Records</h1>
   {% if records %}
   <div class="table-responsive">
     <table class="table table-hover table-striped border">
@@ -26,8 +25,7 @@
           <th scope="col">S. No.</th>
           <th scope="col">Date</th>
           <th scope="col" class="d-none d-sm-block">Day</th>
-          <th scope="col">Item Name</th>
-          <th scope="col">Price</th>
+          <th scope="col">Quantity</th>
           <th scope="col">Entry ID</th>
         </tr>
       </thead>
@@ -37,8 +35,7 @@
           <th scope="row">{{forloop.counter}}</th>
           <td>{{record.purchase_date|date:"d M Y"}}</td>
           <td class="d-none d-sm-block">{{record.purchase_date|date:"D"}}</td>
-          <td>{{record.item|capfirst}}</td>
-          <td>{{record.price}}</td>
+          <td>{{record.quantity}}</td>
           <td>{{record.id}}</td>
         </tr>
         {% endfor %}
@@ -49,4 +46,5 @@
   <h4 class="text-center alert alert-warning">No Records Found</h4>
   {% endif %}
 </div>
+
 {% endblock content %}
