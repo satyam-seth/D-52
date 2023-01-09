@@ -5,8 +5,8 @@
 {% endblock %}
 {% block title %}D-52 Detailed View{% endblock title %}
 {% block content %}
-<!-- TODO: fix background image logic use user profile cover_image -->
-<div class="jumbotron jumbotron-fluid {{user.username}} mt-5">
+<div class="jumbotron jumbotron-fluid mt-5 detail-jumbotron"
+  style="background-image: url('{{user.profile.cover_photo.url}}');">
   <div class="container py-5 text-light">
     <div>
       <h1 class="display-2">{{user.get_full_name|title}} Records</h1>

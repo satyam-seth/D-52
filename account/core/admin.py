@@ -6,7 +6,7 @@ from core.models import Electricity, Feedback, Maid, Profile
 # TODO: register profile under user model
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "avatar")
+    list_display = ("id", "user", "avatar", "cover_photo")
 
 
 @admin.register(Feedback)

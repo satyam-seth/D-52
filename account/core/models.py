@@ -11,6 +11,9 @@ class Profile(models.Model):
         default="profile_images/default.jpg", upload_to="profile_images"
     )
     # TODO: Add cover image field which is use for detailed record jumbotron
+    cover_photo = models.ImageField(
+        default="profile_cover_photos/default.jpg", upload_to="profile_cover_photo"
+    )
 
     def __str__(self):
         return self.user.username
