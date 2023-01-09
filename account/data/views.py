@@ -1,8 +1,8 @@
 import xlwt  # type: ignore
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Sum
-from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
@@ -94,50 +94,34 @@ def detailed_water_view(request):
     return render(request, "data/detailed_water.html", {"records": records})
 
 
+# TODO: fix this view
 def report(request):
-    record = Record.objects.all()
-    t_items = len(record)
-    t_price = record.aggregate(Sum("price"))["price__sum"]
-    p_price = t_price / 4
+    # TODO: remove hardcoded group name
+    users = User.objects.filter(groups__name="d52")
 
-    satyam_record = Record.objects.filter(name="Satyam Seth")
-    st_items = len(satyam_record)
-    st_price = satyam_record.aggregate(Sum("price"))["price__sum"]
-    sd_price = p_price - st_price
+    # TODO: get only current group records
+    total_records = Record.objects.all()
+    total_price = total_records.aggregate(Sum("price"))["price__sum"]
+    per_user_price = total_price / users.count()
 
-    ankit_record = Record.objects.filter(name="Ankit Kumar Gupta")
-    at_items = len(ankit_record)
-    at_price = ankit_record.aggregate(Sum("price"))["price__sum"]
-    ad_price = p_price - at_price
-
-    ganga_record = Record.objects.filter(name="Ganga Sagar Bharti")
-    gt_items = len(ganga_record)
-    gt_price = ganga_record.aggregate(Sum("price"))["price__sum"]
-    gd_price = p_price - gt_price
-
-    prashant_record = Record.objects.filter(name="Prashant Kumar Yadav")
-    pt_items = len(prashant_record)
-    pt_price = prashant_record.aggregate(Sum("price"))["price__sum"]
-    pd_price = p_price - pt_price
+    # TODO: optimize this logic
+    each_user_records = []
+    for user in users:
+        total_spent = total_records.filter(purchaser=user).aggregate(Sum("price"))[
+            "price__sum"
+        ]
+        price_diif = per_user_price - (total_spent if total_spent else 0)
+        each_user_records.append(
+            {"user": user, "total_spent": total_spent, "price_diff": price_diif}
+        )
 
     context = {
         "report_active": "active",
         "report_disabled": "disabled",
-        "t_items": t_items,
-        "t_price": t_price,
-        "p_price": p_price,
-        "st_items": st_items,
-        "st_price": st_price,
-        "sd_price": sd_price,
-        "at_items": at_items,
-        "at_price": at_price,
-        "ad_price": ad_price,
-        "gt_items": gt_items,
-        "gt_price": gt_price,
-        "gd_price": gd_price,
-        "pt_items": pt_items,
-        "pt_price": pt_price,
-        "pd_price": pd_price,
+        "total_records": total_records,
+        "total_price": total_price,
+        "per_user_price": per_user_price,
+        "each_user_records": each_user_records,
     }
     return render(request, "data/report.html", context)
 
