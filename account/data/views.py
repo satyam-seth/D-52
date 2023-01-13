@@ -1,3 +1,4 @@
+from typing import Any, Dict
 import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -5,6 +6,7 @@ from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.views.generic import ListView
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
@@ -66,19 +68,17 @@ def add_water(request):
         return redirect("add")
 
 
-# TODO: user ListView paginated_by attribute
-def records(request):
-    # TODO: expose only requested user group records
-    records = Record.objects.all().order_by("-purchase_date")
-    paginator = Paginator(records, 20, orphans=10)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    context = {
-        "records_active": "active",
-        "records_disabled": "disabled",
-        "records": page_obj,
-    }
-    return render(request, "data/records.html", context)
+class RecordListView(ListView):
+    model = Record
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["records_active"] = "active"
+        context["records_disabled"] = "disabled"
+        return context
 
 
 # TODO: use list view with paginator
