@@ -1,18 +1,21 @@
+from typing import Any, Dict
+
+from data.models import Record, Water
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.contrib.auth.views import PasswordResetCompleteView
+from django.contrib.auth import get_user_model, logout
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
-
-from data.models import Record, Water
+from django.views.generic import CreateView, TemplateView
 
 from .forms import FeedbackFrom, LoginForm
-from .models import Electricity, Feedback, Maid
+from .models import Electricity, Maid
 
 User = get_user_model()
 
-
+# TODO: fix this view
 def home(request):
     # TODO: handle empty database state
     w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
@@ -58,59 +61,60 @@ def home(request):
     return render(request, "core/index.html", context)
 
 
-def about(request):
-    context = {"about_active": "active", "about_disabled": "disabled"}
-    return render(request, "core/about.html", context)
+class AboutTemplateView(TemplateView):
+    template_name = "core/about.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "about_active": "active",
+                "about_disabled": "disabled",
+            }
+        )
+        return context
 
 
-def feedback(request):
-    if request.method == "POST":
-        fm = FeedbackFrom(request.POST)
-        if fm.is_valid():
-            nm = fm.cleaned_data["name"]
-            tp = fm.cleaned_data["problem"]
-            mg = fm.cleaned_data["message"]
-            current_dt = timezone.now()
-            reg = Feedback(name=nm, problem=tp, message=mg, datetime=current_dt)
-            reg.save()
-            messages.success(
-                request,
-                "Thank you for your valuable feedback, it will help us to improve your experience.",
-            )
-        return redirect("home")
-    else:
-        fm = FeedbackFrom()
+class FeedbackCreateView(SuccessMessageMixin, CreateView):
+    form_class = FeedbackFrom
+    # TODO: remove hardcoded url use url name
+    success_url = "/"
+    template_name = "core/feedback.html"
+    success_message = "Thank you for your valuable feedback, it will help us to improve your experience."
 
-    context = {"feedback_active": "active", "feedback_disabled": "disabled", "form": fm}
-    return render(request, "core/feedback.html", context)
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "feedback_active": "active",
+                "feedback_disabled": "disabled",
+            }
+        )
+        return context
 
 
-def user_login(request):
-    if not request.user.is_authenticated:
-        if request.method == "POST":
-            form = LoginForm(request=request, data=request.POST)
-            if form.is_valid():
-                uname = form.cleaned_data["username"]
-                upass = form.cleaned_data["password"]
-                user = authenticate(username=uname, password=upass)
-                if user is not None:
-                    login(request, user)
-                messages.success(request, "Logged In Successfully !!")
-                return redirect("home")
-        else:
-            form = LoginForm()
-        context = {"form": form, "login_active": "active", "login_disabled": "disabled"}
-        return render(request, "core/login.html", context)
-    else:
-        return redirect("home")
+class UserLoginView(SuccessMessageMixin, LoginView):
+    authentication_form = LoginForm
+    template_name = "core/login.html"
+    redirect_authenticated_user = True
+    success_message = "Logged In Successfully !!"
+    extra_context = {
+        "login_active": "active",
+        "login_disabled": "disabled",
+    }
 
 
-def user_logout(request):
-    logout(request)
-    messages.success(request, "Logged Out Successfully !!")
-    return redirect("home")
+class UserLogout(LogoutView):
+    next_page = "home"
+    success_message = "Logged Out Successfully !!"
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        messages.success(request, "Logged Out Successfully !!")
+        return response
 
 
+# TODO: Create custom template or redirect password done view to home
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

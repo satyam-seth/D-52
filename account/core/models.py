@@ -15,17 +15,19 @@ class Profile(models.Model):
         default="profile_cover_photos/default.jpg", upload_to="profile_cover_photo"
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.user.username
 
 
 class Feedback(models.Model):
+    # TODO: remove name field
     name = models.CharField(max_length=20)
+    # TODO: make choice field with predefined and other as custom problem field
     problem = models.CharField(max_length=100)
     message = models.TextField(max_length=500)
-    datetime = models.DateTimeField()
+    datetime = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.problem
 
 
@@ -34,7 +36,7 @@ class Electricity(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=7)
     datetime = models.DateTimeField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.due_date)
 
 
@@ -43,5 +45,5 @@ class Maid(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=7)
     datetime = models.DateTimeField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.due_date)

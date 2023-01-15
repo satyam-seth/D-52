@@ -17,7 +17,7 @@
 </div>
 <div class="container shadow-lg p-4 mb-5 rounded border">
   <h1 class="text-center alert alert-secondary">Water Records</h1>
-  {% if records %}
+  {% if water_list %}
   <div class="table-responsive">
     <table class="table table-hover table-striped border">
       <thead>
@@ -30,17 +30,20 @@
         </tr>
       </thead>
       <tbody>
-        {% for record in records %}
+        {% for water in water_list %}
         <tr>
           <th scope="row">{{forloop.counter}}</th>
-          <td>{{record.purchase_date|date:"d M Y"}}</td>
-          <td class="d-none d-sm-block">{{record.purchase_date|date:"D"}}</td>
-          <td>{{record.quantity}}</td>
-          <td>{{record.id}}</td>
+          <td>{{water.purchase_date|date:"d M Y"}}</td>
+          <td class="d-none d-sm-block">{{water.purchase_date|date:"D"}}</td>
+          <td>{{water.quantity}}</td>
+          <td>{{water.id}}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+    <div>
+      {% include 'core/pagination.html' %}
+    </div>
   </div>
   {% else %}
   <h4 class="text-center alert alert-warning">No Records Found</h4>

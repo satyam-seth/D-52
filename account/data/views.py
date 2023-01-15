@@ -1,10 +1,12 @@
+from typing import Any, Dict
+
 import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.views.generic import ListView, TemplateView, View
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
@@ -13,25 +15,29 @@ from .notification import notify_record, notify_water
 User = get_user_model()
 
 # TODO: use login required decorator
-def add(request):
-    if request.user.is_authenticated:
+class AddTemplateView(TemplateView):
+    template_name = "data/add.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         record_form = RecordFrom(label_suffix="")
         water_form = WaterFrom(label_suffix="")
-        context = {
-            "add_active": "active",
-            "add_disabled": "disabled",
-            "record_form": record_form,
-            "water_form": water_form,
-        }
-        return render(request, "data/add.html", context)
-    else:
-        return redirect("login")
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "add_active": "active",
+                "add_disabled": "disabled",
+                "record_form": record_form,
+                "water_form": water_form,
+            }
+        )
+        return context
 
 
 # TODO: use login required decorator
-def add_item(request):
-    # TODO: use require_http_methods for only post
-    if request.method == "POST":
+class RecordAddView(View):
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest):
         fm = RecordFrom(request.POST)
         if fm.is_valid():
             reg = fm.save(commit=False)
@@ -48,9 +54,10 @@ def add_item(request):
 
 
 # TODO: use login required decorator
-def add_water(request):
-    # TODO: use require_http_methods for only post
-    if request.method == "POST":
+class WaterAddView(View):
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest):
         fm = WaterFrom(request.POST)
         if fm.is_valid():
             reg = fm.save(commit=False)
@@ -66,32 +73,45 @@ def add_water(request):
         return redirect("add")
 
 
-# TODO: user ListView paginated_by attribute
-def records(request):
-    # TODO: expose only requested user group records
-    records = Record.objects.all().order_by("-purchase_date")
-    paginator = Paginator(records, 20, orphans=10)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    context = {
-        "records_active": "active",
-        "records_disabled": "disabled",
-        "records": page_obj,
-    }
-    return render(request, "data/records.html", context)
+class RecordListView(ListView):
+    model = Record
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["records_active"] = "active"
+        context["records_disabled"] = "disabled"
+        return context
 
 
-# TODO: use list view with paginator
-def detailed_view(request, user_id):
-    user = User.objects.get(pk=user_id)
-    records = Record.objects.filter(purchaser__id=user_id).order_by("-purchase_date")
-    return render(request, "data/detailed.html", {"records": records, "user": user})
+class UserRecordListView(ListView):
+    model = Record
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
+
+    # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
+    # def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
+        queryset = Record.objects.filter(purchaser__id=self.kwargs["user_id"]).order_by(
+            "-purchase_date"
+        )
+        return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["user"] = User.objects.get(pk=self.kwargs["user_id"])
+        return context
 
 
-# TODO: use list view with paginator
-def detailed_water_view(request):
-    records = Water.objects.all().order_by("-purchase_date")
-    return render(request, "data/detailed_water.html", {"records": records})
+# TODO: only show current user group water records
+class WaterListView(ListView):
+    model = Water
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
 
 
 # TODO: fix this view
@@ -126,15 +146,28 @@ def report(request):
     return render(request, "data/report.html", context)
 
 
-def search(request):
-    query = request.GET["query"]
-    results = Record.objects.filter(item__icontains=query)
-    return render(request, "data/search.html", {"records": results})
+# TODO:only show current user group records
+class SearchListView(ListView):
+    model = Record
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
+    template_name = "data/search.html"
+
+    # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
+    # def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
+        queryset = Record.objects.filter(item__icontains=self.request.GET["query"])
+        return queryset
 
 
-def download(request):
-    context = {"download_active": "active", "download_disabled": "disabled"}
-    return render(request, "data/download.html", context)
+class DownloadTemplateView(TemplateView):
+    template_name = "data/download.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update({"download_active": "active", "download_disabled": "disabled"})
+        return context
 
 
 # TODO: fix this view
@@ -182,6 +215,7 @@ def overall_xls(request):
         return response
 
 
+# TODO: Fix this view
 def user_xls(request, user):
     records = Record.objects.filter(name=user).order_by("date")
     data = []
@@ -217,6 +251,7 @@ def user_xls(request, user):
         return response
 
 
+# TODO: fix this view
 # def water_xls(request):
 #     records = Water.objects.all().order_by('date')
 #     data=[]

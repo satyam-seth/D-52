@@ -128,6 +128,9 @@ STATIC_URL = "/static/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+
 PASSWORD_RESET_TIMEOUT = 600000
 
 # SMTP Configration
