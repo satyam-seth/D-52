@@ -11,7 +11,8 @@ urlpatterns = [
     path(
         "detailed/<int:user_id>/", views.UserRecordListView.as_view(), name="detailed"
     ),
-    path("detailed_water/", views.detailed_water_view, name="detailed_water"),
+    # path("detailed_water/", views.detailed_water_view, name="detailed_water"),
+    path("detailed_water/", views.WaterListView.as_view(), name="detailed_water"),
     path("report/", views.report, name="report"),
     path("search/", views.search, name="search"),
     path("download/", views.download, name="download"),

@@ -101,10 +101,12 @@ class UserRecordListView(ListView):
         return context
 
 
-# TODO: use list view with paginator
-def detailed_water_view(request):
-    records = Water.objects.all().order_by("-purchase_date")
-    return render(request, "data/detailed_water.html", {"records": records})
+# TODO: only show current user group water records
+class WaterListView(ListView):
+    model = Water
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
 
 
 # TODO: fix this view

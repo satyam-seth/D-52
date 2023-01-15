@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'data/css/style.css' %}">
+{% endblock %}
+{% block title %}D-52 Detailed View{% endblock title %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid water mt-5">
+  <div class="container py-5 text-light">
+    <div>
+      <h1 class="display-2">Water Records</h1>
+    </div>
+    <div class="lead">
+      <p class="pl-2">See all records carefully.</p>
+    </div>
+  </div>
+</div>
+<div class="container shadow-lg p-4 mb-5 rounded border">
+  <h1 class="text-center alert alert-secondary">Water Records</h1>
+  {% if water_list %}
+  <div class="table-responsive">
+    <table class="table table-hover table-striped border">
+      <thead>
+        <tr>
+          <th scope="col">S. No.</th>
+          <th scope="col">Date</th>
+          <th scope="col" class="d-none d-sm-block">Day</th>
+          <th scope="col">Quantity</th>
+          <th scope="col">Entry ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for water in water_list %}
+        <tr>
+          <th scope="row">{{forloop.counter}}</th>
+          <td>{{water.purchase_date|date:"d M Y"}}</td>
+          <td class="d-none d-sm-block">{{water.purchase_date|date:"D"}}</td>
+          <td>{{water.quantity}}</td>
+          <td>{{water.id}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div>
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+  {% else %}
+  <h4 class="text-center alert alert-warning">No Records Found</h4>
+  {% endif %}
+</div>
+
+{% endblock content %}
