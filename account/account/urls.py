@@ -27,7 +27,7 @@ admin.site.site_title = "D-52 Site Admin"
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home, name="home"),
-    path("about/", views.about, name="about"),
+    path("about/", views.AboutTemplateView.as_view(), name="about"),
     path("feedback/", views.feedback, name="feedback"),
     path("login/", views.user_login, name="login"),
     path("logout/", views.user_logout, name="logout"),

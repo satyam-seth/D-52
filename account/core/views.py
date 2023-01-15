@@ -1,5 +1,7 @@
+from typing import Dict, Any
 from data.models import Record, Water
 from django.contrib import messages
+from django.views.generic import TemplateView
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.db.models import Sum
@@ -57,9 +59,13 @@ def home(request):
     return render(request, "core/index.html", context)
 
 
-def about(request):
-    context = {"about_active": "active", "about_disabled": "disabled"}
-    return render(request, "core/about.html", context)
+class AboutTemplateView(TemplateView):
+    template_name = "core/about.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update({"about_active": "active", "about_disabled": "disabled"})
+        return context
 
 
 # TODO: use from view
