@@ -40,32 +40,7 @@
   text-shadow: 2px 2px black;
 }
 
-.satyam {
-  background-image: url("../images/satyam.jpg");
-  background-color: dimgrey;
-  background-size: cover;
-  height: 100%;
-  text-shadow: 2px 2px black;
-}
-
-.ankit {
-  background-image: url("../images/ankit.png");
-  background-color: dimgrey;
-  background-size: cover;
-  height: 100%;
-  text-shadow: 2px 2px black;
-}
-
-.ganga {
-  background-image: url("../images/ganga.png");
-  background-color: dimgrey;
-  background-size: cover;
-  height: 100%;
-  text-shadow: 2px 2px black;
-}
-
-.prashant {
-  background-image: url("../images/prashant.png");
+.detail-jumbotron {
   background-color: dimgrey;
   background-size: cover;
   height: 100%;
