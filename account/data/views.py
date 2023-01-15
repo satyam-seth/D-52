@@ -1,9 +1,9 @@
 from typing import Any, Dict
+
 import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
-from django.db.models import Sum
+from django.db.models import QuerySet, Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
@@ -81,11 +81,24 @@ class RecordListView(ListView):
         return context
 
 
-# TODO: use list view with paginator
-def detailed_view(request, user_id):
-    user = User.objects.get(pk=user_id)
-    records = Record.objects.filter(purchaser__id=user_id).order_by("-purchase_date")
-    return render(request, "data/detailed.html", {"records": records, "user": user})
+class UserRecordListView(ListView):
+    model = Record
+    paginate_by = 20
+    paginate_orphans = 10
+    ordering = ["-purchase_date"]
+
+    # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
+    # def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
+        queryset = Record.objects.filter(purchaser__id=self.kwargs["user_id"]).order_by(
+            "-purchase_date"
+        )
+        return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["user"] = User.objects.get(pk=self.kwargs["user_id"])
+        return context
 
 
 # TODO: use list view with paginator

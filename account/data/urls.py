@@ -1,6 +1,5 @@
-from django.urls import path
-
 from data import views
+from django.urls import path
 
 # TODO: add namespace  'app = "data"'
 
@@ -9,7 +8,9 @@ urlpatterns = [
     path("item/", views.add_item, name="add_item"),
     path("water/", views.add_water, name="add_water"),
     path("records/", views.RecordListView.as_view(), name="records"),
-    path("detailed/<int:user_id>/", views.detailed_view, name="detailed"),
+    path(
+        "detailed/<int:user_id>/", views.UserRecordListView.as_view(), name="detailed"
+    ),
     path("detailed_water/", views.detailed_water_view, name="detailed_water"),
     path("report/", views.report, name="report"),
     path("search/", views.search, name="search"),

@@ -1,6 +1,5 @@
-from django.contrib import admin
-
 from core.models import Electricity, Feedback, Maid, Profile
+from django.contrib import admin
 
 
 # TODO: register profile under user model

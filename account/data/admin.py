@@ -1,6 +1,5 @@
-from django.contrib import admin
-
 from data.models import Record, Water
+from django.contrib import admin
 
 # Register your models here.
 
