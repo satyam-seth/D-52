@@ -4,9 +4,9 @@ import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.views.generic import TemplateView, ListView, View
+from django.views.generic import ListView, TemplateView, View
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
@@ -54,9 +54,10 @@ class RecordAddView(View):
 
 
 # TODO: use login required decorator
-def add_water(request):
-    # TODO: use require_http_methods for only post
-    if request.method == "POST":
+class WaterAddView(View):
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest):
         fm = WaterFrom(request.POST)
         if fm.is_valid():
             reg = fm.save(commit=False)
@@ -160,9 +161,13 @@ class SearchListView(ListView):
         return queryset
 
 
-def download(request):
-    context = {"download_active": "active", "download_disabled": "disabled"}
-    return render(request, "data/download.html", context)
+class DownloadTemplateView(TemplateView):
+    template_name = "data/download.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update({"download_active": "active", "download_disabled": "disabled"})
+        return context
 
 
 # TODO: fix this view
@@ -210,6 +215,7 @@ def overall_xls(request):
         return response
 
 
+# TODO: Fix this view
 def user_xls(request, user):
     records = Record.objects.filter(name=user).order_by("date")
     data = []
@@ -245,6 +251,7 @@ def user_xls(request, user):
         return response
 
 
+# TODO: fix this view
 # def water_xls(request):
 #     records = Water.objects.all().order_by('date')
 #     data=[]
