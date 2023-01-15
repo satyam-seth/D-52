@@ -29,7 +29,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("about/", views.AboutTemplateView.as_view(), name="about"),
     path("feedback/", views.FeedbackCreateView.as_view(), name="feedback"),
-    path("login/", views.user_login, name="login"),
+    path("login/", views.UserLoginView.as_view(), name="login"),
     path("logout/", views.user_logout, name="logout"),
     path("data/", include("data.urls")),
     path(

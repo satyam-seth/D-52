@@ -4,13 +4,13 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import TemplateView, CreateView
 from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.contrib.auth.views import PasswordResetCompleteView
+from django.contrib.auth.views import LoginView, PasswordResetCompleteView
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .forms import FeedbackFrom, LoginForm
-from .models import Electricity, Feedback, Maid
+from .models import Electricity, Maid
 
 User = get_user_model()
 
@@ -92,24 +92,15 @@ class FeedbackCreateView(SuccessMessageMixin, CreateView):
         return context
 
 
-def user_login(request):
-    if not request.user.is_authenticated:
-        if request.method == "POST":
-            form = LoginForm(request=request, data=request.POST)
-            if form.is_valid():
-                uname = form.cleaned_data["username"]
-                upass = form.cleaned_data["password"]
-                user = authenticate(username=uname, password=upass)
-                if user is not None:
-                    login(request, user)
-                messages.success(request, "Logged In Successfully !!")
-                return redirect("home")
-        else:
-            form = LoginForm()
-        context = {"form": form, "login_active": "active", "login_disabled": "disabled"}
-        return render(request, "core/login.html", context)
-    else:
-        return redirect("home")
+class UserLoginView(SuccessMessageMixin, LoginView):
+    authentication_form = LoginForm
+    template_name = "core/login.html"
+    redirect_authenticated_user = True
+    success_message = "Logged In Successfully !!"
+    extra_context = {
+        "login_active": "active",
+        "login_disabled": "disabled",
+    }
 
 
 def user_logout(request):
