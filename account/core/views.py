@@ -1,13 +1,14 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 from data.models import Record, Water
 from django.contrib import messages
+from django.contrib.auth import get_user_model, logout
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.views.generic import TemplateView, CreateView
-from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.contrib.auth.views import LoginView, PasswordResetCompleteView
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.generic import CreateView, TemplateView
 
 from .forms import FeedbackFrom, LoginForm
 from .models import Electricity, Maid
@@ -103,10 +104,14 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     }
 
 
-def user_logout(request):
-    logout(request)
-    messages.success(request, "Logged Out Successfully !!")
-    return redirect("home")
+class UserLogout(LogoutView):
+    next_page = "home"
+    success_message = "Logged Out Successfully !!"
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        messages.success(request, "Logged Out Successfully !!")
+        return response
 
 
 class MyPasswordResetCompleteView(PasswordResetCompleteView):

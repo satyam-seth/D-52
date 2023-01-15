@@ -30,7 +30,8 @@ urlpatterns = [
     path("about/", views.AboutTemplateView.as_view(), name="about"),
     path("feedback/", views.FeedbackCreateView.as_view(), name="feedback"),
     path("login/", views.UserLoginView.as_view(), name="login"),
-    path("logout/", views.user_logout, name="logout"),
+    # path("logout/", views.user_logout, name="logout"),
+    path("logout/", views.UserLogout.as_view(), name="logout"),
     path("data/", include("data.urls")),
     path(
         "password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"
