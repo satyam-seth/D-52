@@ -15,7 +15,7 @@ from .models import Electricity, Maid
 
 User = get_user_model()
 
-
+# TODO: fix this view
 def home(request):
     # TODO: handle empty database state
     w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
@@ -114,6 +114,7 @@ class UserLogout(LogoutView):
         return response
 
 
+# TODO: Create custom template or redirect password done view to home
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
