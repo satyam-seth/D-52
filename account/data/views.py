@@ -3,10 +3,10 @@ from typing import Any, Dict
 import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.db.models import QuerySet, Sum
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.views.generic import ListView
+from django.views.generic import TemplateView, ListView
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
@@ -15,19 +15,22 @@ from .notification import notify_record, notify_water
 User = get_user_model()
 
 # TODO: use login required decorator
-def add(request):
-    if request.user.is_authenticated:
+class AddTemplateView(TemplateView):
+    template_name = "data/add.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         record_form = RecordFrom(label_suffix="")
         water_form = WaterFrom(label_suffix="")
-        context = {
-            "add_active": "active",
-            "add_disabled": "disabled",
-            "record_form": record_form,
-            "water_form": water_form,
-        }
-        return render(request, "data/add.html", context)
-    else:
-        return redirect("login")
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "add_active": "active",
+                "add_disabled": "disabled",
+                "record_form": record_form,
+                "water_form": water_form,
+            }
+        )
+        return context
 
 
 # TODO: use login required decorator

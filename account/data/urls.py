@@ -4,7 +4,7 @@ from django.urls import path
 # TODO: add namespace  'app = "data"'
 
 urlpatterns = [
-    path("add/", views.add, name="add"),
+    path("add/", views.AddTemplateView.as_view(), name="add"),
     path("item/", views.add_item, name="add_item"),
     path("water/", views.add_water, name="add_water"),
     path("records/", views.RecordListView.as_view(), name="records"),
