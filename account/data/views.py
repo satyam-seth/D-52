@@ -4,9 +4,9 @@ import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, View
 
 from .forms import RecordFrom, WaterFrom
 from .models import Record, Water
@@ -34,9 +34,10 @@ class AddTemplateView(TemplateView):
 
 
 # TODO: use login required decorator
-def add_item(request):
-    # TODO: use require_http_methods for only post
-    if request.method == "POST":
+class RecordAddView(View):
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest):
         fm = RecordFrom(request.POST)
         if fm.is_valid():
             reg = fm.save(commit=False)
