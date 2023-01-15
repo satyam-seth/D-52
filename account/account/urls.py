@@ -28,7 +28,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home, name="home"),
     path("about/", views.AboutTemplateView.as_view(), name="about"),
-    path("feedback/", views.feedback, name="feedback"),
+    path("feedback/", views.FeedbackCreateView.as_view(), name="feedback"),
     path("login/", views.user_login, name="login"),
     path("logout/", views.user_logout, name="logout"),
     path("data/", include("data.urls")),

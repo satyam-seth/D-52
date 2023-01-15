@@ -1,7 +1,8 @@
 from typing import Dict, Any
 from data.models import Record, Water
 from django.contrib import messages
-from django.views.generic import TemplateView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.views.generic import TemplateView, CreateView
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.db.models import Sum
@@ -64,31 +65,31 @@ class AboutTemplateView(TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context.update({"about_active": "active", "about_disabled": "disabled"})
+        context.update(
+            {
+                "about_active": "active",
+                "about_disabled": "disabled",
+            }
+        )
         return context
 
 
-# TODO: use from view
-def feedback(request):
-    if request.method == "POST":
-        fm = FeedbackFrom(request.POST)
-        if fm.is_valid():
-            nm = fm.cleaned_data["name"]
-            tp = fm.cleaned_data["problem"]
-            mg = fm.cleaned_data["message"]
-            current_dt = timezone.now()
-            reg = Feedback(name=nm, problem=tp, message=mg, datetime=current_dt)
-            reg.save()
-            messages.success(
-                request,
-                "Thank you for your valuable feedback, it will help us to improve your experience.",
-            )
-        return redirect("home")
-    else:
-        fm = FeedbackFrom()
+class FeedbackCreateView(SuccessMessageMixin, CreateView):
+    form_class = FeedbackFrom
+    # TODO: remove hardcoded url use url name
+    success_url = "/"
+    template_name = "core/feedback.html"
+    success_message = "Thank you for your valuable feedback, it will help us to improve your experience."
 
-    context = {"feedback_active": "active", "feedback_disabled": "disabled", "form": fm}
-    return render(request, "core/feedback.html", context)
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "feedback_active": "active",
+                "feedback_disabled": "disabled",
+            }
+        )
+        return context
 
 
 def user_login(request):
