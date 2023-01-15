@@ -62,6 +62,7 @@ def about(request):
     return render(request, "core/about.html", context)
 
 
+# TODO: use from view
 def feedback(request):
     if request.method == "POST":
         fm = FeedbackFrom(request.POST)
