@@ -3,10 +3,12 @@ from typing import Any, Dict
 from data.models import Record, Water
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordResetCompleteView)
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Sum
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, TemplateView
 
@@ -16,6 +18,7 @@ from .models import Electricity, Maid
 User = get_user_model()
 
 # TODO: fix this view
+# TODO: Add login required once user group login achieved make another page for signup - intro
 def home(request):
     # TODO: handle empty database state
     w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
@@ -61,6 +64,7 @@ def home(request):
     return render(request, "core/index.html", context)
 
 
+# TODO: Update wording and doc for view template
 class AboutTemplateView(TemplateView):
     template_name = "core/about.html"
 
@@ -77,8 +81,7 @@ class AboutTemplateView(TemplateView):
 
 class FeedbackCreateView(SuccessMessageMixin, CreateView):
     form_class = FeedbackFrom
-    # TODO: remove hardcoded url use url name
-    success_url = "/"
+    success_url = reverse_lazy("home")
     template_name = "core/feedback.html"
     success_message = "Thank you for your valuable feedback, it will help us to improve your experience."
 

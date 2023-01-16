@@ -3,6 +3,7 @@ from typing import Any, Dict
 import xlwt  # type: ignore
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -14,8 +15,8 @@ from .notification import notify_record, notify_water
 
 User = get_user_model()
 
-# TODO: use login required decorator
-class AddTemplateView(TemplateView):
+
+class AddTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "data/add.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -33,8 +34,7 @@ class AddTemplateView(TemplateView):
         return context
 
 
-# TODO: use login required decorator
-class RecordAddView(View):
+class RecordAddView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest):
@@ -54,7 +54,7 @@ class RecordAddView(View):
 
 
 # TODO: use login required decorator
-class WaterAddView(View):
+class WaterAddView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest):
@@ -73,6 +73,7 @@ class WaterAddView(View):
         return redirect("add")
 
 
+# TODO: Add login required once user group login achieved
 class RecordListView(ListView):
     model = Record
     paginate_by = 20
@@ -86,6 +87,7 @@ class RecordListView(ListView):
         return context
 
 
+# TODO: Add login required once user group login achieved and only show current user group data
 class UserRecordListView(ListView):
     model = Record
     paginate_by = 20
@@ -115,6 +117,7 @@ class WaterListView(ListView):
 
 
 # TODO: fix this view
+# TODO: Add login required once user group login achieved
 def report(request):
     # TODO: remove hardcoded group name
     users = User.objects.filter(groups__name="d52")
@@ -146,7 +149,8 @@ def report(request):
     return render(request, "data/report.html", context)
 
 
-# TODO:only show current user group records
+# TODO: only show current user group records
+# TODO: Add login required once user group login achieved
 class SearchListView(ListView):
     model = Record
     paginate_by = 20
@@ -161,6 +165,7 @@ class SearchListView(ListView):
         return queryset
 
 
+# TODO: Add login required once user group login achieved
 class DownloadTemplateView(TemplateView):
     template_name = "data/download.html"
 
@@ -171,6 +176,7 @@ class DownloadTemplateView(TemplateView):
 
 
 # TODO: fix this view
+# TODO: Add login required once user group login achieved
 def overall_xls(request):
     records = Record.objects.all().order_by("date")
     data = []
@@ -216,6 +222,7 @@ def overall_xls(request):
 
 
 # TODO: Fix this view
+# TODO: Add login required once user group login achieved
 def user_xls(request, user):
     records = Record.objects.filter(name=user).order_by("date")
     data = []
@@ -252,6 +259,7 @@ def user_xls(request, user):
 
 
 # TODO: fix this view
+# TODO: Add login required once user group login achieved
 # def water_xls(request):
 #     records = Water.objects.all().order_by('date')
 #     data=[]
