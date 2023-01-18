@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'records/css/style.css' %}">
+{% endblock %}
+{% block title %}D-52 Progress Report{% endblock title %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid report mt-5">
+    <div class="container py-5 text-light">
+        <div>
+            <h1 class="display-2">Progress Reports</h1>
+        </div>
+        <div class="lead">
+            <p>See all reports carefully.</p>
+        </div>
+    </div>
+</div>
+<div class="card shadow-lg m-3">
+    <div class="row no-gutters">
+        <div class="col-md-6">
+            <img src="{% static 'records/images/overall.jpg' %}" class="card-img" alt="water">
+        </div>
+        <div class="col-md-6">
+            <div class="card-body text-center pt-4">
+                <h4 class="alert alert-secondary">Overall Items Report</h4>
+                <h2>Total <span class="text-danger">{{total_records.count}}</span> Items <i
+                        class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total
+                    <i class="fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{total_price|stringformat:".2f"}}/-</span>
+                </h2>
+                <h3>({{per_user_price|stringformat:".2f"}} per person)</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% for user_record in each_user_records %}
+<div class="card shadow-lg m-3">
+    <div class="row no-gutters">
+        <div class="col-md-6">
+            <img src="{{user_record.user.profile.cover_photo.url}}" class="card-img"
+                alt="{{user_record.user.get_full_name}}">
+        </div>
+        <div class="col-md-6">
+            <div class="card-body text-center pt-4">
+                <h4 class="alert alert-secondary">{{user_record.user.get_full_name}} Report</h4>
+                <h2>Total <span class="text-danger">{{user_record.user.purchaser.count}}</span> Items <i
+                        class="fas fa-cart-arrow-down"></i>
+                </h2>
+                <h2>Spent
+                    <i class="fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{user_record.total_spent|default_if_none:0|stringformat:".2f"}}/-</span>
+                </h2>
+                {% if user_record.price_diff > 0 %}
+                <h2>Due
+                    <i class="pl-1 fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{user_record.price_diff|stringformat:".2f"}}/-</span>
+                </h2>
+                {% else %}
+                <h2>Extra
+                    <i class="pl-1 fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{user_record.price_diff|stringformat:".2f"|slice:"1:"}}/-</span>
+                </h2>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock content %}
