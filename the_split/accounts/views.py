@@ -1,8 +1,10 @@
-from django.contrib import messages
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
-from django.contrib.messages.views import SuccessMessageMixin
+from typing import Any, Dict
 
 from accounts.forms import LoginForm
+from django.contrib import messages
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordResetCompleteView)
+from django.contrib.messages.views import SuccessMessageMixin
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
@@ -23,7 +25,7 @@ class UserLogout(LogoutView):
     next_page = "core:home"
     success_message = "Logged Out Successfully !!"
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, *args: Any, **kwargs: Any) -> Any:
         response = super().dispatch(request, *args, **kwargs)
         messages.success(request, "Logged Out Successfully !!")
         return response
@@ -31,7 +33,7 @@ class UserLogout(LogoutView):
 
 # TODO: Create custom template or redirect password done view to home
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["login_url"] = "/login/"
         return context

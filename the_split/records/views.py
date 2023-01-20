@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import xlwt  # type: ignore
+from core.notification import notify_record, notify_water
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,8 +9,6 @@ from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
-
-from core.notification import notify_record, notify_water
 from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
 
@@ -37,7 +36,7 @@ class AddTemplateView(LoginRequiredMixin, TemplateView):
 class RecordAddView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
-    def post(self, request: HttpRequest):
+    def post(self, request: HttpRequest) -> HttpResponse:
         fm = RecordFrom(request.POST)
         if fm.is_valid():
             reg = fm.save(commit=False)
@@ -57,7 +56,7 @@ class RecordAddView(LoginRequiredMixin, View):
 class WaterAddView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
-    def post(self, request: HttpRequest):
+    def post(self, request: HttpRequest) -> HttpResponse:
         fm = WaterFrom(request.POST)
         if fm.is_valid():
             reg = fm.save(commit=False)
@@ -113,7 +112,7 @@ class WaterListView(ListView):
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
-def report(request):
+def report(request: HttpRequest) -> HttpResponse:
     # TODO: remove hardcoded group name
     users = User.objects.filter(groups__name="d52")
 
@@ -172,7 +171,7 @@ class DownloadTemplateView(TemplateView):
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
-def overall_xls(request):
+def overall_xls(request: HttpRequest) -> HttpResponse:
     records = Record.objects.all().order_by("date")
     data = []
     for record in records:
@@ -218,7 +217,7 @@ def overall_xls(request):
 
 # TODO: Fix this view
 # TODO: Add login required once user group login achieved
-def user_xls(request, user):
+def user_xls(request: HttpRequest, user: str) -> HttpResponse:
     records = Record.objects.filter(name=user).order_by("date")
     data = []
     for record in records:

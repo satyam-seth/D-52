@@ -1,6 +1,5 @@
 from django import forms
 from django.utils.timezone import localtime, now, timedelta
-
 from records.models import Record, Water
 
 
