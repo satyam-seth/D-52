@@ -1,0 +1,18 @@
+<form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+            <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
+        {% endfor %}
+    {% endif %}
+    {% for field in form %}
+    <div class="form-group">
+        {{field.label_tag}} {{field}} <small class="shadow text-danger">{{field.errors|striptags}}</small>
+        {% if field.help_text %}
+        {% endif %}<small class="shadow text-secondary">{{ field.help_text|safe }}</small>
+    </div>
+    {% endfor %}
+    <div class="mb-5 pb-5 text-center">
+        <input type="submit" value="Signup" class="btn btn-primary shadow">
+    </div>
+</form>

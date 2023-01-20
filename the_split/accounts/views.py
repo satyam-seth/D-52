@@ -1,10 +1,12 @@
 from typing import Any, Dict
 
-from accounts.forms import LoginForm
 from django.contrib import messages
-from django.contrib.auth.views import (LoginView, LogoutView,
-                                       PasswordResetCompleteView)
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
+
+from accounts.forms import LoginForm, SignUpForm
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
@@ -21,7 +23,7 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     }
 
 
-class UserLogout(LogoutView):
+class UserLogoutView(LogoutView):
     next_page = "core:home"
     success_message = "Logged Out Successfully !!"
 
@@ -29,6 +31,12 @@ class UserLogout(LogoutView):
         response = super().dispatch(request, *args, **kwargs)
         messages.success(request, "Logged Out Successfully !!")
         return response
+
+
+class UserSignUpView(CreateView):
+    form_class = SignUpForm
+    success_url = reverse_lazy("accounts:login")
+    template_name = "accounts/signup.html"
 
 
 # TODO: Create custom template or redirect password done view to home
