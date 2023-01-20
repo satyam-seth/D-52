@@ -1,5 +1,5 @@
-from records.models import Record, Water, Electricity, Maid
 from django.contrib import admin
+from records.models import Electricity, Maid, Record, Water
 
 # Register your models here.
 

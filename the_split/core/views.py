@@ -3,16 +3,13 @@ from typing import Any, Dict
 from django.contrib.auth import get_user_model
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Sum
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, TemplateView
 from records.models import (  # stop using this model in core once current index view changed as dashboard
-    Electricity,
-    Maid,
-    Record,
-    Water,
-)
+    Electricity, Maid, Record, Water)
 
 from .forms import FeedbackFrom
 
@@ -23,7 +20,7 @@ User = get_user_model()
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved make another page for signup - dashboard
-def home(request):
+def home(request: HttpRequest) -> HttpResponse:
     # TODO: handle empty database state
     w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
     w_price = 40 * w_sum

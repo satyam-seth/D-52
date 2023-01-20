@@ -622,4 +622,4 @@ redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
 
 # pylint_django configuration
 [pylint-django]
-django-settings-module=account.settings
+django-settings-module=the_split.settings

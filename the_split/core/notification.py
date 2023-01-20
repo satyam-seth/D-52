@@ -11,7 +11,7 @@ receivers = [
 ]
 
 
-def notify_record(reg_id):
+def notify_record(reg_id: int) -> None:
     data = Record.objects.get(pk=reg_id)
     s = smtplib.SMTP("smtp.gmail.com", 587)
     s.starttls()
@@ -36,7 +36,7 @@ def notify_record(reg_id):
     s.quit()
 
 
-def notify_water(reg_id):
+def notify_water(reg_id: int) -> None:
     data = Water.objects.get(pk=reg_id)
     s = smtplib.SMTP("smtp.gmail.com", 587)
     s.starttls()
