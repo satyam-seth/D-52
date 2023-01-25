@@ -49,6 +49,9 @@
                 <li class="nav-item {{login_active}}">
                     <a class="nav-link {{login_disabled}}" href="{% url 'accounts:login' %}">Login</a>
                 </li>
+                <li class="nav-item {{signup_active}}">
+                    <a class="nav-link {{signup_disabled}}" href="{% url 'accounts:signup' %}">Sign Up</a>
+                </li>
                 {% endif %}
             </ul>
             <form method="get" action="{% url 'records:search' %}" class="form-inline my-2 my-lg-0">

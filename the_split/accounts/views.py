@@ -37,6 +37,10 @@ class UserSignUpView(CreateView):
     form_class = SignUpForm
     success_url = reverse_lazy("accounts:login")
     template_name = "accounts/signup.html"
+    extra_context = {
+        "signup_active": "active",
+        "signup_disabled": "disabled",
+    }
 
 
 # TODO: Create custom template or redirect password done view to home
