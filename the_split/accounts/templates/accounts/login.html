@@ -9,7 +9,7 @@
         <div class="offset-4"></div>
         <div class="col-sm-4">
             <h2 class="text-center alert alert-secondary my-3 shadow">User Login</h2>
-            <form method="post" novalidate>
+            <form method="post">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
                     {% for error in form.non_field_errors %}

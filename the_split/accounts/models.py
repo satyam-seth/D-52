@@ -11,11 +11,11 @@ class Profile(models.Model):
     )
     # TODO: resize and rename file
     avatar = models.ImageField(
-        default="profile_avatars/avatar.png", upload_to="profile_images"
+        default="profile_avatars/avatar.png", upload_to="profile_avatars"
     )
     # TODO: resize and rename file
     cover_photo = models.ImageField(
-        default="profile_cover_photos/cover_photo.jpg", upload_to="profile_cover_photo"
+        default="profile_cover_photos/cover_photo.jpg", upload_to="profile_cover_photos"
     )
 
     def __str__(self) -> str:
