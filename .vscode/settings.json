@@ -4,6 +4,9 @@
         "source.fixAll": true,
         "source.organizeImports": true,
     },
+    "editor.rulers": [
+        100
+    ],
     "isort.args": [
         "skip_glob",
         "*/migrations/*",
