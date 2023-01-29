@@ -160,7 +160,7 @@ class SearchListView(ListView):
 
 # TODO: Add login required once user group login achieved
 class DownloadTemplateView(TemplateView):
-    template_name = "data/download.html"
+    template_name = "records/download.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
