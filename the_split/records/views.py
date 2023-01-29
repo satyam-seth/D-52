@@ -52,7 +52,6 @@ class RecordAddView(LoginRequiredMixin, View):
         return redirect("records:add")
 
 
-# TODO: use login required decorator
 class WaterAddView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
