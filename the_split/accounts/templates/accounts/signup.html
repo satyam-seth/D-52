@@ -3,10 +3,10 @@
 {% block title %}D-52 SignUp{% endblock title %}
 {% block content %}
 
-<div class="container-fluid login pt-5 mt-5">
-    <div class="container pt-5 mt-5">
+<div class="container-fluid sign-up py-5 mt-5">
+    <div class="container mt-5">
         <div class="row">
-            <div class="col-sm-12">
+            <div class="col-lg-6 mx-auto">
                 <h2 class="text-center alert alert-secondary my-3 shadow">Sign Up</h2>
                 <form method="post">
                     {% csrf_token %}
@@ -23,7 +23,7 @@
                         <small class="shadow text-secondary">{{ field.help_text|safe }}</small>
                     </div>
                     {% endfor %}
-                    <div class="mb-5 pb-5 text-center">
+                    <div class="text-center">
                         <input type="reset" value="Reset" class="btn btn-primary shadow">
                         <input type="submit" value="Signup" class="btn btn-success shadow">
                     </div>

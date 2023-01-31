@@ -5,6 +5,7 @@
   height: 100%;
   text-shadow: 2px 2px black;
 }
+
 .about {
   background-image: url("../images/about.jpg");
   background-color: dimgrey;
@@ -12,6 +13,7 @@
   height: 100%;
   text-shadow: 2px 2px black;
 }
+
 .feed {
   background-image: url("../images/feedback.jpg");
   background-color: dimgrey;
@@ -19,6 +21,7 @@
   height: 100%;
   text-shadow: 2px 2px black;
 }
+
 .search {
   background-image: url("../images/search.jpg");
   background-color: dimgrey;
@@ -26,7 +29,9 @@
   height: 100%;
   text-shadow: 1px 1px gray;
 }
-.login {
+
+.login,
+.sign-up {
   background: url("../images/login.jpg") no-repeat center center fixed;
   background-color: #EACDCF;
   -webkit-background-size: cover;
