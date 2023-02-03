@@ -58,15 +58,11 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
 
 class GroupTemplateView(LoginRequiredMixin, TemplateView):
     """
-    This view is used to show two forms in one template.
-    First form is for creating a group and second form is for joining a group.
+    This view is used to display the group template
+    which contains the links to join or create a group
     """
 
     template_name = "accounts/group.html"
-    extra_context = {
-        "join_form": GroupJoinForm(),
-        "create_form": GroupCreateForm(),
-    }
 
 
 class GroupJoinView(LoginRequiredMixin, View):

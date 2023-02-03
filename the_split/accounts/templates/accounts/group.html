@@ -4,65 +4,13 @@
 {% block content %}
 
 <div class="container-fluid login py-5 mt-5">
-    <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-            <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %} role="alert">
-                <strong>{{message}}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            {% endfor %}
-        {% endif %}
-    </div>
     <div class="containerr mt-5">
-        <div class="row">
-            <div class="col-lg-6 px-5">
-                <h2 class="text-center alert alert-secondary my-3 shadow">Join a room group</h2>
-                <form method="post" action="{% url 'accounts:group_join' %}">
-                    {% csrf_token %}
-                    {% if join_form.non_field_errors %}
-                        {% for error in join_form.non_field_errors %}
-                            <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
-                        {% endfor %}
-                    {% endif %}
-                    {% for field in join_form %}
-                    <div class="form-group">
-                        {{field.label_tag}} {{field}} <small class="shadow text-danger">{{field.errors|striptags}}</small>
-                            {% if field.help_text %}
-                        {% endif %}
-                        <small class="shadow text-secondary">{{ field.help_text|safe }}</small>
-                    </div>
-                    {% endfor %}
-                    <div class="text-center">
-                        <input type="reset" value="Reset" class="btn btn-primary shadow">
-                        <input type="submit" value="Join" class="btn btn-success shadow">
-                    </div>
-                </form>
+        <div class="row text-center">
+            <div class="col-md-12 my-5">
+                <a href="{% url 'accounts:group_join' %}" class="btn btn-lg btn-primary">Join a room group</a>
             </div>
-            <div class="col-lg-6 px-5">
-                <h2 class="text-center alert alert-secondary my-3 shadow">Create group for your room</h2>
-                <form method="post" action="{% url 'accounts:group_create' %}">
-                    {% csrf_token %}
-                    {% if create_form.non_field_errors %}
-                        {% for error in create_form.non_field_errors %}
-                            <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
-                        {% endfor %}
-                    {% endif %}
-                    {% for field in create_form %}
-                    <div class="form-group">
-                        {{field.label_tag}} {{field}} <small class="shadow text-danger">{{field.errors|striptags}}</small>
-                            {% if field.help_text %}
-                        {% endif %}
-                        <small class="shadow text-secondary">{{ field.help_text|safe }}</small>
-                    </div>
-                    {% endfor %}
-                    <div class="text-center">
-                        <input type="reset" value="Reset" class="btn btn-primary shadow">
-                        <input type="submit" value="Create" class="btn btn-success shadow">
-                    </div>
-                </form>
+            <div class="col-md-12 mb-5">
+                <a href="{% url 'accounts:group_create' %}" class="btn btn-lg btn-success">Create a room group</a>
             </div>
         </div>
     </div>
