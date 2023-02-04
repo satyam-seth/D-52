@@ -87,21 +87,25 @@ class GroupJoinView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-class GroupCreateView(LoginRequiredMixin, View):
-    allowed_methods = ["POST"]
+class GroupCreateView(LoginRequiredMixin, CreateView):
+    """
+    This view is used to display the group create form
+    and create a new group then add the user to the group
+    """
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        form = GroupCreateForm(request.POST)
-        if form.is_valid():
-            group = form.save()
-            print(group)
-            request.user.groups.add(group)
-            print(request.user.groups)
-            messages.success(request, "Group created successfully !!")
-            return redirect("core:home")
-        else:
-            messages.error(request, "Invalid group name !!")
-            return redirect("accounts:group")
+    form_class = GroupCreateForm
+    template_name = "accounts/group_create.html"
+    # TODO: redirect to invite members view
+    success_url = reverse_lazy("core:home")
+
+    def form_valid(self, form: GroupCreateForm) -> HttpResponse:
+        group = form.save()
+        messages.success(
+            self.request, f"You have joined the group {group.name} successfully !!"
+        )
+        # add the user to the group
+        self.request.user.groups.add(group)
+        return super().form_valid(form)
 
 
 # TODO: Create custom template or redirect password done view to home
