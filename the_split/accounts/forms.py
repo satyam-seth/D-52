@@ -2,12 +2,12 @@ from typing import Any
 
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.auth.forms import (
     AuthenticationForm,
     UserCreationForm,
     UsernameField,
 )
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
@@ -57,7 +57,19 @@ class GroupJoinForm(forms.Form):
     group_name = forms.CharField(
         label="Group Name:",
         widget=forms.TextInput(attrs={"class": "form-control"}),
+        help_text="Enter the group name to join",
     )
+
+    def clean_group_name(self) -> Group:
+        group_name = self.cleaned_data["group_name"]
+        try:
+            group = Group.objects.get(name=group_name)
+        except Group.DoesNotExist:
+            raise forms.ValidationError(
+                _("group with name %(name)s is not found"),
+                params={"name": group_name},
+            )
+        return group_name
 
 
 class GroupCreateForm(forms.ModelForm):
