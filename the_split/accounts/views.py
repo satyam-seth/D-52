@@ -1,18 +1,17 @@
 from typing import Any, Dict
 
-from accounts.forms import (GroupCreateForm, GroupJoinForm, LoginForm,
-                            SignUpForm)
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import (LoginView, LogoutView,
-                                       PasswordResetCompleteView)
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, TemplateView, View
+
+from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
@@ -71,6 +70,7 @@ class GroupJoinView(LoginRequiredMixin, FormView):
     This view is used to display the group join form
     and join the user to the group
     """
+
     form_class = GroupJoinForm
     template_name = "accounts/group_join.html"
     success_url = reverse_lazy("core:home")
@@ -85,6 +85,7 @@ class GroupJoinView(LoginRequiredMixin, FormView):
         # add the user to the group
         self.request.user.groups.add(group)
         return super().form_valid(form)
+
 
 class GroupCreateView(LoginRequiredMixin, View):
     allowed_methods = ["POST"]
