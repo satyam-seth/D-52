@@ -1,17 +1,18 @@
 from typing import Any, Dict
 
+from accounts.forms import (GroupCreateForm, GroupJoinForm, LoginForm,
+                            SignUpForm)
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordResetCompleteView)
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, View
-
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
+from django.views.generic import CreateView, FormView, TemplateView, View
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
@@ -65,33 +66,25 @@ class GroupTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/group.html"
 
 
-class GroupJoinView(LoginRequiredMixin, View):
-    allowed_methods = ["POST"]
+class GroupJoinView(LoginRequiredMixin, FormView):
+    """
+    This view is used to display the group join form
+    and join the user to the group
+    """
+    form_class = GroupJoinForm
+    template_name = "accounts/group_join.html"
+    success_url = reverse_lazy("core:home")
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        form = GroupJoinForm(request.POST)
-        if form.is_valid():
-            group_name = form.cleaned_data["group_name"]
-
-            try:
-                group = Group.objects.get(name=group_name)
-            except Group.DoesNotExist:
-                group = None
-
-            if group:
-                request.user.groups.add(group)
-                # TODO: Notify the group admin and members that a new user has joined the group
-                messages.success(
-                    request, f"You have joined the group {group_name} successfully !!"
-                )
-                return redirect("core:home")
-            else:
-                messages.error(request, f"Group with named {group_name} not found !!")
-                return redirect("accounts:group")
-        else:
-            messages.error(request, "Invalid group name !!")
-            return redirect("accounts:group")
-
+    def form_valid(self, form: GroupJoinForm) -> HttpResponse:
+        group_name = form.cleaned_data["group_name"]
+        group = Group.objects.get(name=group_name)
+        # TODO: Notify the group admin and members that a new user has joined the group
+        messages.success(
+            self.request, f"You have joined the group {group_name} successfully !!"
+        )
+        # add the user to the group
+        self.request.user.groups.add(group)
+        return super().form_valid(form)
 
 class GroupCreateView(LoginRequiredMixin, View):
     allowed_methods = ["POST"]
