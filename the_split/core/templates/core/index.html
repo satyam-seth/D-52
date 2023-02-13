@@ -29,7 +29,7 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 justify-content-center">
         {% for record in records %}
         <div class="col">
-            <div class="card text-center">
+            <div class="card text-center shadow-lg">
                 <img src="{{ record.user.profile.avatar.url }}" class="card-img-top img-thumbnail" alt="{{record.user.full_name}}">
                 <div class="card-body">
                 <!-- TODO: remove this if condition once first and last name of user is marked as required fields -->
