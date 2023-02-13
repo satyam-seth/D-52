@@ -53,12 +53,12 @@
                 </h2>
                 {% if user_record.price_diff > 0 %}
                 <h2>Due
-                    <i class="pl-1 fas fa-rupee-sign"></i>
+                    <i class="ps-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{user_record.price_diff|stringformat:".2f"}}/-</span>
                 </h2>
                 {% else %}
                 <h2>Extra
-                    <i class="pl-1 fas fa-rupee-sign"></i>
+                    <i class="ps-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{user_record.price_diff|stringformat:".2f"|slice:"1:"}}/-</span>
                 </h2>
                 {% endif %}
