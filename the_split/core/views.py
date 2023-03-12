@@ -9,11 +9,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, TemplateView
 from records.models import (  # stop using this model in core once current index view changed as dashboard
-    Electricity,
-    Maid,
-    Record,
-    Water,
-)
+    Electricity, Maid, Record, Water)
 
 from .forms import FeedbackFrom
 
