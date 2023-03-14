@@ -6,14 +6,14 @@
 {% block title %}D-52 See Records{% endblock title %}
 {% block content %}
 <!-- TODO: Create base record list template with user defended block for jumbotron class name, style and title and page title -->
-<div class="jumbotron jumbotron-fluid {% if records_active %} records {% endif %} mt-5" {% if not records_active %} style="background-image: url('{{user.profile.cover_photo.url}}');" {% endif %}>
+<div class="container-fluid py-5 my-5 {% if records_active %} records {% endif %}" {% if not records_active %} style="background-image: url('{{user.profile.cover_photo.url}}');" {% endif %}>
   <div class="container py-5 text-light">
     <div>
       <!-- TODO: Fix this once base template ready for record_list template -->
       <h1 class="display-2">{{user.get_full_name|title}} Records</h1>
     </div>
     <div class="lead">
-      <p class="pl-2">See all records carefully.</p>
+      <p class="ps-2">See all records carefully.</p>
     </div>
   </div>
 </div>

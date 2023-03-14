@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}D-52 Feedback{% endblock title %}
 {% block content %}
-<div class="jumbotron jumbotron-fluid feed mt-5">
+<div class="container-fluid py-5 feed my-5">
   <div class="container text-light my-5">
     <div>
       <h1 class="display-4">Feedback</h1>
@@ -30,7 +30,10 @@
       </div>
     </div>
     <div class="py-2">
-      <button type="submit" class="btn btn-sm btn-success">Submit
+      <button type="reset" class="btn btn-sm btn-danger">Reset
+        <i class="fas fa-undo-alt"></i>
+      </button>
+      <button type="submit" class="btn btn-sm btn-primary">Submit
         <i class="fas fa-paper-plane"></i>
       </button>
     </div>

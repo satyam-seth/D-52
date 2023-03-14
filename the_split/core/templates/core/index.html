@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}D-52 Home{% endblock title %}
 {% block content %}
-<div class="jumbotron jumbotron-fluid home">
+<div class="container-fluid py-5 mb-4 home">
     <div class="container text-light my-5">
         <div>
             <h1 class="display-4">Hi,</h1>
@@ -20,20 +20,18 @@
     <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
         role="alert">
         <strong>{{message}}</strong>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
     {% endif %}
 </div>
-<div class="container-fluid">
-    <div class="row card-deck justify-content-center">
+<div class="container-fluid mb-4 px-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 justify-content-center">
         {% for record in records %}
-        <div class="card shadow-lg mb-4" style="width: 18rem;">
-            <img src="{{ record.user.profile.avatar.url }}" class="card-img-top img-thumbnail"
-                alt="{{record.user.full_name}}">
-            <div class="card-body text-center">
+        <div class="col">
+            <div class="card text-center shadow-lg">
+                <img src="{{ record.user.profile.avatar.url }}" class="card-img-top img-thumbnail" alt="{{record.user.full_name}}">
+                <div class="card-body">
                 <!-- TODO: remove this if condition once first and last name of user is marked as required fields -->
                 <h3 class="card-title">{% if record.user.get_full_name %}{{record.user.get_full_name}}{% else %}{{record.user.username}}{% endif %}</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{record.user.purchaser.count}}</span> Items <i
@@ -41,8 +39,10 @@
                 <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
                         {{record.total_spent|default_if_none:0|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'records:detailed' record.user.id %}" role="button">Detailed View
-                    <i class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'records:detailed' record.user.id %}" role="button">
+                    Detailed View<i class="far fa-eye"></i>
+                </a>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -56,7 +56,7 @@
         </div>
         <div class="col-md-8">
             <div class="card-body text-center pt-5">
-                <div class="display-3"><i class="fas fa-plug text-warning mr-2"></i>Electricity Bill</div>
+                <div class="display-3"><i class="fas fa-plug text-warning me-2"></i>Electricity Bill</div>
                 <h1 class="pt-3">
                     <i class="fas fa-rupee-sign"></i>
                     <span class="text-danger">{{electricity.price}}</span>
@@ -83,7 +83,7 @@
         </div>
         <div class="col-md-8">
             <div class="card-body text-center pt-4">
-                <h2 class="display-3"><i class="fas fa-tint text-primary mr-2"></i>Water Bill</h2>
+                <h2 class="display-3"><i class="fas fa-tint text-primary me-2"></i>Water Bill</h2>
                 <h1>
                     <i class="fas fa-rupee-sign"></i>
                     <span class="text-danger">{{w_price}}</span>
@@ -103,7 +103,7 @@
         </div>
         <div class="col-md-8">
             <div class="card-body text-center">
-                <h2 class="display-4"><i class="fas fa-utensils text-success mr-2"></i>
+                <h2 class="display-4"><i class="fas fa-utensils text-success me-2"></i>
                     Maid's Salary</h2>
                 <h1>
                     <i class="fas fa-rupee-sign"></i>

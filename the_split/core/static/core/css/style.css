@@ -32,6 +32,7 @@
 
 .login,
 .sign-up {
+  height: 100vh;
   background: url("../images/login.jpg") no-repeat center center fixed;
   background-color: #EACDCF;
   -webkit-background-size: cover;

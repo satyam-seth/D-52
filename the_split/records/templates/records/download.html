@@ -5,13 +5,13 @@
 {% endblock %}
 {% block title %}D-52 Download{% endblock title %}
 {% block content %}
-<div class="jumbotron jumbotron-fluid download mt-5">
+<div class="container-fluid py-5 download my-5">
   <div class="container py-5 text-dark">
     <div>
       <h1 class="display-3">Download</h1>
     </div>
     <div class="lead">
-      <p class="pl-1">Thank you for visiting.</p>
+      <p class="ps-1">Thank you for visiting.</p>
     </div>
   </div>
 </div>
@@ -23,53 +23,53 @@
         <tr>
           <td class="h5">
             Overall Items Records
-            <a class="float-right btn btn-sm btn-danger" href="{% url 'records:overall_xls' %}" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:overall_xls' %}" role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Satyam Items Records
-            <a class="float-right btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Satyam Seth' %}"
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Satyam Seth' %}"
               role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Ankit Items Records
-            <a class="float-right btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Ankit Kumar Gupta' %}"
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Ankit Kumar Gupta' %}"
               role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Ganga Items Records
-            <a class="float-right btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Ganga Sagar Bharti' %}"
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Ganga Sagar Bharti' %}"
               role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Prashant Items Records
-            <a class="float-right btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Prashant Kumar Yadav' %}"
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Prashant Kumar Yadav' %}"
               role="button">Download</a>
           </td>
         </tr>
         <!-- <tr>
           <td class="h5">
             Water Entry Records
-            <a class="float-right btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Electricity Bill Records
-            <a class="float-right btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Maid Salary Records
-            <a class="float-right btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
           </td>
         </tr> -->
       </tbody>

@@ -142,7 +142,7 @@ class SearchListView(ListView):
     paginate_by = 20
     paginate_orphans = 10
     ordering = ["-purchase_date"]
-    template_name = "data/search.html"
+    template_name = "records/search.html"
 
     # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
