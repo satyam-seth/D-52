@@ -27,9 +27,9 @@
 </div>
 <div class="container border rounded shadow-lg mb-5">
   <h1 class="text-center alert alert-secondary mt-4">Add Item Record</h1>
-  <form action="{% url 'records:add_item' %}" method="POST" class="p-2 mb-4">
+  <form action="{% url 'records:add_item' %}" method="POST" class="p-2 mb-2">
     {% csrf_token %}
-    <div class="form-row">
+    <div class="row mb-3">
       <div class="form-group col-md-6">
         {{record_form.purchase_date.label_tag}}
         {{record_form.purchase_date}}
@@ -39,7 +39,7 @@
         {{record_form.purchaser}}
       </div>
     </div>
-    <div class="form-row">
+    <div class="row mb-3">
       <div class="form-group col-md-6">
         {{record_form.item.label_tag}}
         {{record_form.item}}
@@ -49,19 +49,19 @@
         {{record_form.price}}
       </div>
     </div>
-    <button type="reset" class="btn btn-danger">Reset
+    <button type="reset" class="btn btn-sm btn-danger">Reset
       <i class="fas fa-undo-alt"></i>
     </button>
-    <button type="submit" class="btn btn-primary">Add
+    <button type="submit" class="btn btn-sm btn-primary">Add
       <i class="fa fa-paper-plane"></i>
     </button>
   </form>
 </div>
 <div class="container border rounded shadow-lg mb-5">
   <h1 class="text-center alert alert-secondary mt-4">Add Water Record</h1>
-  <form action="{% url 'records:add_water' %}" method="POST" class="p-2 mb-4">
+  <form action="{% url 'records:add_water' %}" method="POST" class="p-2 mb-2">
     {% csrf_token %}
-    <div class="form-row">
+    <div class="row mb-3">
       <div class="form-group col-md-6">
         {{water_form.purchase_date.label_tag}}
         {{water_form.purchase_date}}
@@ -71,10 +71,10 @@
         {{water_form.quantity}}
       </div>
     </div>
-    <button type="reset" class="btn btn-danger">Reset
+    <button type="reset" class="btn btn-sm btn-danger">Reset
       <i class="fas fa-undo-alt"></i>
     </button>
-    <button type="submit" class="btn btn-primary">Add
+    <button type="submit" class="btn btn-sm btn-primary">Add
       <i class="fa fa-paper-plane"></i>
     </button>
   </form>
