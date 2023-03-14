@@ -25,7 +25,6 @@ class AddTemplateView(LoginRequiredMixin, TemplateView):
         context.update(
             {
                 "add_active": "active",
-                "add_disabled": "disabled",
                 "record_form": record_form,
                 "water_form": water_form,
             }
@@ -77,12 +76,7 @@ class RecordListView(ListView):
     paginate_by = 20
     paginate_orphans = 10
     ordering = ["-purchase_date"]
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["records_active"] = "active"
-        context["records_disabled"] = "disabled"
-        return context
+    extra_context = {"records_active": "active"}
 
 
 # TODO: Add login required once user group login achieved and only show current user group data
@@ -133,7 +127,6 @@ def report(request: HttpRequest) -> HttpResponse:
 
     context = {
         "report_active": "active",
-        "report_disabled": "disabled",
         "total_records": total_records,
         "total_price": total_price,
         "per_user_price": per_user_price,
@@ -149,7 +142,7 @@ class SearchListView(ListView):
     paginate_by = 20
     paginate_orphans = 10
     ordering = ["-purchase_date"]
-    template_name = "data/search.html"
+    template_name = "records/search.html"
 
     # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
@@ -159,13 +152,9 @@ class SearchListView(ListView):
 
 
 # TODO: Add login required once user group login achieved
-class DownloadTemplateView(TemplateView):
+class DownloadTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "records/download.html"
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context.update({"download_active": "active", "download_disabled": "disabled"})
-        return context
+    extra_context = {"download_active": "active"}
 
 
 # TODO: fix this view

@@ -51,7 +51,6 @@ def home(request: HttpRequest) -> HttpResponse:
 
     context = {
         "home_active": "active",
-        "home_disabled": "disabled",
         "records": records,
         "w_sum": w_sum,
         "w_price": w_price,
@@ -71,16 +70,7 @@ def home(request: HttpRequest) -> HttpResponse:
 # TODO: Update wording and doc for view template
 class AboutTemplateView(TemplateView):
     template_name = "core/about.html"
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "about_active": "active",
-                "about_disabled": "disabled",
-            }
-        )
-        return context
+    extra_context = {"about_active": "active"}
 
 
 class FeedbackCreateView(SuccessMessageMixin, CreateView):
@@ -88,13 +78,4 @@ class FeedbackCreateView(SuccessMessageMixin, CreateView):
     success_url = reverse_lazy("core:home")
     template_name = "core/feedback.html"
     success_message = "Thank you for your valuable feedback, it will help us to improve your experience."
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "feedback_active": "active",
-                "feedback_disabled": "disabled",
-            }
-        )
-        return context
+    extra_context = {"feedback_active": "active"}

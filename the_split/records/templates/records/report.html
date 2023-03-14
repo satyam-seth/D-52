@@ -5,7 +5,7 @@
 {% endblock %}
 {% block title %}D-52 Progress Report{% endblock title %}
 {% block content %}
-<div class="jumbotron jumbotron-fluid report mt-5">
+<div class="container-fluid py-5 report my-5">
     <div class="container py-5 text-light">
         <div>
             <h1 class="display-2">Progress Reports</h1>
@@ -53,12 +53,12 @@
                 </h2>
                 {% if user_record.price_diff > 0 %}
                 <h2>Due
-                    <i class="pl-1 fas fa-rupee-sign"></i>
+                    <i class="ps-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{user_record.price_diff|stringformat:".2f"}}/-</span>
                 </h2>
                 {% else %}
                 <h2>Extra
-                    <i class="pl-1 fas fa-rupee-sign"></i>
+                    <i class="ps-1 fas fa-rupee-sign"></i>
                     <span class="text-danger">{{user_record.price_diff|stringformat:".2f"|slice:"1:"}}/-</span>
                 </h2>
                 {% endif %}

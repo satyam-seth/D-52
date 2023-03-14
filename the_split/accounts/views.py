@@ -1,17 +1,18 @@
 from typing import Any, Dict
 
+from accounts.forms import (GroupCreateForm, GroupJoinForm, LoginForm,
+                            SignUpForm)
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordResetCompleteView)
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, TemplateView, View
-
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
@@ -22,10 +23,7 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     template_name = "accounts/login.html"
     redirect_authenticated_user = True
     success_message = "Logged In Successfully !!"
-    extra_context = {
-        "login_active": "active",
-        "login_disabled": "disabled",
-    }
+    extra_context = {"login_active": "active"}
 
 
 class UserLogoutView(LogoutView):
@@ -43,10 +41,7 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
     success_message = "Account Created Successfully !!"
     success_url = reverse_lazy("accounts:group")
     template_name = "accounts/signup.html"
-    extra_context = {
-        "signup_active": "active",
-        "signup_disabled": "disabled",
-    }
+    extra_context = {"signup_active": "active"}
 
     def form_valid(self, form: SignUpForm) -> HttpResponse:
         valid = super().form_valid(form)
