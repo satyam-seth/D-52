@@ -1,13 +1,11 @@
 from typing import Any, Dict
 
-from accounts.forms import (GroupCreateForm, GroupJoinForm, LoginForm,
-                            SignUpForm)
+from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import (LoginView, LogoutView,
-                                       PasswordResetCompleteView)
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse
 from django.shortcuts import redirect
