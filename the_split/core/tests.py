@@ -14,7 +14,7 @@ class FeedBackModelTest(TestCase):
         problem = "test-problem"
         message = "test message"
 
-        # create feedback
+        # create feedback instance
         feedback = Feedback.objects.create(name=name, problem=problem, message=message)
 
         # assert field values

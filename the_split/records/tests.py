@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
-from records.models import Electricity, Record, Water
+from records.models import Electricity, Maid, Record, Water
 
 User = get_user_model()
 
@@ -25,7 +25,7 @@ class RecordModelTest(TestCase):
         price = 99.99
         purchase_date = timezone.now().date()
 
-        # create record
+        # create record instance
         record = Record.objects.create(
             item=item,
             price=price,
@@ -60,7 +60,7 @@ class WaterModelTest(TestCase):
         quantity = 1
         purchase_date = timezone.now().date()
 
-        # create water
+        # create water instance
         water = Water.objects.create(
             quantity=quantity,
             adder=self.adder,
@@ -87,7 +87,7 @@ class ElectricityModelTest(TestCase):
         price = 1234
         due_date = timezone.now().date()
 
-        # create electricity
+        # create electricity instance
         electricity = Electricity.objects.create(
             price=price,
             due_date=due_date,
@@ -100,3 +100,28 @@ class ElectricityModelTest(TestCase):
 
         # assert string representation
         self.assertEqual(str(electricity), str(electricity.due_date))
+
+
+class MaidModelTest(TestCase):
+    """Test Maid Model"""
+
+    def test_maid_creation(self) -> None:
+        """Test maid model instance creation"""
+
+        # initialize data
+        price = 5678
+        due_date = timezone.now().date()
+
+        # create maid instance
+        maid = Maid.objects.create(
+            price=price,
+            due_date=due_date,
+        )
+
+        # assert field values
+        self.assertEqual(maid.price, price)
+        self.assertEqual(maid.due_date, due_date)
+        # TODO: add assertion for modified_on field and created_on
+
+        # assert string representation
+        self.assertEqual(str(maid), str(maid.due_date))

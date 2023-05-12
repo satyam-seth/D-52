@@ -90,6 +90,8 @@ class Electricity(models.Model):
 
 # TODO: fix this model
 class Maid(models.Model):
+    """Model to store maid salary details"""
+
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
