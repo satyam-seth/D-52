@@ -8,6 +8,8 @@ from django.db import models
 
 
 class Record(models.Model):
+    """Model to store purchase details"""
+
     item = models.CharField(max_length=50)
     # TODO: price can't be negative or zero
     price = models.DecimalField(
