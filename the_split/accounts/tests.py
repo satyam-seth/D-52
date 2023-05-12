@@ -9,7 +9,7 @@ class ProfileModelTest(TestCase):
     """Test Profile Model"""
 
     def setUp(self) -> None:
-        self.user = User.objects.create(username="test-user")
+        self.user = User.objects.create(username="test-user", password="test-password")
 
     def test_profile_creation(self) -> None:
         """Test profile model for default values"""
