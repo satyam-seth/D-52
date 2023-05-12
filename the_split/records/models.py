@@ -73,6 +73,9 @@ class Water(models.Model):
 # TODO: Create a common model to store electricity and maid data
 # TODO: fix this model
 class Electricity(models.Model):
+    """Model to store electricity bill details"""
+
+    # TODO: add field to store bill and paid invoice image, and status paid or not
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
