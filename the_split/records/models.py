@@ -40,7 +40,7 @@ class Record(models.Model):
 
     def __str__(self) -> str:
         # TODO: finalize str
-        return str(self.item) + " " + self.purchaser.username
+        return f"{self.item} {self.purchaser.username}"
 
 
 # TODO: Add price field because price of one gallon of water may change in future

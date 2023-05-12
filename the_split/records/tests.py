@@ -1,7 +1,7 @@
-from records.models import Record
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
-from django.contrib.auth import get_user_model
+from records.models import Record
 
 User = get_user_model()
 
@@ -42,3 +42,6 @@ class RecordModelTest(TestCase):
         self.assertEqual(record.purchase_date, purchase_date)
         # TODO: add assertion for modified_on field and created_on
         # self.assertEqual(record.created_on, timezone.now())
+
+        # assert string representation
+        self.assertEqual(str(record), f"{record.item} {record.purchaser.username}")
