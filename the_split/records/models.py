@@ -45,6 +45,8 @@ class Record(models.Model):
 
 # TODO: Add price field because price of one gallon of water may change in future
 class Water(models.Model):
+    """Model to store water purchase details"""
+
     # currently we only allow maximum 5 quantity
     # TODO: add validator for allowed max quantity is 5 for a day
     quantity = models.PositiveIntegerField(
@@ -68,6 +70,7 @@ class Water(models.Model):
         return str(self.purchase_date)
 
 
+# TODO: Create a common model to store electricity and maid data
 # TODO: fix this model
 class Electricity(models.Model):
     due_date = models.DateField()
