@@ -3,6 +3,8 @@ from django import forms
 
 
 class FeedbackFrom(forms.ModelForm):
+    """Form for user feedback"""
+
     class Meta:
         model = Feedback
         fields = ["name", "problem", "message"]
@@ -16,7 +18,7 @@ class FeedbackFrom(forms.ModelForm):
             "message": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Suggetion message",
+                    "placeholder": "Suggestion message",
                     "rows": 5,
                 }
             ),
