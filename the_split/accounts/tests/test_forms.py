@@ -1,9 +1,5 @@
-from django.test import TestCase
 from accounts.forms import LoginForm
-
-from django.test.client import RequestFactory
-
-rf = RequestFactory()
+from django.test import TestCase
 
 
 class TestLoginForm(TestCase):
