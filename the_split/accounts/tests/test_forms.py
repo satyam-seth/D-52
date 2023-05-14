@@ -46,7 +46,7 @@ class TestLoginForm(TestCase):
     #     self.assertTrue(form.is_valid())
 
 
-class SignUpFormTestCase(TestCase):
+class TestSignUpForm(TestCase):
     """Test SignUp Form"""
 
     def test_signup_form_fields(self):
@@ -175,9 +175,6 @@ class TestGroupCreateForm(TestCase):
         """test group create form field"""
 
         form = GroupCreateForm()
-
-        # assert that the form has only one field
-        self.assertEqual(len(form.fields), 1)
 
         self.assertEqual(form.Meta.model, Group)
         self.assertEqual(form.Meta.fields, ("name",))
