@@ -1,7 +1,6 @@
-from accounts.forms import GroupJoinForm, LoginForm, SignUpForm
+from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 User = get_user_model()
@@ -99,7 +98,7 @@ class SignUpFormTestCase(TestCase):
 
         form = SignUpForm(data=form_data)
 
-        # assert signup form is valid for valid form data
+        # assert form is valid for valid form data
         self.assertTrue(form.is_valid())
 
         # assert form save create a user
@@ -167,3 +166,38 @@ class TestGroupJoinForm(TestCase):
             form.errors["group_name"],
             [f"group with name {group_name} is not found"],
         )
+
+
+class TestGroupCreateForm(TestCase):
+    """Test Group Create Form"""
+
+    def test_group_create_form_field(self) -> None:
+        """test group create form field"""
+
+        form = GroupCreateForm()
+
+        # assert that the form has only one field
+        self.assertEqual(len(form.fields), 1)
+
+        self.assertEqual(form.Meta.model, Group)
+        self.assertEqual(form.Meta.fields, ("name",))
+        self.assertEqual(form.Meta.labels["name"], "Group Name:")
+        self.assertEqual(
+            form.Meta.widgets["name"].attrs["class"],
+            "form-control",
+        )
+
+    def test_group_create_form_working(self):
+        """Test group create form working"""
+
+        # initialize form data
+        form_data = {"name": "test-group"}
+
+        form = GroupCreateForm(data=form_data)
+
+        # assert form is valid for valid form data
+        self.assertTrue(form.is_valid())
+
+        # assert form save create a group
+        group = form.save()
+        self.assertIsInstance(group, Group)
