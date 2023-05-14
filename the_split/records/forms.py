@@ -37,10 +37,13 @@ class RecordFrom(forms.ModelForm):
 
 
 class WaterFrom(forms.ModelForm):
+    """Form for water purchase"""
+
     class Meta:
         model = Water
         fields = ["purchase_date", "quantity"]
         widgets = {
+            # TODO: find out right way to infer max value from model validators if possible
             "purchase_date": forms.DateInput(
                 attrs={
                     "type": "date",
@@ -50,8 +53,5 @@ class WaterFrom(forms.ModelForm):
                     "value": localtime(now()).date(),
                 }
             ),
-            # TODO: find out right way to infer max value from model validators if possible
-            "quantity": forms.NumberInput(
-                attrs={"class": "form-control", "min": 1, "max": 5}
-            ),
+            "quantity": forms.NumberInput(attrs={"class": "form-control"}),
         }
