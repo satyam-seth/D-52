@@ -56,6 +56,8 @@ class SignUpForm(UserCreationForm):
 
 
 class GroupJoinForm(forms.Form):
+    """Form to join a user group"""
+
     group_name = forms.CharField(
         label="Group Name:",
         widget=forms.TextInput(attrs={"class": "form-control"}),
@@ -63,14 +65,18 @@ class GroupJoinForm(forms.Form):
     )
 
     def clean_group_name(self) -> Group:
+        """Clean and validate the group_name field"""
+
         group_name = self.cleaned_data["group_name"]
+
         try:
-            group = Group.objects.get(name=group_name)
-        except Group.DoesNotExist:
+            Group.objects.get(name=group_name)
+        except Group.DoesNotExist as exc:
             raise forms.ValidationError(
                 _("group with name %(name)s is not found"),
                 params={"name": group_name},
-            )
+            ) from exc
+
         return group_name
 
 
