@@ -1,5 +1,7 @@
-from accounts.forms import LoginForm, SignUpForm
+from accounts.forms import GroupJoinForm, LoginForm, SignUpForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 User = get_user_model()
@@ -10,6 +12,7 @@ class TestLoginForm(TestCase):
 
     def test_login_form_fields(self) -> None:
         """Test login form fields"""
+
         form = LoginForm()
 
         # assert that the form has only two fields
@@ -49,6 +52,7 @@ class SignUpFormTestCase(TestCase):
 
     def test_signup_form_fields(self):
         """Test signup form fields"""
+
         form = SignUpForm()
 
         # assert that the form has only two fields
@@ -105,3 +109,61 @@ class SignUpFormTestCase(TestCase):
         self.assertEqual(user.email, form_data["email"])
         self.assertEqual(user.first_name, form_data["first_name"])
         self.assertEqual(user.last_name, form_data["last_name"])
+
+
+class TestGroupJoinForm(TestCase):
+    """Test Group Join Form"""
+
+    def test_group_join_form_field(self) -> None:
+        """test group join form field"""
+
+        form = GroupJoinForm()
+
+        # assert that the form has only one field
+        self.assertEqual(len(form.fields), 1)
+
+        # assert field widget
+        self.assertEqual(form.fields["group_name"].label, "Group Name:")
+        self.assertEqual(
+            form.fields["group_name"].widget.attrs["class"], "form-control"
+        )
+        self.assertEqual(
+            form.fields["group_name"].help_text, "Enter the group name to join"
+        )
+
+    def test_group_join_from_working_for_valid_group_name(self):
+        """Test group join form is working for valid group name"""
+
+        group_name = "test-group"
+
+        # create group
+        Group.objects.create(name=group_name)
+
+        # initialize form data
+        form_data = {
+            "group_name": group_name,
+        }
+
+        form = GroupJoinForm(data=form_data)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["group_name"], group_name)
+
+    def test_group_join_from_working_for_invalid_group_name(self):
+        """Test group join form is working for invalid group name"""
+
+        group_name = "test-group"
+
+        # initialize form data
+        form_data = {
+            "group_name": group_name,
+        }
+
+        form = GroupJoinForm(data=form_data)
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("group_name", form.errors)
+        self.assertEqual(
+            form.errors["group_name"],
+            [f"group with name {group_name} is not found"],
+        )
