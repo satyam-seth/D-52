@@ -81,6 +81,8 @@ class GroupJoinForm(forms.Form):
 
 
 class GroupCreateForm(forms.ModelForm):
+    """Form to create a group"""
+
     class Meta:
         model = Group
         fields = ("name",)
