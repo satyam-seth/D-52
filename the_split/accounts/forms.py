@@ -14,6 +14,8 @@ User = get_user_model()
 
 
 class LoginForm(AuthenticationForm):
+    """Form to authentication user"""
+
     username = UsernameField(
         widget=forms.TextInput(attrs={"autofocus": True, "class": "form-control"})
     )
