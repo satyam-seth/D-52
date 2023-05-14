@@ -8,6 +8,8 @@ from django.db import models
 
 
 class Record(models.Model):
+    """Model to store purchase details"""
+
     item = models.CharField(max_length=50)
     # TODO: price can't be negative or zero
     price = models.DecimalField(
@@ -38,11 +40,13 @@ class Record(models.Model):
 
     def __str__(self) -> str:
         # TODO: finalize str
-        return str(self.item) + " " + self.purchaser.username
+        return f"{self.item} {self.purchaser.username}"
 
 
 # TODO: Add price field because price of one gallon of water may change in future
 class Water(models.Model):
+    """Model to store water purchase details"""
+
     # currently we only allow maximum 5 quantity
     # TODO: add validator for allowed max quantity is 5 for a day
     quantity = models.PositiveIntegerField(
@@ -66,8 +70,12 @@ class Water(models.Model):
         return str(self.purchase_date)
 
 
+# TODO: Create a common model to store electricity and maid data
 # TODO: fix this model
 class Electricity(models.Model):
+    """Model to store electricity bill details"""
+
+    # TODO: add field to store bill and paid invoice image, and status paid or not
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
@@ -82,6 +90,8 @@ class Electricity(models.Model):
 
 # TODO: fix this model
 class Maid(models.Model):
+    """Model to store maid salary details"""
+
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
