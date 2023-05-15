@@ -17,5 +17,5 @@ urlpatterns = [
     path("report/", views.report, name="report"),
     path("overall_xls/", views.overall_xls, name="overall_xls"),
     path("<str:user>/", views.user_xls, name="user_xls"),
-    # path('water_xls/',views.water_xls,name='water_xls'),
+    # path("water_xls/", views.water_xls, name="water_xls"),
 ]
