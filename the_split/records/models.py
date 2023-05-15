@@ -17,7 +17,10 @@ class Record(models.Model):
         max_digits=7,
         validators=[
             MinValueValidator(
-                Decimal("0.01"),
+                Decimal("0"),
+            ),
+            MaxValueValidator(
+                Decimal("5000"),
             ),
         ],
     )
