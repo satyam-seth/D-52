@@ -67,3 +67,6 @@ class FeedbackFormTestCase(TestCase):
         # assert form save create a group
         feedback = form.save()
         self.assertIsInstance(feedback, Feedback)
+        self.assertEqual(feedback.name, form_data["name"])
+        self.assertEqual(feedback.problem, form_data["problem"])
+        self.assertEqual(feedback.message, form_data["message"])

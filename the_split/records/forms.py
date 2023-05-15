@@ -4,6 +4,8 @@ from records.models import Record, Water
 
 
 class RecordFrom(forms.ModelForm):
+    """Form for item purchase"""
+
     class Meta:
         model = Record
         fields = ["purchase_date", "purchaser", "item", "price"]
@@ -25,6 +27,7 @@ class RecordFrom(forms.ModelForm):
             "item": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter item name"}
             ),
+            # TODO: Move min and max login to model
             "price": forms.NumberInput(
                 attrs={
                     "class": "form-control",
