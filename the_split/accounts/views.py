@@ -8,15 +8,16 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse
-from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView, TemplateView, View
+from django.views.generic import CreateView, FormView, TemplateView
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):
+    """View to handle user login"""
+
     authentication_form = LoginForm
     template_name = "accounts/login.html"
     redirect_authenticated_user = True
@@ -25,6 +26,8 @@ class UserLoginView(SuccessMessageMixin, LoginView):
 
 
 class UserLogoutView(LogoutView):
+    """View to handle user logout"""
+
     next_page = "core:home"
     success_message = "Logged Out Successfully !!"
 
@@ -35,6 +38,8 @@ class UserLogoutView(LogoutView):
 
 
 class UserSignUpView(SuccessMessageMixin, CreateView):
+    """View to handle user signup"""
+
     form_class = SignUpForm
     success_message = "Account Created Successfully !!"
     success_url = reverse_lazy("accounts:group")
@@ -103,6 +108,8 @@ class GroupCreateView(LoginRequiredMixin, CreateView):
 
 # TODO: Create custom template or redirect password done view to home
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
+    """View to handle user password complete"""
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["login_url"] = "/login/"
