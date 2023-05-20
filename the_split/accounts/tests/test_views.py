@@ -1,13 +1,19 @@
 from http import HTTPStatus
 
 from accounts.forms import LoginForm, SignUpForm
-from accounts.views import UserLoginView, UserLogoutView, UserSignUpView
+from accounts.views import (
+    GroupTemplateView,
+    UserLoginView,
+    UserLogoutView,
+    UserSignUpView,
+)
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.views.generic import CreateView
+from django.views.generic import CreateView, TemplateView
 
 User = get_user_model()
 
@@ -85,6 +91,8 @@ class TestUserSignUpView(TestCase):
         self.assertEqual(view.extra_context, {"signup_active": "active"})
 
     def test_signup_success(self):
+        """Test user signup view working"""
+
         # Define the form data
         form_data = {
             "username": "test-user",
@@ -113,3 +121,38 @@ class TestUserSignUpView(TestCase):
                 password=form_data["password1"],
             )
         )
+
+
+class TestGroupTemplateView(TestCase):
+    """Test user signup view working"""
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("accounts:group")
+
+        # create test user
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        # log in the user
+        self.client.login(username="test-user", password="test-password")
+
+    def test_group_template_view_attributes(self):
+        """Test group template view attributes"""
+
+        view = GroupTemplateView()
+        self.assertIsInstance(view, TemplateView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertEqual(view.template_name, "accounts/group.html")
+
+    def test_group_template_view_working(self):
+        """Test group template view working"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, 200)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "accounts/group.html")
