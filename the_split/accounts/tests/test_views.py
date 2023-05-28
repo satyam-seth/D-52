@@ -1,7 +1,8 @@
 from http import HTTPStatus
 
-from accounts.forms import LoginForm, SignUpForm
+from accounts.forms import GroupJoinForm, LoginForm, SignUpForm
 from accounts.views import (
+    GroupJoinView,
     GroupTemplateView,
     UserLoginView,
     UserLogoutView,
@@ -9,11 +10,13 @@ from accounts.views import (
 )
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView, FormView, TemplateView
 
 User = get_user_model()
 
@@ -156,3 +159,51 @@ class TestGroupTemplateView(TestCase):
 
         # Assert that the correct template is used
         self.assertTemplateUsed(response, "accounts/group.html")
+
+
+class TestGroupJoinView(TestCase):
+    """Test group join view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:group_join")
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        self.group = Group.objects.create(name="test-group")
+
+    def test_group_join_view_attributes(self):
+        """Test group join view attributes"""
+
+        view = GroupJoinView()
+        self.assertIsInstance(view, FormView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertEqual(view.form_class, GroupJoinForm)
+        self.assertEqual(view.template_name, "accounts/group_join.html")
+        self.assertTrue(view.success_url, reverse("core:home"))
+
+    def test_group_join_view_working(self) -> None:
+        """Test group join view working"""
+
+        # Log in the user
+        self.client.login(username="test-user", password="test-password")
+
+        # Send a POST request to the view with the group name
+        response = self.client.post(self.url, {"group_name": "test-group"})
+
+        # Assert that the response status code is 302 (redirect)
+        self.assertEqual(response.status_code, 302)
+
+        # Assert that the user is added to the group
+        self.assertIn(self.group, self.user.groups.all())
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            "You have joined the group test-group successfully !!",
+        )
+
+        # Assert that the user is redirected to the home page
+        self.assertRedirects(response, reverse("core:home"))
