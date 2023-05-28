@@ -128,7 +128,7 @@ class TestUserSignUpView(TestCase):
 
 
 class TestGroupTemplateView(TestCase):
-    """Test user signup view working"""
+    """Test group template view"""
 
     def setUp(self):
         self.client = Client()
