@@ -156,7 +156,7 @@ class TestGroupTemplateView(TestCase):
         response = self.client.get(self.url)
 
         # Assert that the response status code is 200 (OK)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
         # Assert that the correct template is used
         self.assertTemplateUsed(response, "accounts/group.html")
@@ -193,7 +193,7 @@ class TestGroupJoinView(TestCase):
         response = self.client.post(self.url, {"group_name": "test-group"})
 
         # Assert that the response status code is 302 (redirect)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         # Assert that the user is added to the group
         self.assertIn(self.group, self.user.groups.all())
@@ -240,7 +240,7 @@ class TestGroupCerateView(TestCase):
         response = self.client.post(self.url, data={"name": "test-group"})
 
         # Assert that the response status code is 302 (redirect)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         # Assert that the success message is displayed
         messages = list(get_messages(response.wsgi_request))
@@ -252,3 +252,26 @@ class TestGroupCerateView(TestCase):
 
         # Assert that the user is redirected to the home page
         self.assertRedirects(response, reverse("core:home"))
+
+
+class TestMyPasswordResetCompleteView(TestCase):
+    """Test my password reset complete view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:password_reset_complete")
+
+    def test_my_password_reset_complete_view_working(self):
+        """Test my password reset complete view working"""
+
+        # Send a GET request to the password reset complete URL
+        response = self.client.get(self.url)
+
+        # Verify that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Verify that the correct template is used
+        self.assertTemplateUsed(response, "registration/password_reset_complete.html")
+
+        # Verify that the 'login_url' variable is included in the context and has the correct value
+        self.assertEqual(response.context["login_url"], "/login/")
