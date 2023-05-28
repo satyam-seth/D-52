@@ -82,6 +82,8 @@ def home(request: HttpRequest) -> HttpResponse:
 
 # TODO: Update wording and doc for view template
 class AboutTemplateView(TemplateView):
+    """View to render the about page template."""
+
     template_name = "core/about.html"
     extra_context = {"about_active": "active"}
 
