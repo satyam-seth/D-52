@@ -1,7 +1,8 @@
 from http import HTTPStatus
 
-from accounts.forms import GroupJoinForm, LoginForm, SignUpForm
+from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 from accounts.views import (
+    GroupCreateView,
     GroupJoinView,
     GroupTemplateView,
     UserLoginView,
@@ -196,6 +197,50 @@ class TestGroupJoinView(TestCase):
 
         # Assert that the user is added to the group
         self.assertIn(self.group, self.user.groups.all())
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            "You have joined the group test-group successfully !!",
+        )
+
+        # Assert that the user is redirected to the home page
+        self.assertRedirects(response, reverse("core:home"))
+
+
+class TestGroupCerateView(TestCase):
+    """Test group create view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        self.url = reverse("accounts:group_create")
+
+    def test_group_create_view_attributes(self):
+        """Test group create view attributes"""
+
+        view = GroupCreateView()
+        self.assertIsInstance(view, CreateView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertEqual(view.form_class, GroupCreateForm)
+        self.assertEqual(view.template_name, "accounts/group_create.html")
+        self.assertTrue(view.success_url, reverse("core:home"))
+
+    def test_group_create_view_working(self) -> None:
+        """Test group create view working"""
+
+        # Log in the user
+        self.client.login(username="test-user", password="test-password")
+
+        # Send a POST request to the view with the group name
+        response = self.client.post(self.url, data={"name": "test-group"})
+
+        # Assert that the response status code is 302 (redirect)
+        self.assertEqual(response.status_code, 302)
 
         # Assert that the success message is displayed
         messages = list(get_messages(response.wsgi_request))
