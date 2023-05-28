@@ -1,8 +1,9 @@
 from http import HTTPStatus
-from django.test import TestCase, Client
+
+from core.views import AboutTemplateView
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.views.generic import TemplateView
-from core.views import AboutTemplateView
 
 
 class TestAboutTemplateView(TestCase):
