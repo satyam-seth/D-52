@@ -89,6 +89,8 @@ class AboutTemplateView(TemplateView):
 
 
 class FeedbackCreateView(SuccessMessageMixin, CreateView):
+    """View  to handle the creation of user feedback"""
+
     form_class = FeedbackFrom
     success_url = reverse_lazy("core:home")
     template_name = "core/feedback.html"
