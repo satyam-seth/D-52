@@ -26,6 +26,8 @@ User = get_user_model()
 # TODO: fix this view
 # TODO: Add login required once user group login achieved make another page for signup - dashboard
 def home(request: HttpRequest) -> HttpResponse:
+    """View to serve home page template"""
+
     # TODO: handle empty database state
     w_sum = Water.objects.aggregate(Sum("quantity"))["quantity__sum"]
     w_price = 40 * (w_sum if w_sum else 0)
