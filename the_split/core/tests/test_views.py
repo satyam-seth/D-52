@@ -9,6 +9,41 @@ from django.urls import reverse
 from django.views.generic import CreateView, TemplateView
 
 
+class TestHomeView(TestCase):
+    """Test home view"""
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("core:home")
+        self.context = {"about_active": "active"}
+
+    def test_home_view_working(self) -> None:
+        """Test home view working"""
+
+        # Send a GET request to the home page
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the template used for rendering is "core/index.html"
+        self.assertTemplateUsed(response, "core/index.html")
+
+        # Assert context
+        # TODO: assert all context once home view is fixed
+        self.assertEqual(response.context["home_active"], "active")
+        self.assertIn("records", response.context)
+        self.assertIn("w_sum", response.context)
+        self.assertIn("w_price", response.context)
+        self.assertIn("w_pp", response.context)
+        self.assertIn("electricity", response.context)
+        self.assertIn("e_pp", response.context)
+        self.assertIn("e_days_left", response.context)
+        self.assertIn("maid", response.context)
+        self.assertIn("m_pp", response.context)
+        self.assertIn("m_days_left", response.context)
+
+
 class TestAboutTemplateView(TestCase):
     "Test about template view"
 
