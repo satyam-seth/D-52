@@ -1,11 +1,12 @@
-from django.test import TestCase, Client
-from records.views import AddTemplateView
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from records.forms import RecordFrom, WaterFrom
-from django.urls import reverse
 from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.test import Client, TestCase
+from django.urls import reverse
+from django.views.generic import TemplateView
+from records.forms import RecordFrom, WaterFrom
+from records.views import AddTemplateView
 
 User = get_user_model()
 
