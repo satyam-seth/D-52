@@ -12,7 +12,7 @@ from django.views.generic import CreateView, TemplateView
 class TestHomeView(TestCase):
     """Test home view"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("core:home")
         self.context = {"about_active": "active"}
@@ -47,7 +47,7 @@ class TestHomeView(TestCase):
 class TestAboutTemplateView(TestCase):
     "Test about template view"
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("core:about")
         self.context = {"about_active": "active"}

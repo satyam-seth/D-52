@@ -130,7 +130,7 @@ class TestUserSignUpView(TestCase):
 class TestGroupTemplateView(TestCase):
     """Test group template view"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("accounts:group")
 
