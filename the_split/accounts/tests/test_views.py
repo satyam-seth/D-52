@@ -81,6 +81,7 @@ class TestUserSignUpView(TestCase):
 
     def setUp(self) -> None:
         self.client = Client()
+        self.url = reverse("accounts:signup")
 
     def test_user_signup_view_attributes(self):
         """Test user signup view attributes"""
@@ -107,7 +108,7 @@ class TestUserSignUpView(TestCase):
 
         # Make a POST request to the signup view with the form data
         response = self.client.post(
-            reverse("accounts:signup"),
+            self.url,
             data=form_data,
             follow=True,
         )
