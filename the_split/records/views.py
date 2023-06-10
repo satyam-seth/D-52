@@ -50,7 +50,7 @@ class RecordAddView(LoginRequiredMixin, View):
             reg.save()
             messages.success(request, "Your item record successfully added.")
             # TODO: move this logic in record post save signal
-            notify_record(reg.id)
+            # notify_record(reg.id)
         else:
             messages.error(
                 request,
@@ -60,16 +60,21 @@ class RecordAddView(LoginRequiredMixin, View):
 
 
 class WaterAddView(LoginRequiredMixin, View):
+    """View save water form data"""
+
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        fm = WaterFrom(request.POST)
-        if fm.is_valid():
-            reg = fm.save(commit=False)
+        """Method to validate and save water form post data"""
+
+        form = WaterFrom(request.POST)
+        if form.is_valid():
+            reg = form.save(commit=False)
             reg.adder = request.user
             reg.save()
             messages.success(request, "Water record successfully added.")
-            notify_water(reg.id)
+            # TODO: move this logic in water post save signal
+            # notify_record(reg.id)
         else:
             messages.error(
                 request,

@@ -4,14 +4,13 @@ from typing import Type
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages import get_messages
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.test import Client, RequestFactory, TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView, View
 from records.forms import RecordFrom, WaterFrom
-from records.models import Record
-from records.views import AddTemplateView, RecordAddView
+from records.models import Record, Water
+from records.views import AddTemplateView, RecordAddView, WaterAddView
 
 User = get_user_model()
 
@@ -83,9 +82,8 @@ class TestRecordAddView(TestCase):
     def test_record_add_view_for_valid_post_data(self) -> None:
         """Test record add view working for valid post data"""
 
-        purchase_date = timezone.localdate(timezone.now())
         valid_form_data = {
-            "purchase_date": purchase_date,
+            "purchase_date": timezone.localdate(timezone.now()),
             "item": "Test Item",
             "price": 123.45,
             "purchaser": self.user.pk,
@@ -108,8 +106,10 @@ class TestRecordAddView(TestCase):
         # Assert that the record is saved in the database
         self.assertEqual(Record.objects.count(), 1)
         record: Type[Record] = Record.objects.first()  # type: ignore
-        self.assertEqual(record.item, "Test Item")
-        self.assertEqual(float(str(record.price)), 123.45)
+        self.assertEqual(record.item, valid_form_data["item"])
+        self.assertEqual(float(str(record.price)), valid_form_data["price"])
+        self.assertEqual(record.purchaser, self.user)
+        self.assertEqual(record.purchase_date, valid_form_data["purchase_date"])
         self.assertEqual(record.adder, self.user)
 
     def test_record_add_view_for_invalid_post_data(self) -> None:
@@ -138,3 +138,80 @@ class TestRecordAddView(TestCase):
 
         # Assert that the record is not saved in the database
         self.assertEqual(Record.objects.count(), 0)
+
+
+class TestWaterAddView(TestCase):
+    """Test water add view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:add_water")
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        # login user
+        self.client.login(username="test-user", password="test-password")
+
+    def test_water_add_view_attributes(self) -> None:
+        """Test water add view attributes"""
+
+        view = WaterAddView()
+        self.assertIsInstance(view, View)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertEqual(view.http_method_names, ["post"])
+
+    def test_water_add_view_for_valid_post_data(self) -> None:
+        """Test water add view working for valid post data"""
+
+        valid_form_data = {
+            "purchase_date": timezone.localdate(timezone.now()),
+            "quantity": 1,
+        }
+
+        response = self.client.post(
+            self.url,
+            data=valid_form_data,
+        )
+
+        # Redirects to the specified URL
+        self.assertRedirects(response, reverse("records:add"))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+        # Assert success message
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn(str(messages[0]), "Water record successfully added.")
+
+        # Assert that the water is saved in the database
+        self.assertEqual(Water.objects.count(), 1)
+        water: Type[Water] = Water.objects.first()  # type: ignore
+        self.assertEqual(water.quantity, valid_form_data["quantity"])
+        self.assertEqual(water.purchase_date, valid_form_data["purchase_date"])
+        self.assertEqual(water.adder, self.user)
+
+    def test_water_add_view_for_invalid_post_data(self) -> None:
+        """Test water add view working for invalid post data"""
+
+        valid_form_data = {
+            "quantity": 1,
+        }
+
+        response = self.client.post(
+            self.url,
+            data=valid_form_data,
+        )
+
+        # Redirects to the specified URL
+        self.assertRedirects(response, reverse("records:add"))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+        # Assert success message
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn(
+            str(messages[0]),
+            "Please check and fill all information correctly, Water record not added.",
+        )
+
+        # Assert that the water is not saved in the database
+        self.assertEqual(Water.objects.count(), 0)
