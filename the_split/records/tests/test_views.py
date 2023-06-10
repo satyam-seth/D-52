@@ -1,12 +1,17 @@
 from http import HTTPStatus
+from typing import Type
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.test import Client, TestCase
+from django.contrib.messages import get_messages
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
-from django.views.generic import TemplateView
+from django.utils import timezone
+from django.views.generic import TemplateView, View
 from records.forms import RecordFrom, WaterFrom
-from records.views import AddTemplateView
+from records.models import Record
+from records.views import AddTemplateView, RecordAddView
 
 User = get_user_model()
 
@@ -53,3 +58,83 @@ class TestAddTemplateView(TestCase):
 
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
+
+
+class TestRecordAddView(TestCase):
+    """Test record add view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:add_item")
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        # login user
+        self.client.login(username="test-user", password="test-password")
+
+    def test_record_add_view_attributes(self) -> None:
+        """Test record add view attributes"""
+
+        view = RecordAddView()
+        self.assertIsInstance(view, View)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertEqual(view.http_method_names, ["post"])
+
+    def test_record_add_view_for_valid_post_data(self) -> None:
+        """Test record add view working for valid post data"""
+
+        purchase_date = timezone.localdate(timezone.now())
+        valid_form_data = {
+            "purchase_date": purchase_date,
+            "item": "Test Item",
+            "price": 123.45,
+            "purchaser": self.user.pk,
+        }
+
+        response = self.client.post(
+            self.url,
+            data=valid_form_data,
+        )
+
+        # Redirects to the specified URL
+        self.assertRedirects(response, reverse("records:add"))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+        # Assert success message
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn(str(messages[0]), "Your item record successfully added.")
+
+        # Assert that the record is saved in the database
+        self.assertEqual(Record.objects.count(), 1)
+        record: Type[Record] = Record.objects.first()  # type: ignore
+        self.assertEqual(record.item, "Test Item")
+        self.assertEqual(float(str(record.price)), 123.45)
+        self.assertEqual(record.adder, self.user)
+
+    def test_record_add_view_for_invalid_post_data(self) -> None:
+        """Test record add view working for invalid post data"""
+
+        valid_form_data = {
+            "item": "Test Item",
+        }
+
+        response = self.client.post(
+            self.url,
+            data=valid_form_data,
+        )
+
+        # Redirects to the specified URL
+        self.assertRedirects(response, reverse("records:add"))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+        # Assert success message
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn(
+            str(messages[0]),
+            "Please check and fill all information correctly, Your item record not added.",
+        )
+
+        # Assert that the record is not saved in the database
+        self.assertEqual(Record.objects.count(), 0)

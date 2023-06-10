@@ -16,6 +16,8 @@ User = get_user_model()
 
 
 class AddTemplateView(LoginRequiredMixin, TemplateView):
+    """View to render record and water form"""
+
     template_name = "records/add.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -33,15 +35,21 @@ class AddTemplateView(LoginRequiredMixin, TemplateView):
 
 
 class RecordAddView(LoginRequiredMixin, View):
+    """View save record form data"""
+
     http_method_names = ["post"]
 
+    # TODO: propagate form.errors to view
     def post(self, request: HttpRequest) -> HttpResponse:
-        fm = RecordFrom(request.POST)
-        if fm.is_valid():
-            reg = fm.save(commit=False)
+        """Method to validate and save record form post data"""
+
+        form = RecordFrom(request.POST)
+        if form.is_valid():
+            reg = form.save(commit=False)
             reg.adder = request.user
             reg.save()
             messages.success(request, "Your item record successfully added.")
+            # TODO: move this logic in record post save signal
             notify_record(reg.id)
         else:
             messages.error(
