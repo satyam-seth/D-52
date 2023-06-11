@@ -16,6 +16,7 @@ from records.views import (
     RecordListView,
     UserRecordListView,
     WaterAddView,
+    WaterListView,
 )
 
 User = get_user_model()
@@ -247,7 +248,7 @@ class TestRecordListView(TestCase):
     def test_record_list_view_working(self) -> None:
         """Test record list view working"""
 
-        # Create a records
+        # Create a record
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             item="Test Item",
@@ -321,3 +322,46 @@ class TestUserRecordListView(TestCase):
         records = response.context["record_list"]
         self.assertEqual(records.count(), 1)
         self.assertTrue(all(record.purchaser == self.user1 for record in records))
+
+
+class TestWaterListView(TestCase):
+    """Test water list view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:detailed_water")
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+
+    def test_water_list_view_attributes(self) -> None:
+        "Test water list view attributes"
+
+        view = WaterListView()
+        self.assertIsInstance(view, ListView)
+        self.assertEqual(view.model, Water)
+        self.assertEqual(view.paginate_by, 20)
+        self.assertEqual(view.paginate_orphans, 10)
+        self.assertEqual(view.ordering, ["-purchase_date"])
+
+    def test_water_list_view_working(self) -> None:
+        """Test water list view working"""
+
+        # Create a water record
+        Water.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            quantity=1,
+        )
+
+        # Make a GET request to the view
+        response = self.client.get(self.url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/water_list.html")
+
+        # Check that the water records are present in the context
+        waters = response.context["water_list"]
+        self.assertEqual(waters.count(), 1)
