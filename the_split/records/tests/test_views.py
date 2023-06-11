@@ -10,7 +10,13 @@ from django.utils import timezone
 from django.views.generic import ListView, TemplateView, View
 from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
-from records.views import AddTemplateView, RecordAddView, RecordListView, WaterAddView
+from records.views import (
+    AddTemplateView,
+    RecordAddView,
+    RecordListView,
+    UserRecordListView,
+    WaterAddView,
+)
 
 User = get_user_model()
 
@@ -261,3 +267,57 @@ class TestRecordListView(TestCase):
         # Check that the records are present in the context
         records = response.context["record_list"]
         self.assertEqual(records.count(), 1)
+
+
+class TestUserRecordListView(TestCase):
+    """Test user record list view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user1 = User.objects.create_user(
+            username="test-user-1", password="test-password"
+        )
+        self.user2 = User.objects.create_user(
+            username="test-user-2", password="test-password"
+        )
+        self.url = reverse("records:detailed", args=[self.user1.pk])
+
+    def test_record_list_view_attributes(self) -> None:
+        "Test user record list view attributes"
+
+        view = UserRecordListView()
+        self.assertIsInstance(view, ListView)
+        self.assertEqual(view.model, Record)
+        self.assertEqual(view.paginate_by, 20)
+        self.assertEqual(view.paginate_orphans, 10)
+
+    def test_user_record_list_view_working(self) -> None:
+        """Test user record list view working"""
+
+        # Create some records
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            item="Test Item 1",
+            price=123.45,
+            purchaser=self.user1,
+        )
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            item="Test Item 2",
+            price=123.45,
+            purchaser=self.user2,
+        )
+
+        # Make a GET request to the view
+        response = self.client.get(self.url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/record_list.html")
+
+        # Check that the records purchased by user1 are present in the context
+        records = response.context["record_list"]
+        self.assertEqual(records.count(), 1)
+        self.assertTrue(all(record.purchaser == self.user1 for record in records))
