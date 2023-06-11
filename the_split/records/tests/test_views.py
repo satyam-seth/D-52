@@ -12,6 +12,7 @@ from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
 from records.views import (
     AddTemplateView,
+    DownloadTemplateView,
     RecordAddView,
     RecordListView,
     SearchListView,
@@ -418,3 +419,43 @@ class TestSearchListView(TestCase):
         records = response.context["record_list"]
         self.assertEqual(records.count(), 1)
         self.assertEqual(records[0], second_record)
+
+
+class TestDownloadTemplateView(TestCase):
+    """Test download template view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        self.url = reverse("records:download")
+
+    def test_download_template_view_attributes(self) -> None:
+        """Test download template view attributes"""
+
+        view = DownloadTemplateView()
+        context = view.get_context_data()
+
+        self.assertIsInstance(view, TemplateView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertTrue(view.template_name, "records/download.html")
+        self.assertEqual(context["download_active"], "active")
+
+    def test_download_template_view_working(self) -> None:
+        """Test download template view working"""
+
+        # login user
+        self.client.login(username="test-user", password="test-password")
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/download.html")
+
+        # Assert context is correct
+        self.assertEqual(response.context["download_active"], "active")

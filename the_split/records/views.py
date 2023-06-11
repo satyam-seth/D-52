@@ -174,6 +174,8 @@ class SearchListView(ListView):
 
 # TODO: Add login required once user group login achieved
 class DownloadTemplateView(LoginRequiredMixin, TemplateView):
+    """View to render download template"""
+
     template_name = "records/download.html"
     extra_context = {"download_active": "active"}
 
