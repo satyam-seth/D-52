@@ -113,6 +113,8 @@ class UserRecordListView(ListView):
 
 # TODO: only show current user group water records
 class WaterListView(ListView):
+    """View to render list of water records"""
+
     model = Water
     paginate_by = 20
     paginate_orphans = 10
