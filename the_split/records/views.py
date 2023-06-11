@@ -85,6 +85,8 @@ class WaterAddView(LoginRequiredMixin, View):
 
 # TODO: Add login required once user group login achieved
 class RecordListView(ListView):
+    """View to render list records"""
+
     model = Record
     paginate_by = 20
     paginate_orphans = 10

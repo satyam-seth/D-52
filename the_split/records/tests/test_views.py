@@ -7,10 +7,10 @@ from django.contrib.messages import get_messages
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import TemplateView, View
+from django.views.generic import ListView, TemplateView, View
 from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
-from records.views import AddTemplateView, RecordAddView, WaterAddView
+from records.views import AddTemplateView, RecordAddView, RecordListView, WaterAddView
 
 User = get_user_model()
 
@@ -215,3 +215,49 @@ class TestWaterAddView(TestCase):
 
         # Assert that the water is not saved in the database
         self.assertEqual(Water.objects.count(), 0)
+
+
+class TestRecordListView(TestCase):
+    """Test record list view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:records")
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+
+    def test_record_list_view_attributes(self) -> None:
+        "Test record list view attributes"
+
+        view = RecordListView()
+        self.assertIsInstance(view, ListView)
+        self.assertEqual(view.model, Record)
+        self.assertEqual(view.paginate_by, 20)
+        self.assertEqual(view.paginate_orphans, 10)
+        self.assertEqual(view.ordering, ["-purchase_date"])
+        self.assertEqual(view.extra_context, {"records_active": "active"})
+
+    def test_record_list_view_working(self) -> None:
+        """Test record list view working"""
+
+        # Create a records
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            item="Test Item",
+            price=123.45,
+            purchaser=self.user,
+        )
+
+        # Make a GET request to the view
+        response = self.client.get(self.url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/record_list.html")
+
+        # Check that the records are present in the context
+        records = response.context["record_list"]
+        self.assertEqual(records.count(), 1)
