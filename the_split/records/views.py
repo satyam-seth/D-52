@@ -156,16 +156,19 @@ def report(request: HttpRequest) -> HttpResponse:
 # TODO: only show current user group records
 # TODO: Add login required once user group login achieved
 class SearchListView(ListView):
+    """View to render search result record list"""
+
     model = Record
     paginate_by = 20
     paginate_orphans = 10
-    ordering = ["-purchase_date"]
     template_name = "records/search.html"
 
     # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
     def get_queryset(self):
-        queryset = Record.objects.filter(item__icontains=self.request.GET["query"])
+        queryset = Record.objects.filter(
+            item__icontains=self.request.GET["query"]
+        ).order_by("-purchase_date")
         return queryset
 
 

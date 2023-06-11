@@ -14,6 +14,7 @@ from records.views import (
     AddTemplateView,
     RecordAddView,
     RecordListView,
+    SearchListView,
     UserRecordListView,
     WaterAddView,
     WaterListView,
@@ -365,3 +366,55 @@ class TestWaterListView(TestCase):
         # Check that the water records are present in the context
         waters = response.context["water_list"]
         self.assertEqual(waters.count(), 1)
+
+
+class TestSearchListView(TestCase):
+    """Test search list view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:search")
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+
+    def test_search_list_view_attributes(self) -> None:
+        """Test search list view attributes"""
+
+        view = SearchListView()
+        self.assertIsInstance(view, ListView)
+        self.assertEqual(view.model, Record)
+        self.assertEqual(view.paginate_by, 20)
+        self.assertEqual(view.paginate_orphans, 10)
+        self.assertEqual(view.template_name, "records/search.html")
+
+    def test_search_list_view_working(self) -> None:
+        """Test search list view working"""
+
+        # Create some records
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            item="Test Item 1",
+            price=123.45,
+            purchaser=self.user,
+        )
+        second_record = Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            item="Test Item Good 2",
+            price=123.45,
+            purchaser=self.user,
+        )
+
+        # Make a GET request to the view
+        response = self.client.get(self.url, {"query": "good"})
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/search.html")
+
+        # Check that the records contain item "item" are present in the context
+        records = response.context["record_list"]
+        self.assertEqual(records.count(), 1)
+        self.assertEqual(records[0], second_record)
