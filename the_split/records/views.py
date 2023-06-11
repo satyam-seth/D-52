@@ -101,7 +101,6 @@ class UserRecordListView(ListView):
     model = Record
     paginate_by = 20
     paginate_orphans = 10
-    ordering = ["-purchase_date"]
 
     # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:

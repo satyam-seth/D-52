@@ -290,7 +290,6 @@ class TestUserRecordListView(TestCase):
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
-        self.assertEqual(view.ordering, ["-purchase_date"])
 
     def test_user_record_list_view_working(self) -> None:
         """Test user record list view working"""
