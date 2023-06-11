@@ -11,7 +11,7 @@
         "skip_glob",
         "*/migrations/*",
     ],
-    "python.formatting.provider": "none",
+    "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
@@ -19,8 +19,5 @@
         "--load-plugins",
         "pylint_django",
         "--django-settings-module=the_split.settings"
-    ],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    }
+    ]
 }
