@@ -3,6 +3,7 @@ from typing import Type
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -367,6 +368,61 @@ class TestWaterListView(TestCase):
         # Check that the water records are present in the context
         waters = response.context["water_list"]
         self.assertEqual(waters.count(), 1)
+
+
+class TestReportView(TestCase):
+    """Test report view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:report")
+
+        # create group named "d52"
+        group = Group.objects.create(name="d52")
+
+        # Create test users and add them to the "d52" group
+        self.user1 = User.objects.create_user(
+            username="test-user-1", password="test-password"
+        )
+        self.user2 = User.objects.create_user(
+            username="test-user-2", password="test-password"
+        )
+        self.user1.groups.add(group)
+        self.user2.groups.add(group)
+
+        # Create some test records
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            purchaser=self.user1,
+            price=10,
+        )
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            purchaser=self.user1,
+            price=30,
+        )
+        Record.objects.create(
+            purchase_date=timezone.localdate(timezone.now()),
+            purchaser=self.user2,
+            price=70,
+        )
+
+    def test_report_view_working(self) -> None:
+        """Test report view working"""
+
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the expected context variables are present in the response
+        self.assertEqual(response.context["report_active"], "active")
+        self.assertEqual(response.context["total_records"].count(), 3)
+        self.assertEqual(response.context["total_price"], 110)
+        self.assertEqual(response.context["per_user_price"], 55)
+        self.assertEqual(response.context["each_user_records"][1]["price_diff"], -15)
+        self.assertEqual(response.context["each_user_records"][1]["total_spent"], 70)
+        self.assertEqual(response.context["each_user_records"][1]["user"], self.user2)
 
 
 class TestSearchListView(TestCase):
