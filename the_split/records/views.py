@@ -160,47 +160,60 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def overall_xls(request: HttpRequest) -> HttpResponse:
-    records = Record.objects.all().order_by("date")
+    """View to download overall report excel file"""
+    # query data from db
+    records = Record.objects.all().order_by("purchase_date")
+
+    # prepare data
     data = []
     for record in records:
+        adder_name = record.adder.get_full_name()
+        purchaser_name = record.purchaser.get_full_name()
         temp = [
-            record.date.strftime("%d-%m-%Y"),
+            record.purchase_date.strftime("%d-%m-%Y"),
             record.item,
             record.price,
-            record.name,
+            purchaser_name if purchaser_name else record.purchaser.username,
             record.id,
-            record.datetime.strftime("%d-%m-%Y"),
-            record.added_by,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
+    # crate response object
     file_name = "Overall Items Records.xls"
-    with open(file_name, "wb") as f:
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = "attachment; filename=" + file_name
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet("Overall Items Records")
-        row_num = 0
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        columns = [
-            "Date",
-            "Item Name",
-            "Price",
-            "Purchase By",
-            "Entry ID",
-            "Entry Date",
-            "Added By",
-        ]
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        font_style = xlwt.XFStyle()
-        for row in data:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-        wb.save(response)
-        return response
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # create workbook and add sheet
+    workbook = xlwt.Workbook(encoding="utf-8")
+    workbook_sheet = workbook.add_sheet("Overall Items Records")
+
+    # add columns
+    columns = [
+        "Purchase Date",
+        "Item Name",
+        "Price",
+        "Purchase By",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Added By",
+    ]
+    header_style = xlwt.easyxf("font: bold on")
+    for col_num, column in enumerate(columns):
+        workbook_sheet.write(0, col_num, column, header_style)
+
+    # add rows
+    data_style = xlwt.XFStyle()
+    for row_num, row in enumerate(data, start=1):
+        for col_num, value in enumerate(row):
+            workbook_sheet.write(row_num, col_num, value, data_style)
+
+    # save workbook and return response
+    workbook.save(response)
+    return response
 
 
 # TODO: Fix this view
