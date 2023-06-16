@@ -156,6 +156,14 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "records/download.html"
     extra_context = {"download_active": "active"}
 
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        # TODO: remove hardcoded group name
+        users = User.objects.filter(groups__name__in=["d52"])
+
+        context = super().get_context_data(**kwargs)
+        context["users"] = users
+        return context
+
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
@@ -218,39 +226,63 @@ def overall_xls(request: HttpRequest) -> HttpResponse:
 
 # TODO: Fix this view
 # TODO: Add login required once user group login achieved
-def user_xls(request: HttpRequest, user: str) -> HttpResponse:
-    records = Record.objects.filter(name=user).order_by("date")
+def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
+    """View to download user report excel file"""
+    purchaser = User.objects.get(pk=user_id)
+    purchaser_name = (
+        purchaser.get_full_name() if purchaser.get_full_name() else purchaser.username
+    )
+
+    # query data from db
+    records = Record.objects.filter(purchaser=purchaser).order_by("purchase_date")
+
+    # prepare data
     data = []
     for record in records:
+        adder_name = record.adder.get_full_name()
         temp = [
-            record.date.strftime("%d-%m-%Y"),
+            record.purchase_date.strftime("%d-%m-%Y"),
             record.item,
             record.price,
             record.id,
-            record.datetime.strftime("%d-%m-%Y"),
-            record.added_by,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
-    file_name = user + " Items Records.xls"
-    with open(file_name, "wb") as f:
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = "attachment; filename=" + file_name
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet(f"{user} Records")
-        row_num = 0
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        columns = ["Date", "Item Name", "Price", "Entry ID", "Entry Date", "Added By"]
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        font_style = xlwt.XFStyle()
-        for row in data:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-        wb.save(response)
-        return response
+    # crate response object
+    file_name = f"{purchaser_name} Items Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # create workbook and add sheet
+    workbook = xlwt.Workbook(encoding="utf-8")
+    workbook_sheet = workbook.add_sheet(f"{purchaser_name} Records")
+
+    # add columns
+    columns = [
+        "Date",
+        "Item Name",
+        "Price",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Added By",
+    ]
+    header_style = xlwt.easyxf("font: bold on")
+    for col_num, column in enumerate(columns):
+        workbook_sheet.write(0, col_num, column, header_style)
+
+    # add rows
+    data_style = xlwt.XFStyle()
+    for row_num, row in enumerate(data, start=1):
+        for col_num, value in enumerate(row):
+            workbook_sheet.write(row_num, col_num, value, data_style)
+
+    # save workbook and return response
+    workbook.save(response)
+    return response
 
 
 # TODO: fix this view
