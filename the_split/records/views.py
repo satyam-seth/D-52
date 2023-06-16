@@ -169,6 +169,7 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
 # TODO: Add login required once user group login achieved
 def overall_xls(request: HttpRequest) -> HttpResponse:
     """View to download overall report excel file"""
+
     # query data from db
     records = Record.objects.all().order_by("purchase_date")
 
@@ -228,12 +229,12 @@ def overall_xls(request: HttpRequest) -> HttpResponse:
 # TODO: Add login required once user group login achieved
 def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
     """View to download user report excel file"""
+
+    # query data from db
     purchaser = User.objects.get(pk=user_id)
     purchaser_name = (
         purchaser.get_full_name() if purchaser.get_full_name() else purchaser.username
     )
-
-    # query data from db
     records = Record.objects.filter(purchaser=purchaser).order_by("purchase_date")
 
     # prepare data
@@ -287,29 +288,54 @@ def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
-# def water_xls(request):
-#     records = Water.objects.all().order_by('date')
-#     data=[]
-#     for record in records:
-#         temp=[record.date.strftime("%d-%m-%Y"),record.quantity,record.id,record.datetime.strftime("%d-%m-%Y"),record.added_by]
-#         data.append(temp)
+def water_xls(request):
+    """View to download water report excel file"""
 
-#     file_name='Water Records.xls'
-#     with open(file_name, 'wb') as f:
-#         response = HttpResponse(content_type='application/ms-excel')
-#         response['Content-Disposition'] = 'attachment; filename='+file_name
-#         wb = xlwt.Workbook(encoding='utf-8')
-#         ws = wb.add_sheet('Water Records')
-#         row_num = 0
-#         font_style = xlwt.XFStyle()
-#         font_style.font.bold = True
-#         columns = ['Date','Quantity','Entry ID','Entry Date','Added By']
-#         for col_num in range(len(columns)):
-#             ws.write(row_num, col_num, columns[col_num], font_style)
-#         font_style = xlwt.XFStyle()
-#         for row in data:
-#             row_num += 1
-#             for col_num in range(len(row)):
-#                 ws.write(row_num, col_num, row[col_num], font_style)
-#         wb.save(response)
-#         return response
+    # query data from db
+    records = Water.objects.all().order_by("purchase_date")
+
+    # prepare data
+    data = []
+    for record in records:
+        adder_name = record.adder.get_full_name()
+        temp = [
+            record.purchase_date.strftime("%d-%m-%Y"),
+            record.quantity,
+            record.id,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            adder_name if adder_name else record.adder.username,
+        ]
+        data.append(temp)
+
+    # crate response object
+    file_name = "Water Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # create workbook and add sheet
+    workbook = xlwt.Workbook(encoding="utf-8")
+    workbook_sheet = workbook.add_sheet("Water Records")
+
+    # add columns
+    columns = [
+        "Date",
+        "Quantity",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Added By",
+    ]
+    header_style = xlwt.easyxf("font: bold on")
+    for col_num, column in enumerate(columns):
+        workbook_sheet.write(0, col_num, column, header_style)
+
+    # add rows
+    data_style = xlwt.XFStyle()
+    for row_num, row in enumerate(data, start=1):
+        for col_num, value in enumerate(row):
+            workbook_sheet.write(row_num, col_num, value, data_style)
+
+    # save workbook and return response
+    workbook.save(response)
+    return response
