@@ -35,13 +35,13 @@
           </td>
         </tr>
         {% endfor %}
-        <!-- <tr>
+        <tr>
           <td class="h5">
             Water Entry Records
-            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:water_xls' %}" role="button">Download</a>
           </td>
         </tr>
-        <tr>
+        <!-- <tr>
           <td class="h5">
             Electricity Bill Records
             <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
