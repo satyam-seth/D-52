@@ -18,4 +18,5 @@ urlpatterns = [
     path("download/overall/", views.overall_xls, name="overall_xls"),
     path("download/<int:user_id>/", views.user_xls, name="user_xls"),
     path("water_xls/", views.water_xls, name="water_xls"),
+    path("electricity_xls/", views.electricity_xls, name="electricity_xls"),
 ]

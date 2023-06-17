@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
 from records.forms import RecordFrom, WaterFrom
-from records.models import Record, Water
+from records.models import Electricity, Record, Water
 
 User = get_user_model()
 
@@ -309,13 +309,13 @@ def water_xls(request):
         data.append(temp)
 
     # crate response object
-    file_name = "Water Records.xls"
+    file_name = "Water Entry Records.xls"
     response = HttpResponse(content_type="application/ms-excel")
     response["Content-Disposition"] = f"attachment; filename={file_name}"
 
     # create workbook and add sheet
     workbook = xlwt.Workbook(encoding="utf-8")
-    workbook_sheet = workbook.add_sheet("Water Records")
+    workbook_sheet = workbook.add_sheet("Water Entry Records")
 
     # add columns
     columns = [
@@ -325,6 +325,58 @@ def water_xls(request):
         "Entry Date",
         "Entry Time",
         "Added By",
+    ]
+    header_style = xlwt.easyxf("font: bold on")
+    for col_num, column in enumerate(columns):
+        workbook_sheet.write(0, col_num, column, header_style)
+
+    # add rows
+    data_style = xlwt.XFStyle()
+    for row_num, row in enumerate(data, start=1):
+        for col_num, value in enumerate(row):
+            workbook_sheet.write(row_num, col_num, value, data_style)
+
+    # save workbook and return response
+    workbook.save(response)
+    return response
+
+
+# TODO: fix this view
+# TODO: Add login required once user group login achieved
+def electricity_xls(request):
+    """View to download electricity report excel file"""
+
+    # query data from db
+    records = Electricity.objects.all().order_by("due_date")
+
+    # prepare data
+    data = []
+    for record in records:
+        temp = [
+            record.due_date.strftime("%d-%m-%Y"),
+            record.price,
+            record.id,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+        ]
+        data.append(temp)
+
+    # crate response object
+    file_name = "Electricity Bill Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # create workbook and add sheet
+    workbook = xlwt.Workbook(encoding="utf-8")
+    workbook_sheet = workbook.add_sheet("Electricity Bill Records")
+
+    # add columns
+    columns = [
+        "Date",
+        "Price",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
     ]
     header_style = xlwt.easyxf("font: bold on")
     for col_num, column in enumerate(columns):
