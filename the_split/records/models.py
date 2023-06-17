@@ -68,6 +68,7 @@ class Water(models.Model):
 
 # TODO: fix this model
 class Electricity(models.Model):
+    # TODO: add paid_on date field
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
@@ -82,6 +83,7 @@ class Electricity(models.Model):
 
 # TODO: fix this model
 class Maid(models.Model):
+    # TODO: add paid_on date field
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
