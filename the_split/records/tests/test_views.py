@@ -655,3 +655,34 @@ class TestElectricityXlsView(TestCase):
             response["Content-Disposition"],
             f"attachment; filename={expected_filename}",
         )
+
+
+class TestMaidXlsView(TestCase):
+    """Test maid xls view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:maid_xls")
+
+    @mock.patch("records.views.get_excel")
+    def test_maid_xls_view_working(self, mock_get_excel) -> None:
+        """Test maid xls view working"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that get_excel function is called once
+        mock_get_excel.assert_called_once()
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the content type of the response is application/ms-excel
+        self.assertEqual(response["Content-Type"], "application/ms-excel")
+
+        # Assert that the content disposition is correctly set
+        expected_filename = "Maid Salary Records.xls"
+        self.assertEqual(
+            response["Content-Disposition"],
+            f"attachment; filename={expected_filename}",
+        )
