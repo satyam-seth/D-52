@@ -15,7 +15,9 @@ urlpatterns = [
     path("search/", views.SearchListView.as_view(), name="search"),
     path("download/", views.DownloadTemplateView.as_view(), name="download"),
     path("report/", views.report, name="report"),
-    path("overall_xls/", views.overall_xls, name="overall_xls"),
-    path("<str:user>/", views.user_xls, name="user_xls"),
-    # path('water_xls/',views.water_xls,name='water_xls'),
+    path("download/overall/", views.overall_xls, name="overall_xls"),
+    path("download/<int:user_id>/", views.user_xls, name="user_xls"),
+    path("water_xls/", views.water_xls, name="water_xls"),
+    path("electricity_xls/", views.electricity_xls, name="electricity_xls"),
+    path("maid_xls/", views.maid_xls, name="maid_xls"),
 ]
