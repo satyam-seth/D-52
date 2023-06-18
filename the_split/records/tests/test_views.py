@@ -31,10 +31,11 @@ class TestAddTemplateView(TestCase):
 
     def setUp(self) -> None:
         self.client = Client()
-        self.user = User.objects.create_user(
-            username="test-user", password="test-password"
-        )
         self.url = reverse("records:add")
+        self.user = User.objects.create_user(
+            username="test-user",
+            password="test-password",
+        )
 
     def test_add_template_view_attributes(self) -> None:
         """Test add template view attributes"""
@@ -77,7 +78,8 @@ class TestRecordAddView(TestCase):
         self.client = Client()
         self.url = reverse("records:add_item")
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            username="test-user",
+            password="test-password",
         )
         # login user
         self.client.login(username="test-user", password="test-password")
@@ -158,7 +160,8 @@ class TestWaterAddView(TestCase):
         self.client = Client()
         self.url = reverse("records:add_water")
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            username="test-user",
+            password="test-password",
         )
         # login user
         self.client.login(username="test-user", password="test-password")
@@ -285,7 +288,7 @@ class TestUserRecordListView(TestCase):
         self.user2 = User.objects.create_user(
             username="test-user-2", password="test-password"
         )
-        self.url = reverse("records:detailed", args=[self.user1.pk])
+        self.url = reverse("records:detailed", kwargs={"user_id": self.user1.pk})
 
     def test_record_list_view_attributes(self) -> None:
         "Test user record list view attributes"
@@ -335,7 +338,8 @@ class TestWaterListView(TestCase):
         self.client = Client()
         self.url = reverse("records:detailed_water")
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            username="test-user",
+            password="test-password",
         )
 
     def test_water_list_view_attributes(self) -> None:
@@ -383,10 +387,12 @@ class TestReportView(TestCase):
 
         # Create test users and add them to the "d52" group
         self.user1 = User.objects.create_user(
-            username="test-user-1", password="test-password"
+            username="test-user-1",
+            password="test-password",
         )
         self.user2 = User.objects.create_user(
-            username="test-user-2", password="test-password"
+            username="test-user-2",
+            password="test-password",
         )
         self.user1.groups.add(group)
         self.user2.groups.add(group)
@@ -433,7 +439,8 @@ class TestSearchListView(TestCase):
         self.client = Client()
         self.url = reverse("records:search")
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            username="test-user",
+            password="test-password",
         )
 
     def test_search_list_view_attributes(self) -> None:
@@ -485,7 +492,8 @@ class TestDownloadTemplateView(TestCase):
         self.client = Client()
         self.group = Group.objects.create(name="d52")
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            username="test-user",
+            password="test-password",
         )
         self.user.groups.add(self.group)
         self.url = reverse("records:download")
@@ -522,7 +530,7 @@ class TestDownloadTemplateView(TestCase):
 
 
 class TestOverallXlsView(TestCase):
-    """Test overall_xls view"""
+    """Test overall xls view"""
 
     def setUp(self) -> None:
         self.client = Client()
@@ -531,9 +539,6 @@ class TestOverallXlsView(TestCase):
     @mock.patch("records.views.get_excel")
     def test_overall_xls_view_working(self, mock_get_excel) -> None:
         """Test overall xls view working"""
-
-        # Login as a user (if authentication is required)
-        self.client.login(username="test-user", password="test-password")
 
         # Send a GET request to the view
         response = self.client.get(self.url)
@@ -549,6 +554,41 @@ class TestOverallXlsView(TestCase):
 
         # Assert that the content disposition is correctly set
         expected_filename = "Overall Items Records.xls"
+        self.assertEqual(
+            response["Content-Disposition"],
+            f"attachment; filename={expected_filename}",
+        )
+
+
+class TestUserXlsView(TestCase):
+    """Test user xls view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="test-user",
+            password="test-password",
+        )
+        self.url = reverse("records:user_xls", kwargs={"user_id": self.user.pk})
+
+    @mock.patch("records.views.get_excel")
+    def test_user_xls_view_working(self, mock_get_excel) -> None:
+        """Test user xls view working"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that get_excel function is called once
+        mock_get_excel.assert_called_once()
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the content type of the response is application/ms-excel
+        self.assertEqual(response["Content-Type"], "application/ms-excel")
+
+        # Assert that the content disposition is correctly set
+        expected_filename = f"{self.user.username} Items Records.xls"
         self.assertEqual(
             response["Content-Disposition"],
             f"attachment; filename={expected_filename}",
