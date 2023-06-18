@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import xlwt  # type: ignore
+from core.excel import get_excel
 from core.notification import notify_record, notify_water
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -10,7 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
 from records.forms import RecordFrom, WaterFrom
-from records.models import Record, Water
+from records.models import Electricity, Maid, Record, Water
 
 User = get_user_model()
 
@@ -179,115 +180,253 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "records/download.html"
     extra_context = {"download_active": "active"}
 
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        # TODO: remove hardcoded group name
+        users = User.objects.filter(groups__name__in=["d52"])
+
+        context = super().get_context_data(**kwargs)
+        context["users"] = users
+        return context
+
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def overall_xls(request: HttpRequest) -> HttpResponse:
-    records = Record.objects.all().order_by("date")
+    """View to download overall report excel file"""
+
+    # query data from db
+    records = Record.objects.all().order_by("purchase_date")
+
+    # prepare data
     data = []
     for record in records:
+        adder_name = record.adder.get_full_name()
+        purchaser_name = record.purchaser.get_full_name()
         temp = [
-            record.date.strftime("%d-%m-%Y"),
+            record.purchase_date.strftime("%d-%m-%Y"),
             record.item,
             record.price,
-            record.name,
+            purchaser_name if purchaser_name else record.purchaser.username,
             record.id,
-            record.datetime.strftime("%d-%m-%Y"),
-            record.added_by,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
+            adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
+    # columns
+    columns = [
+        "Purchase Date",
+        "Item Name",
+        "Price",
+        "Purchase By",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
+        "Added By",
+    ]
+
+    # crate response object
     file_name = "Overall Items Records.xls"
-    with open(file_name, "wb") as f:
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = "attachment; filename=" + file_name
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet("Overall Items Records")
-        row_num = 0
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        columns = [
-            "Date",
-            "Item Name",
-            "Price",
-            "Purchase By",
-            "Entry ID",
-            "Entry Date",
-            "Added By",
-        ]
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        font_style = xlwt.XFStyle()
-        for row in data:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-        wb.save(response)
-        return response
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # save workbook and return response
+    workbook = get_excel(sheet_name="Overall Items Records", columns=columns, data=data)
+    workbook.save(response)
+    return response
 
 
 # TODO: Fix this view
 # TODO: Add login required once user group login achieved
-def user_xls(request: HttpRequest, user: str) -> HttpResponse:
-    records = Record.objects.filter(name=user).order_by("date")
+def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
+    """View to download user report excel file"""
+
+    # query data from db
+    purchaser = User.objects.get(pk=user_id)
+    purchaser_name = (
+        purchaser.get_full_name() if purchaser.get_full_name() else purchaser.username
+    )
+    records = Record.objects.filter(purchaser=purchaser).order_by("purchase_date")
+
+    # prepare data
     data = []
     for record in records:
+        adder_name = record.adder.get_full_name()
         temp = [
-            record.date.strftime("%d-%m-%Y"),
+            record.purchase_date.strftime("%d-%m-%Y"),
             record.item,
             record.price,
             record.id,
-            record.datetime.strftime("%d-%m-%Y"),
-            record.added_by,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
+            adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
-    file_name = user + " Items Records.xls"
-    with open(file_name, "wb") as f:
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = "attachment; filename=" + file_name
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet(f"{user} Records")
-        row_num = 0
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        columns = ["Date", "Item Name", "Price", "Entry ID", "Entry Date", "Added By"]
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        font_style = xlwt.XFStyle()
-        for row in data:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-        wb.save(response)
-        return response
+    # columns
+    columns = [
+        "Date",
+        "Item Name",
+        "Price",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
+        "Added By",
+    ]
+
+    # crate response object
+    file_name = f"{purchaser_name} Items Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # save workbook and return response
+    workbook = get_excel(f"{purchaser_name} Records", columns=columns, data=data)
+    workbook.save(response)
+    return response
 
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
-# def water_xls(request):
-#     records = Water.objects.all().order_by('date')
-#     data=[]
-#     for record in records:
-#         temp=[record.date.strftime("%d-%m-%Y"),record.quantity,record.id,record.datetime.strftime("%d-%m-%Y"),record.added_by]
-#         data.append(temp)
+def water_xls(request: HttpRequest) -> HttpResponse:
+    """View to download water report excel file"""
 
-#     file_name='Water Records.xls'
-#     with open(file_name, 'wb') as f:
-#         response = HttpResponse(content_type='application/ms-excel')
-#         response['Content-Disposition'] = 'attachment; filename='+file_name
-#         wb = xlwt.Workbook(encoding='utf-8')
-#         ws = wb.add_sheet('Water Records')
-#         row_num = 0
-#         font_style = xlwt.XFStyle()
-#         font_style.font.bold = True
-#         columns = ['Date','Quantity','Entry ID','Entry Date','Added By']
-#         for col_num in range(len(columns)):
-#             ws.write(row_num, col_num, columns[col_num], font_style)
-#         font_style = xlwt.XFStyle()
-#         for row in data:
-#             row_num += 1
-#             for col_num in range(len(row)):
-#                 ws.write(row_num, col_num, row[col_num], font_style)
-#         wb.save(response)
-#         return response
+    # query data from db
+    records = Water.objects.all().order_by("purchase_date")
+
+    # prepare data
+    data = []
+    for record in records:
+        adder_name = record.adder.get_full_name()
+        temp = [
+            record.purchase_date.strftime("%d-%m-%Y"),
+            record.quantity,
+            record.id,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
+            adder_name if adder_name else record.adder.username,
+        ]
+        data.append(temp)
+
+    # columns
+    columns = [
+        "Date",
+        "Quantity",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
+        "Added By",
+    ]
+
+    # crate response object
+    file_name = "Water Entry Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # save workbook and return response
+    workbook = get_excel(sheet_name="Water Entry Records", columns=columns, data=data)
+    workbook.save(response)
+    return response
+
+
+# TODO: fix this view
+# TODO: Add login required once user group login achieved
+def electricity_xls(request: HttpRequest) -> HttpResponse:
+    """View to download electricity report excel file"""
+
+    # query data from db
+    records = Electricity.objects.all().order_by("due_date")
+
+    # prepare data
+    data = []
+    for record in records:
+        temp = [
+            record.due_date.strftime("%d-%m-%Y"),
+            record.price,
+            record.id,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
+        ]
+        data.append(temp)
+
+    # columns
+    columns = [
+        "Date",
+        "Price",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
+    ]
+
+    # crate response object
+    file_name = "Electricity Bill Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # save workbook and return response
+    workbook = get_excel(
+        sheet_name="Electricity Bill Records",
+        columns=columns,
+        data=data,
+    )
+    workbook.save(response)
+    return response
+
+
+# TODO: fix this view
+# TODO: Add login required once user group login achieved
+def maid_xls(request: HttpRequest) -> HttpResponse:
+    """View to download maid report excel file"""
+
+    # query data from db
+    records = Maid.objects.all().order_by("due_date")
+
+    # prepare data
+    data = []
+    for record in records:
+        temp = [
+            record.due_date.strftime("%d-%m-%Y"),
+            record.price,
+            record.id,
+            record.created_on.strftime("%d-%m-%Y"),
+            record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
+        ]
+        data.append(temp)
+
+    # columns
+    columns = [
+        "Date",
+        "Price",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time" "Last Modified Date",
+        "Last Modified Time",
+    ]
+
+    # crate response object
+    file_name = "Maid Salary Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+    # save workbook and return response
+    workbook = get_excel(sheet_name="Maid Salary Records", columns=columns, data=data)
+    workbook.save(response)
+    return response

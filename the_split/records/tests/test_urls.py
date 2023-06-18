@@ -69,9 +69,7 @@ class TestUrls(TestCase):
     def test_user_xls_url(self):
         """Test user xls url resolve"""
 
-        url = reverse(
-            "records:user_xls", args=["username"]
-        )  # Assuming username is provided
+        url = reverse("records:user_xls", args=[1])  # Assuming username is provided
         self.assertEqual(resolve(url).func, views.user_xls)
 
     # def test_water_xls_url(self):
