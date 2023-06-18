@@ -4,7 +4,7 @@ from xlwt import Workbook, XFStyle, easyxf  # type: ignore
 
 
 def get_excel(sheet_name: str, columns: List[str], data: List[Any]) -> Workbook:
-
+    """Function create and return excel workbook"""
     # create workbook and add sheet
     workbook = Workbook(encoding="utf-8")
     workbook_sheet = workbook.add_sheet(sheet_name)
