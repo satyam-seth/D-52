@@ -79,6 +79,7 @@ class Electricity(models.Model):
     """Model to store electricity bill details"""
 
     # TODO: add field to store bill and paid invoice image, and status paid or not
+    # TODO: add paid_on date field
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,
@@ -95,6 +96,7 @@ class Electricity(models.Model):
 class Maid(models.Model):
     """Model to store maid salary details"""
 
+    # TODO: add paid_on date field
     due_date = models.DateField()
     price = models.DecimalField(
         decimal_places=2,

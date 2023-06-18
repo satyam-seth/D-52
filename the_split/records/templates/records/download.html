@@ -26,52 +26,33 @@
             <a class="float-end btn btn-sm btn-danger" href="{% url 'records:overall_xls' %}" role="button">Download</a>
           </td>
         </tr>
+        {% for user in users %}
         <tr>
           <td class="h5">
-            Satyam Items Records
-            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Satyam Seth' %}"
+            {% if user.get_full_name %}{{user.get_full_name}}{% else %}{{user.username}}{% endif %} Items Records
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' user.pk %}"
               role="button">Download</a>
           </td>
         </tr>
+        {% endfor %}
         <tr>
-          <td class="h5">
-            Ankit Items Records
-            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Ankit Kumar Gupta' %}"
-              role="button">Download</a>
-          </td>
-        </tr>
-        <tr>
-          <td class="h5">
-            Ganga Items Records
-            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Ganga Sagar Bharti' %}"
-              role="button">Download</a>
-          </td>
-        </tr>
-        <tr>
-          <td class="h5">
-            Prashant Items Records
-            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' 'Prashant Kumar Yadav' %}"
-              role="button">Download</a>
-          </td>
-        </tr>
-        <!-- <tr>
           <td class="h5">
             Water Entry Records
-            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:water_xls' %}" role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Electricity Bill Records
-            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:electricity_xls' %}" role="button">Download</a>
           </td>
         </tr>
         <tr>
           <td class="h5">
             Maid Salary Records
-            <a class="float-end btn btn-sm btn-danger" href="#" role="button">Download</a>
+            <a class="float-end btn btn-sm btn-danger" href="{% url 'records:maid_xls' %}" role="button">Download</a>
           </td>
-        </tr> -->
+        </tr>
       </tbody>
     </table>
   </div>
