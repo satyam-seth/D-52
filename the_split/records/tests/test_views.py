@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from typing import Type
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -518,3 +519,37 @@ class TestDownloadTemplateView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["download_active"], "active")
         self.assertQuerysetEqual(response.context["users"], users)
+
+
+class TestOverallXlsView(TestCase):
+    """Test overall_xls view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:overall_xls")
+
+    @mock.patch("records.views.get_excel")
+    def test_overall_xls_view_working(self, mock_get_excel) -> None:
+        """Test overall xls view working"""
+
+        # Login as a user (if authentication is required)
+        self.client.login(username="test-user", password="test-password")
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that get_excel function is called once
+        mock_get_excel.assert_called_once()
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the content type of the response is application/ms-excel
+        self.assertEqual(response["Content-Type"], "application/ms-excel")
+
+        # Assert that the content disposition is correctly set
+        expected_filename = "Overall Items Records.xls"
+        self.assertEqual(
+            response["Content-Disposition"],
+            f"attachment; filename={expected_filename}",
+        )

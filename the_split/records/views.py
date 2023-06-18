@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 from core.excel import get_excel
-from core.notification import notify_record, notify_water
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,6 +10,9 @@ from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
 from records.forms import RecordFrom, WaterFrom
 from records.models import Electricity, Maid, Record, Water
+
+# from core.notification import notify_record, notify_water
+
 
 User = get_user_model()
 
