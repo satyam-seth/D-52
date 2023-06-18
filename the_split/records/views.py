@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-import xlwt  # type: ignore
 from core.excel import get_excel
 from core.notification import notify_record, notify_water
 from django.contrib import messages
@@ -178,7 +177,6 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
     """View to render download template"""
 
     template_name = "records/download.html"
-    extra_context = {"download_active": "active"}
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         # TODO: remove hardcoded group name
@@ -186,6 +184,7 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
 
         context = super().get_context_data(**kwargs)
         context["users"] = users
+        context["download_active"] = "active"
         return context
 
 

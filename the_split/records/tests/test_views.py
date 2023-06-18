@@ -482,24 +482,26 @@ class TestDownloadTemplateView(TestCase):
 
     def setUp(self) -> None:
         self.client = Client()
+        self.group = Group.objects.create(name="d52")
         self.user = User.objects.create_user(
             username="test-user", password="test-password"
         )
+        self.user.groups.add(self.group)
         self.url = reverse("records:download")
 
     def test_download_template_view_attributes(self) -> None:
         """Test download template view attributes"""
 
         view = DownloadTemplateView()
-        context = view.get_context_data()
-
         self.assertIsInstance(view, TemplateView)
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertTrue(view.template_name, "records/download.html")
-        self.assertEqual(context["download_active"], "active")
 
     def test_download_template_view_working(self) -> None:
         """Test download template view working"""
+
+        # get group users
+        users = User.objects.filter(groups__in=[self.group])
 
         # login user
         self.client.login(username="test-user", password="test-password")
@@ -515,3 +517,4 @@ class TestDownloadTemplateView(TestCase):
 
         # Assert context is correct
         self.assertEqual(response.context["download_active"], "active")
+        self.assertQuerysetEqual(response.context["users"], users)
