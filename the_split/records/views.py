@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import xlwt  # type: ignore
+from core.excel import get_excel
 from core.notification import notify_record, notify_water
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -186,20 +187,13 @@ def overall_xls(request: HttpRequest) -> HttpResponse:
             record.id,
             record.created_on.strftime("%d-%m-%Y"),
             record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
             adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
-    # crate response object
-    file_name = "Overall Items Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # create workbook and add sheet
-    workbook = xlwt.Workbook(encoding="utf-8")
-    workbook_sheet = workbook.add_sheet("Overall Items Records")
-
-    # add columns
+    # columns
     columns = [
         "Purchase Date",
         "Item Name",
@@ -208,19 +202,18 @@ def overall_xls(request: HttpRequest) -> HttpResponse:
         "Entry ID",
         "Entry Date",
         "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
         "Added By",
     ]
-    header_style = xlwt.easyxf("font: bold on")
-    for col_num, column in enumerate(columns):
-        workbook_sheet.write(0, col_num, column, header_style)
 
-    # add rows
-    data_style = xlwt.XFStyle()
-    for row_num, row in enumerate(data, start=1):
-        for col_num, value in enumerate(row):
-            workbook_sheet.write(row_num, col_num, value, data_style)
+    # crate response object
+    file_name = "Overall Items Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
 
     # save workbook and return response
+    workbook = get_excel(sheet_name="Overall Items Records", columns=columns, data=data)
     workbook.save(response)
     return response
 
@@ -248,20 +241,13 @@ def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
             record.id,
             record.created_on.strftime("%d-%m-%Y"),
             record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
             adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
-    # crate response object
-    file_name = f"{purchaser_name} Items Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # create workbook and add sheet
-    workbook = xlwt.Workbook(encoding="utf-8")
-    workbook_sheet = workbook.add_sheet(f"{purchaser_name} Records")
-
-    # add columns
+    # columns
     columns = [
         "Date",
         "Item Name",
@@ -269,19 +255,18 @@ def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
         "Entry ID",
         "Entry Date",
         "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
         "Added By",
     ]
-    header_style = xlwt.easyxf("font: bold on")
-    for col_num, column in enumerate(columns):
-        workbook_sheet.write(0, col_num, column, header_style)
 
-    # add rows
-    data_style = xlwt.XFStyle()
-    for row_num, row in enumerate(data, start=1):
-        for col_num, value in enumerate(row):
-            workbook_sheet.write(row_num, col_num, value, data_style)
+    # crate response object
+    file_name = f"{purchaser_name} Items Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
 
     # save workbook and return response
+    workbook = get_excel(f"{purchaser_name} Records", columns=columns, data=data)
     workbook.save(response)
     return response
 
@@ -304,39 +289,31 @@ def water_xls(request: HttpRequest) -> HttpResponse:
             record.id,
             record.created_on.strftime("%d-%m-%Y"),
             record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
             adder_name if adder_name else record.adder.username,
         ]
         data.append(temp)
 
-    # crate response object
-    file_name = "Water Entry Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # create workbook and add sheet
-    workbook = xlwt.Workbook(encoding="utf-8")
-    workbook_sheet = workbook.add_sheet("Water Entry Records")
-
-    # add columns
+    # columns
     columns = [
         "Date",
         "Quantity",
         "Entry ID",
         "Entry Date",
         "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
         "Added By",
     ]
-    header_style = xlwt.easyxf("font: bold on")
-    for col_num, column in enumerate(columns):
-        workbook_sheet.write(0, col_num, column, header_style)
 
-    # add rows
-    data_style = xlwt.XFStyle()
-    for row_num, row in enumerate(data, start=1):
-        for col_num, value in enumerate(row):
-            workbook_sheet.write(row_num, col_num, value, data_style)
+    # crate response object
+    file_name = "Water Entry Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
 
     # save workbook and return response
+    workbook = get_excel(sheet_name="Water Entry Records", columns=columns, data=data)
     workbook.save(response)
     return response
 
@@ -358,37 +335,33 @@ def electricity_xls(request: HttpRequest) -> HttpResponse:
             record.id,
             record.created_on.strftime("%d-%m-%Y"),
             record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
         ]
         data.append(temp)
 
-    # crate response object
-    file_name = "Electricity Bill Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # create workbook and add sheet
-    workbook = xlwt.Workbook(encoding="utf-8")
-    workbook_sheet = workbook.add_sheet("Electricity Bill Records")
-
-    # add columns
+    # columns
     columns = [
         "Date",
         "Price",
         "Entry ID",
         "Entry Date",
         "Entry Time",
+        "Last Modified Date",
+        "Last Modified Time",
     ]
-    header_style = xlwt.easyxf("font: bold on")
-    for col_num, column in enumerate(columns):
-        workbook_sheet.write(0, col_num, column, header_style)
 
-    # add rows
-    data_style = xlwt.XFStyle()
-    for row_num, row in enumerate(data, start=1):
-        for col_num, value in enumerate(row):
-            workbook_sheet.write(row_num, col_num, value, data_style)
+    # crate response object
+    file_name = "Electricity Bill Records.xls"
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
 
     # save workbook and return response
+    workbook = get_excel(
+        sheet_name="Electricity Bill Records",
+        columns=columns,
+        data=data,
+    )
     workbook.save(response)
     return response
 
@@ -410,36 +383,27 @@ def maid_xls(request: HttpRequest) -> HttpResponse:
             record.id,
             record.created_on.strftime("%d-%m-%Y"),
             record.created_on.strftime("%H:%M:%S"),
+            record.modified_on.strftime("%d-%m-%Y"),
+            record.modified_on.strftime("%H:%M:%S"),
         ]
         data.append(temp)
+
+    # columns
+    columns = [
+        "Date",
+        "Price",
+        "Entry ID",
+        "Entry Date",
+        "Entry Time" "Last Modified Date",
+        "Last Modified Time",
+    ]
 
     # crate response object
     file_name = "Maid Salary Records.xls"
     response = HttpResponse(content_type="application/ms-excel")
     response["Content-Disposition"] = f"attachment; filename={file_name}"
 
-    # create workbook and add sheet
-    workbook = xlwt.Workbook(encoding="utf-8")
-    workbook_sheet = workbook.add_sheet("Maid Salary Records")
-
-    # add columns
-    columns = [
-        "Date",
-        "Price",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-    ]
-    header_style = xlwt.easyxf("font: bold on")
-    for col_num, column in enumerate(columns):
-        workbook_sheet.write(0, col_num, column, header_style)
-
-    # add rows
-    data_style = xlwt.XFStyle()
-    for row_num, row in enumerate(data, start=1):
-        for col_num, value in enumerate(row):
-            workbook_sheet.write(row_num, col_num, value, data_style)
-
     # save workbook and return response
+    workbook = get_excel(sheet_name="Maid Salary Records", columns=columns, data=data)
     workbook.save(response)
     return response
