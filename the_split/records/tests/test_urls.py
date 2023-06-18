@@ -72,8 +72,20 @@ class TestUrls(TestCase):
         url = reverse("records:user_xls", args=[1])  # Assuming username is provided
         self.assertEqual(resolve(url).func, views.user_xls)
 
-    # def test_water_xls_url(self):
-    #     """Test water xls url resolve"""
+    def test_water_xls_url(self):
+        """Test water xls url resolve"""
 
-    #     url = reverse("records:water_xls")
-    #     self.assertEqual(resolve(url).func, views.water_xls)
+        url = reverse("records:water_xls")
+        self.assertEqual(resolve(url).func, views.water_xls)
+
+    def test_electricity_xls_url(self):
+        """Test electricity xls url resolve"""
+
+        url = reverse("records:electricity_xls")
+        self.assertEqual(resolve(url).func, views.electricity_xls)
+
+    def test_maid_xls_url(self):
+        """Test maid xls url resolve"""
+
+        url = reverse("records:maid_xls")
+        self.assertEqual(resolve(url).func, views.maid_xls)
