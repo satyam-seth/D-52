@@ -1,8 +1,6 @@
 from typing import Any, Dict
 
-import xlwt  # type: ignore
 from core.excel import get_excel
-from core.notification import notify_record, notify_water
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -13,10 +11,15 @@ from django.views.generic import ListView, TemplateView, View
 from records.forms import RecordFrom, WaterFrom
 from records.models import Electricity, Maid, Record, Water
 
+# from core.notification import notify_record, notify_water
+
+
 User = get_user_model()
 
 
 class AddTemplateView(LoginRequiredMixin, TemplateView):
+    """View to render record and water form"""
+
     template_name = "records/add.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -34,16 +37,22 @@ class AddTemplateView(LoginRequiredMixin, TemplateView):
 
 
 class RecordAddView(LoginRequiredMixin, View):
+    """View save record form data"""
+
     http_method_names = ["post"]
 
+    # TODO: propagate form.errors to view
     def post(self, request: HttpRequest) -> HttpResponse:
-        fm = RecordFrom(request.POST)
-        if fm.is_valid():
-            reg = fm.save(commit=False)
+        """Method to validate and save record form post data"""
+
+        form = RecordFrom(request.POST)
+        if form.is_valid():
+            reg = form.save(commit=False)
             reg.adder = request.user
             reg.save()
             messages.success(request, "Your item record successfully added.")
-            notify_record(reg.id)
+            # TODO: move this logic in record post save signal
+            # notify_record(reg.id)
         else:
             messages.error(
                 request,
@@ -53,16 +62,21 @@ class RecordAddView(LoginRequiredMixin, View):
 
 
 class WaterAddView(LoginRequiredMixin, View):
+    """View save water form data"""
+
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        fm = WaterFrom(request.POST)
-        if fm.is_valid():
-            reg = fm.save(commit=False)
+        """Method to validate and save water form post data"""
+
+        form = WaterFrom(request.POST)
+        if form.is_valid():
+            reg = form.save(commit=False)
             reg.adder = request.user
             reg.save()
             messages.success(request, "Water record successfully added.")
-            notify_water(reg.id)
+            # TODO: move this logic in water post save signal
+            # notify_record(reg.id)
         else:
             messages.error(
                 request,
@@ -73,6 +87,8 @@ class WaterAddView(LoginRequiredMixin, View):
 
 # TODO: Add login required once user group login achieved
 class RecordListView(ListView):
+    """View to render list records"""
+
     model = Record
     paginate_by = 20
     paginate_orphans = 10
@@ -82,10 +98,11 @@ class RecordListView(ListView):
 
 # TODO: Add login required once user group login achieved and only show current user group data
 class UserRecordListView(ListView):
+    """View to render template to show records purchased by specific user"""
+
     model = Record
     paginate_by = 20
     paginate_orphans = 10
-    ordering = ["-purchase_date"]
 
     # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
@@ -98,6 +115,8 @@ class UserRecordListView(ListView):
 
 # TODO: only show current user group water records
 class WaterListView(ListView):
+    """View to render list of water records"""
+
     model = Water
     paginate_by = 20
     paginate_orphans = 10
@@ -139,23 +158,27 @@ def report(request: HttpRequest) -> HttpResponse:
 # TODO: only show current user group records
 # TODO: Add login required once user group login achieved
 class SearchListView(ListView):
+    """View to render search result record list"""
+
     model = Record
     paginate_by = 20
     paginate_orphans = 10
-    ordering = ["-purchase_date"]
     template_name = "records/search.html"
 
     # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
     def get_queryset(self):
-        queryset = Record.objects.filter(item__icontains=self.request.GET["query"])
+        queryset = Record.objects.filter(
+            item__icontains=self.request.GET["query"]
+        ).order_by("-purchase_date")
         return queryset
 
 
 # TODO: Add login required once user group login achieved
 class DownloadTemplateView(LoginRequiredMixin, TemplateView):
+    """View to render download template"""
+
     template_name = "records/download.html"
-    extra_context = {"download_active": "active"}
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         # TODO: remove hardcoded group name
@@ -163,6 +186,7 @@ class DownloadTemplateView(LoginRequiredMixin, TemplateView):
 
         context = super().get_context_data(**kwargs)
         context["users"] = users
+        context["download_active"] = "active"
         return context
 
 

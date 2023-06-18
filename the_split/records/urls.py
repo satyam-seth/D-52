@@ -9,7 +9,9 @@ urlpatterns = [
     path("water/", views.WaterAddView.as_view(), name="add_water"),
     path("records/", views.RecordListView.as_view(), name="records"),
     path(
-        "detailed/<int:user_id>/", views.UserRecordListView.as_view(), name="detailed"
+        "detailed/<int:user_id>/",
+        views.UserRecordListView.as_view(),
+        name="detailed",
     ),
     path("detailed_water/", views.WaterListView.as_view(), name="detailed_water"),
     path("search/", views.SearchListView.as_view(), name="search"),

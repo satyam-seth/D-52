@@ -4,6 +4,8 @@ from records.models import Record, Water
 
 
 class RecordFrom(forms.ModelForm):
+    """Form for item purchase"""
+
     class Meta:
         model = Record
         fields = ["purchase_date", "purchaser", "item", "price"]
@@ -25,6 +27,7 @@ class RecordFrom(forms.ModelForm):
             "item": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter item name"}
             ),
+            # TODO: Move min and max login to model
             "price": forms.NumberInput(
                 attrs={
                     "class": "form-control",
@@ -37,10 +40,13 @@ class RecordFrom(forms.ModelForm):
 
 
 class WaterFrom(forms.ModelForm):
+    """Form for water purchase"""
+
     class Meta:
         model = Water
         fields = ["purchase_date", "quantity"]
         widgets = {
+            # TODO: find out right way to infer max value from model validators if possible
             "purchase_date": forms.DateInput(
                 attrs={
                     "type": "date",
@@ -50,8 +56,5 @@ class WaterFrom(forms.ModelForm):
                     "value": localtime(now()).date(),
                 }
             ),
-            # TODO: find out right way to infer max value from model validators if possible
-            "quantity": forms.NumberInput(
-                attrs={"class": "form-control", "min": 1, "max": 5}
-            ),
+            "quantity": forms.NumberInput(attrs={"class": "form-control"}),
         }

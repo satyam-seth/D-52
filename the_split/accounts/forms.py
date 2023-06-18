@@ -14,6 +14,8 @@ User = get_user_model()
 
 
 class LoginForm(AuthenticationForm):
+    """Form to authentication user"""
+
     username = UsernameField(
         widget=forms.TextInput(attrs={"autofocus": True, "class": "form-control"})
     )
@@ -27,6 +29,8 @@ class LoginForm(AuthenticationForm):
 
 
 class SignUpForm(UserCreationForm):
+    """Form for user signup"""
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.fields["password1"].widget.attrs["class"] = "form-control"
@@ -48,12 +52,12 @@ class SignUpForm(UserCreationForm):
             "first_name": forms.TextInput(attrs={"class": "form-control"}),
             "last_name": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
-            "password1": forms.PasswordInput(attrs={"class": "form-control"}),
-            "password2": forms.PasswordInput(attrs={"class": "form-control"}),
         }
 
 
 class GroupJoinForm(forms.Form):
+    """Form to join a user group"""
+
     group_name = forms.CharField(
         label="Group Name:",
         widget=forms.TextInput(attrs={"class": "form-control"}),
@@ -61,18 +65,24 @@ class GroupJoinForm(forms.Form):
     )
 
     def clean_group_name(self) -> Group:
+        """Clean and validate the group_name field"""
+
         group_name = self.cleaned_data["group_name"]
+
         try:
-            group = Group.objects.get(name=group_name)
-        except Group.DoesNotExist:
+            Group.objects.get(name=group_name)
+        except Group.DoesNotExist as exc:
             raise forms.ValidationError(
                 _("group with name %(name)s is not found"),
                 params={"name": group_name},
-            )
+            ) from exc
+
         return group_name
 
 
 class GroupCreateForm(forms.ModelForm):
+    """Form to create a group"""
+
     class Meta:
         model = Group
         fields = ("name",)

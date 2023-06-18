@@ -5,6 +5,8 @@ from django.db import models
 
 # TODO: mark user first and last name as required fields
 # for now we are showing username as name in templates if use name is not found
+# also add birthday and other basic details in future
+# we are may be notify other room member about birthday
 class Profile(models.Model):
     user = models.OneToOneField(
         to=settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
