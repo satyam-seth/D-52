@@ -8,7 +8,9 @@
         100
     ],
     "isort.args": [
-        "skip_glob",
+        "--profile",
+        "black",
+        "--skip-glob",
         "*/migrations/*",
     ],
     "python.formatting.provider": "black",
