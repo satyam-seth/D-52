@@ -4,7 +4,6 @@ target-version = ['py310']
 # issue- https://github.com/psf/black/issues/3015
 force-exclude = "/migrations/"
 
-
 [tool.isort]
 profile = black
 verbose = true
