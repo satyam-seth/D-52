@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 from django.contrib.auth import get_user_model
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,12 +7,9 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, TemplateView
-from records.models import (  # stop using this model in core once current index view changed as dashboard
-    Electricity,
-    Maid,
-    Record,
-    Water,
-)
+
+# stop using this model in core once current index view changed as dashboard
+from records.models import Electricity, Maid, Record, Water
 
 from .forms import FeedbackFrom
 

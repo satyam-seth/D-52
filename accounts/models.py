@@ -3,6 +3,7 @@ from django.db import models
 
 # Create your models here.
 
+
 # TODO: mark user first and last name as required fields
 # for now we are showing username as name in templates if use name is not found
 # also add birthday and other basic details in future

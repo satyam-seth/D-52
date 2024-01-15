@@ -1,6 +1,6 @@
-from core.models import Feedback
 from django.test import TestCase
-from django.utils import timezone
+
+from core.models import Feedback
 
 
 class FeedBackModelTest(TestCase):

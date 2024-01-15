@@ -1,14 +1,5 @@
 from http import HTTPStatus
 
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
-from accounts.views import (
-    GroupCreateView,
-    GroupJoinView,
-    GroupTemplateView,
-    UserLoginView,
-    UserLogoutView,
-    UserSignUpView,
-)
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
@@ -18,6 +9,16 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.views.generic import CreateView, FormView, TemplateView
+
+from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
+from accounts.views import (
+    GroupCreateView,
+    GroupJoinView,
+    GroupTemplateView,
+    UserLoginView,
+    UserLogoutView,
+    UserSignUpView,
+)
 
 User = get_user_model()
 

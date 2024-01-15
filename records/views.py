@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from core.excel import get_excel
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,6 +7,8 @@ from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
+
+from core.excel import get_excel
 from records.forms import RecordFrom, WaterFrom
 from records.models import Electricity, Maid, Record, Water
 
