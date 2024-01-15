@@ -1,0 +1,5 @@
+[tool.black]
+target-version = ['py310']
+# currently exclude option is not working for now we can use force-exclude
+# issue- https://github.com/psf/black/issues/3015
+force-exclude = "/migrations/"

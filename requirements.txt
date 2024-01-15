@@ -1,9 +1,4 @@
-black==22.12.0
-django-stubs==1.13.1
+black==23.12.1
 Django==4.1.5
-isort==5.11.4
-mypy==0.991
 Pillow==9.4.0
-pylint==2.15.9
-pylint-django==2.5.3
 xlwt==1.3.0
