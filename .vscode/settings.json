@@ -10,4 +10,10 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
+    "isort.args":[
+        "--profile",
+        "black",
+        "--skip-glob",
+        "*/migrations/*",
+    ],
 }
