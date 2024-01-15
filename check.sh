@@ -1,8 +1,8 @@
 echo "<------------ isort ------------>"
-isort .
+isort ./the_split ./core ./accounts ./records
 echo "<------------ black ------------>"
-py -m black .
+python -m black ./the_split ./core ./accounts ./records
 echo "<------------ mypy ------------>"
-mypy .
+mypy ./the_split ./core ./accounts ./records
 echo "<------------ pylint ------------>"
-pylint **/*.py
+pylint ./the_split ./core ./accounts ./records

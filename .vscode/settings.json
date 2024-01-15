@@ -7,19 +7,13 @@
     "editor.rulers": [
         100
     ],
-    "isort.args": [
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "isort.args":[
         "--profile",
         "black",
         "--skip-glob",
         "*/migrations/*",
     ],
-    "python.formatting.provider": "black",
-    "python.linting.enabled": true,
-    "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.pylintArgs": [
-        "--load-plugins",
-        "pylint_django",
-        "--django-settings-module=the_split.settings"
-    ]
 }
