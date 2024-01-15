@@ -1,7 +1,8 @@
-from accounts import views
 from django.contrib.auth import views as auth_views
 from django.test import TestCase
 from django.urls import resolve, reverse
+
+from accounts import views
 
 
 class UrlsTestCase(TestCase):

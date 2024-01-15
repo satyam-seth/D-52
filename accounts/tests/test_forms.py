@@ -1,7 +1,8 @@
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
+
+from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 
 User = get_user_model()
 

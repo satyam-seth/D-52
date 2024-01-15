@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
+
 from records.models import Electricity, Maid, Record, Water
 
 User = get_user_model()

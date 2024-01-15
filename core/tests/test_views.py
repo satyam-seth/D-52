@@ -1,12 +1,13 @@
 from http import HTTPStatus
 
-from core.forms import FeedbackFrom
-from core.views import AboutTemplateView, FeedbackCreateView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.views.generic import CreateView, TemplateView
+
+from core.forms import FeedbackFrom
+from core.views import AboutTemplateView, FeedbackCreateView
 
 
 class TestHomeView(TestCase):

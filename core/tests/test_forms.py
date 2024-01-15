@@ -1,6 +1,7 @@
+from django.test import TestCase
+
 from core.forms import FeedbackFrom
 from core.models import Feedback
-from django.test import TestCase
 
 
 class FeedbackFormTestCase(TestCase):

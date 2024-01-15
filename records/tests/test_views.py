@@ -10,6 +10,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import ListView, TemplateView, View
+
 from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
 from records.views import (

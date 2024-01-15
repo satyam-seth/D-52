@@ -1,6 +1,7 @@
-from core import views
 from django.test import TestCase
 from django.urls import resolve, reverse
+
+from core import views
 
 
 class TestUrls(TestCase):
