@@ -105,7 +105,8 @@ class UserRecordListView(ListView):
     paginate_by = 20
     paginate_orphans = 10
 
-    # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
+    # TODO: Add return type once this issue is fixed
+    # - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
     def get_queryset(self):
         queryset = Record.objects.filter(purchaser__id=self.kwargs["user_id"]).order_by(
@@ -127,6 +128,8 @@ class WaterListView(ListView):
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def report(request: HttpRequest) -> HttpResponse:
+    """View to canclulate and render report"""
+
     # TODO: remove hardcoded group name
     users = User.objects.filter(groups__name="d52")
 
@@ -166,7 +169,8 @@ class SearchListView(ListView):
     paginate_orphans = 10
     template_name = "records/search.html"
 
-    # TODO: Add return type once this issue is fixed - https://github.com/typeddjango/django-stubs/issues/477
+    # TODO: Add return type once this issue is fixed
+    # - https://github.com/typeddjango/django-stubs/issues/477
     # def get_queryset(self) -> QuerySet[Any]:
     def get_queryset(self):
         queryset = Record.objects.filter(
@@ -419,7 +423,8 @@ def maid_xls(request: HttpRequest) -> HttpResponse:
         "Price",
         "Entry ID",
         "Entry Date",
-        "Entry Time" "Last Modified Date",
+        "Entry Time",
+        "Last Modified Date",
         "Last Modified Time",
     ]
 

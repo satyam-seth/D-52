@@ -7,6 +7,8 @@ from records.models import Electricity, Maid, Record, Water
 
 @admin.register(Record)
 class RecordAdmin(admin.ModelAdmin):
+    """Admin configuration for the Record model."""
+
     list_display = (
         "id",
         "item",
@@ -21,6 +23,8 @@ class RecordAdmin(admin.ModelAdmin):
 
 @admin.register(Water)
 class WaterAdmin(admin.ModelAdmin):
+    """Admin configuration for the Water model."""
+
     list_display = (
         "id",
         "quantity",
@@ -33,6 +37,8 @@ class WaterAdmin(admin.ModelAdmin):
 
 @admin.register(Electricity)
 class ElectricityAdmin(admin.ModelAdmin):
+    """Admin configuration for the Electricity model."""
+
     list_display = (
         "id",
         "due_date",
@@ -44,6 +50,8 @@ class ElectricityAdmin(admin.ModelAdmin):
 
 @admin.register(Maid)
 class MaidAdmin(admin.ModelAdmin):
+    """Admin configuration for the Maid model."""
+
     list_display = (
         "id",
         "due_date",
