@@ -83,7 +83,10 @@ class TestFeedbackCerateView(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("core:feedback")
-        self.success_message = "Thank you for your valuable feedback, it will help us to improve your experience."
+        self.success_message = (
+            "Thank you for your valuable feedback, "
+            + "it will help us to improve your experience."
+        )
 
     def test_feedback_create_view_attributes(self):
         """Test feedback create view attributes"""

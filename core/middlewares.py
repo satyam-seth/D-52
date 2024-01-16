@@ -4,7 +4,10 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 
+# pylint: disable=too-few-public-methods
 class UnderConstructionMiddleware:
+    """Middleware for displaying an "Under Construction" page."""
+
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
 

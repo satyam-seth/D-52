@@ -1,9 +1,9 @@
-import smtplib
+from smtplib import SMTP, SMTPException
 
 # TODO: records app use this module instead of importing records app model
 from records.models import Record, Water
 
-# TODO: use celery for notification emails
+# TODO: use celery for notification emails and remove hardcoded emails
 receivers = [
     "satyam1998.1998@gmail.com",
     "ankitgupta6564@gmail.com",
@@ -12,15 +12,17 @@ receivers = [
 
 
 def notify_record(reg_id: int) -> None:
+    """Send notification email for record"""
+
     data = Record.objects.get(pk=reg_id)
-    s = smtplib.SMTP("smtp.gmail.com", 587)
+    s = SMTP("smtp.gmail.com", 587)
     s.starttls()
     try:
         s.login("astered.info@gmail.com", "password")
-    except:
+    except SMTPException:
         return
-    SUBJECT = f"D-52 Record Entry Alert {data.id}"
-    TEXT = f"""!!     D-52 Record Entry Notification      !!
+    subject = f"D-52 Record Entry Alert {data.id}"
+    body = f"""!!     D-52 Record Entry Notification      !!
         Purchase Date - {data.date.strftime("%d-%m-%Y")}
         Item Name - {data.item}
         Item Price - {data.price}
@@ -30,22 +32,24 @@ def notify_record(reg_id: int) -> None:
         Enter By - {data.added_by}
         Detailed View - http://satyam1998.pythonanywhere.com/admin/data/record/{data.id}/change/
         Visit D-52 Website - http://satyam1998.pythonanywhere.com/"""
-    message = "Subject: {}\n\n{}".format(SUBJECT, TEXT)
+    message = f"Subject: {subject}\n\n{ body}"
     for receiver in receivers:
         s.sendmail("astered.info@gmail.com", receiver, message)
     s.quit()
 
 
 def notify_water(reg_id: int) -> None:
+    """Send notification email for water"""
+
     data = Water.objects.get(pk=reg_id)
-    s = smtplib.SMTP("smtp.gmail.com", 587)
+    s = SMTP("smtp.gmail.com", 587)
     s.starttls()
     try:
         s.login("astered.info@gmail.com", "password")
-    except:
+    except SMTPException:
         return
-    SUBJECT = f"D-52 Water Entry Alert {data.id}"
-    TEXT = f"""!!     D-52 Water Entry Notification       !!
+    subject = f"D-52 Water Entry Alert {data.id}"
+    body = f"""!!     D-52 Water Entry Notification       !!
         Receiving Date - {data.date.strftime("%d-%m-%Y")}
         Quantity - {data.quantity}
         Entry ID - {data.id}
@@ -53,7 +57,7 @@ def notify_water(reg_id: int) -> None:
         Enter By - {data.added_by}
         Detailed View - http://satyam1998.pythonanywhere.com/admin/data/water/{data.id}/change/
         Visit D-52 Website - http://satyam1998.pythonanywhere.com/"""
-    message = "Subject: {}\n\n{}".format(SUBJECT, TEXT)
+    message = f"Subject: {subject}\n\n{body}"
     for receiver in receivers:
         s.sendmail("astered.info@gmail.com", receiver, message)
     s.quit()
