@@ -432,6 +432,7 @@ disable=raw-checker-failed,
         use-implicit-booleaness-not-comparison-to-string,
         use-implicit-booleaness-not-comparison-to-zero,
         missing-module-docstring,
+        import-outside-toplevel,
         fixme
 
 

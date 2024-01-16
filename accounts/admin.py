@@ -8,6 +8,8 @@ from accounts.models import Profile
 # TODO: register profile under user model as inline
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
+    """Admin configuration for the Profile model."""
+
     list_display = (
         "id",
         "user",

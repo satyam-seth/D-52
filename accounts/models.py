@@ -9,6 +9,8 @@ from django.db import models
 # also add birthday and other basic details in future
 # we are may be notify other room member about birthday
 class Profile(models.Model):
+    """Model to store profile info for users"""
+
     user = models.OneToOneField(
         to=settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
     )
