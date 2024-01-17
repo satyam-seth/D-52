@@ -1,0 +1,94 @@
+<div class="container-fluid">
+    <nav class="navbar navbar-expand-lg py-2 navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+            <i class="fas fa-house-user fa-2x text-white me-2"></i>
+            <a class="navbar-brand" href="#">The Split</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {{home_active}}" href="{% url 'core:home' %}">Home <span
+                                class="sr-only">(current)</span></a>
+                    </li>
+                    {% if request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {{add_active}}" href="{% url 'records:add' %}">Add Data</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {{records_active}}" href="{% url 'records:records' %}">See Records</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{report_active}}" href="{% url 'records:report' %}">Progress Reports</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Account
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            {% if request.user.is_authenticated %}
+                            <li>
+                                <a class="dropdown-item" href="#">Profile</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a class="dropdown-item {{login_active}}" href="{% url 'accounts:login' %}">Login</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{signup_active}}" href="{% url 'accounts:signup' %}">Sign Up</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            More
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            {% if request.user.is_authenticated %}
+                            <li><a class="dropdown-item {{download_active}}"
+                                    href="{% url 'records:download' %}">Download ExcelSheet</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% endif %}
+                            <li><a class="dropdown-item {{feedback_active}}"
+                                    href="{% url 'core:feedback' %}">Feedback</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" target="_blank" href="/admin">Admin Panel</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{about_active}}" href="{% url 'core:about' %}">About</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+                <form class="d-flex" role="search" action="{% url 'records:search' %}">
+                    <input class="form-control me-2" type="search" placeholder="Search record" aria-label="Search"
+                        name='query'>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</div>

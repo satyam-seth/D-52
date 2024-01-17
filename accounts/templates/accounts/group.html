@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Room Group{% endblock title %}
+{% block content %}
+
+<div class="container-fluid login py-5 mt-5">
+    <div class="containerr mt-5">
+        <div class="row text-center">
+            <div class="col-md-12 my-5">
+                <a href="{% url 'accounts:group_join' %}" class="btn btn-lg btn-primary">Join a room group</a>
+            </div>
+            <div class="col-md-12 mb-5">
+                <a href="{% url 'accounts:group_create' %}" class="btn btn-lg btn-success">Create a room group</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

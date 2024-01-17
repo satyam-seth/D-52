@@ -1,0 +1,42 @@
+.home {
+  background-image: url("../images/home.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.about {
+  background-image: url("../images/about.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.feed {
+  background-image: url("../images/feedback.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.search {
+  background-image: url("../images/search.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 1px 1px gray;
+}
+
+.login,
+.sign-up {
+  height: 100vh;
+  background: url("../images/login.jpg") no-repeat center center fixed;
+  background-color: #EACDCF;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}

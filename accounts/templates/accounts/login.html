@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Login{% endblock title %}
+{% block content %}
+
+<div class="container-fluid login">
+    <div class="row h-100 align-items-center justify-content-center">
+        <div class="col-md-4">
+            <h2 class="text-center alert alert-secondary my-3 shadow">User Login</h2>
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
+                    {% endfor %}
+                {% endif %}
+                {% for field in form %}
+                <div class="form-group mb-3">
+                    {{field.label_tag}} {{field}} <small class="shadow text-danger">{{field.errors|striptags}}</small>
+                </div>
+
+                {% endfor %}
+                <div class="text-center">
+                    <input type="submit" value="Login" class="btn btn-primary shadow">
+                    <a class="btn btn-success" href="{% url 'accounts:password_reset' %}" target="_blank">Forget Password</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- </div> -->
+</div>
+{% endblock content %}
