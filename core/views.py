@@ -91,5 +91,8 @@ class FeedbackCreateView(SuccessMessageMixin, CreateView):
     form_class = FeedbackFrom
     success_url = reverse_lazy("core:home")
     template_name = "core/feedback.html"
-    success_message = "Thank you for your valuable feedback, it will help us to improve your experience."
+    success_message = (
+        "Thank you for your valuable feedback, "
+        + "it will help us to improve your experience."
+    )
     extra_context = {"feedback_active": "active"}
