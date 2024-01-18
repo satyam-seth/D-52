@@ -5,6 +5,20 @@
 
 <div class="container-fluid login py-5 mt-5">
     <div class="containerr mt-5">
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %} role="alert">
+                    <strong>{{message}}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="containerr mt-5">
         <div class="row text-center">
             <div class="col-md-12 my-5">
                 <a href="{% url 'accounts:group_join' %}" class="btn btn-lg btn-primary">Join a room group</a>
