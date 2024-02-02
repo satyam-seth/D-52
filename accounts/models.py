@@ -24,4 +24,4 @@ class Profile(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.user.username
+        return f"{self.user.username}'s profile"
