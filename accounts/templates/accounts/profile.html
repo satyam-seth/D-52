@@ -21,16 +21,16 @@
     </div>
     <div class="container mt-5 py-5">
         <h2 class="text-center alert alert-secondary my-3 shadow">Your Profile</h2>
-        <div class="row text-center align-items-center">
+        <div class="row gy-4 text-center align-items-center">
             <div class="col-md-6">
                 <h2>Avatar Image</h2>
-                <img src="{{profile.avatar.url}}" class="rounded img-fluid" alt="avatar" style="max-height: 30rem;">
+                <img src="{{request.user.profile.avatar.url}}" class="rounded img-fluid" alt="avatar" style="max-height: 30rem;">
             </div>
             <div class="col-md-6">
                 <h2>Cover Phtoto</h2>
-                <img src="{{profile.cover_photo.url}}" class="rounded img-fluid" alt="cover photo" style="max-height: 30rem;">
+                <img src="{{request.user.profile.cover_photo.url}}" class="rounded img-fluid" alt="cover photo" style="max-height: 30rem;">
             </div>
-            <div class="col mt-4">
+            <div class="col">
                 <button type="button" class="btn btn-success">Edit</button>
             </div>
         </div>

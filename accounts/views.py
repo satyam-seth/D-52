@@ -8,18 +8,17 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetComple
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, FormView, TemplateView
+from django.views.generic import CreateView, FormView, TemplateView
 
 from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
-from accounts.models import Profile
 
 
 # Create your views here.
 # TODO: Add profile view and profile edit view
-class ProfileDetailView(DetailView):
+class ProfileTemplateView(LoginRequiredMixin, TemplateView):
     """View to show user profile"""
 
-    model = Profile
+    template_name = "accounts/profile.html"
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):
