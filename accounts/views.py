@@ -12,8 +12,13 @@ from django.views.generic import CreateView, FormView, TemplateView
 
 from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
 
+
 # Create your views here.
 # TODO: Add profile view and profile edit view
+class ProfileTemplateView(LoginRequiredMixin, TemplateView):
+    """View to show user profile"""
+
+    template_name = "accounts/profile.html"
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):
