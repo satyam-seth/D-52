@@ -15,12 +15,48 @@ from accounts.views import (
     GroupCreateView,
     GroupJoinView,
     GroupTemplateView,
+    ProfileTemplateView,
     UserLoginView,
     UserLogoutView,
     UserSignUpView,
 )
 
 User = get_user_model()
+
+
+class TestProfileTemplateView(TestCase):
+    """Test Profile template view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:profile")
+
+        # create test user
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        # log in the user
+        self.client.login(username="test-user", password="test-password")
+
+    def test_profile_template_view_attributes(self):
+        """Test profile template view attributes"""
+
+        view = ProfileTemplateView()
+        self.assertIsInstance(view, TemplateView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertEqual(view.template_name, "accounts/profile.html")
+
+    def test_profile_template_view_working(self):
+        """Test profile template view working"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "accounts/profile.html")
 
 
 class TestUserLoginView(TestCase):
