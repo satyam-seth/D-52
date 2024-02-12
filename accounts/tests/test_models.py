@@ -26,4 +26,4 @@ class ProfileModelTest(TestCase):
         )
 
         # assert string representation
-        self.assertEqual(str(profile), self.user.username)
+        self.assertEqual(str(profile), f"{self.user.username}'s profile")

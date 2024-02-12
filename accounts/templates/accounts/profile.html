@@ -1,0 +1,40 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Profile{% endblock title %}
+{% block content %}
+
+<div class="container-fluid bg-primary">
+    <div class="container mt-5">
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+                role="alert">
+                <strong>{{message}}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="container mt-5 py-5">
+        <h2 class="text-center alert alert-secondary my-3 shadow">Your Profile</h2>
+        <div class="row gy-4 text-center align-items-center">
+            <div class="col-md-6">
+                <h2>Avatar Image</h2>
+                <img src="{{request.user.profile.avatar.url}}" class="rounded img-fluid" alt="avatar" style="max-height: 30rem;">
+            </div>
+            <div class="col-md-6">
+                <h2>Cover Phtoto</h2>
+                <img src="{{request.user.profile.cover_photo.url}}" class="rounded img-fluid" alt="cover photo" style="max-height: 30rem;">
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-success">Edit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
