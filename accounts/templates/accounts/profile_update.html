@@ -1,0 +1,43 @@
+{% extends 'core/base.html' %} {% load static %} {% block content %}
+
+<div class="container-fluid login py-5 mt-5 h-100">
+  <div class="containerr mt-5">
+    <div class="row">
+      <div class="col-lg-4 px-5 mx-auto">
+        <h2 class="text-center alert alert-secondary my-3 shadow">
+          {% block form_heading %}Room Group Form{% endblock form_heading %}
+        </h2>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %} 
+          {% if form.non_field_errors %} 
+            {% for error in form.non_field_errors %}
+            <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
+            {% endfor %} 
+          {% endif %} 
+          {% for field in form %}
+          <div class="form-group">
+            {{field.label_tag}} {{field}}
+            <small class="shadow text-danger">{{field.errors|striptags}}</small>
+            {% if field.help_text %} {% endif %}
+            <small class="shadow text-secondary"
+              >{{ field.help_text|safe }}</small
+            >
+          </div>
+          {% endfor %}
+          <div class="text-center">
+            <input type="reset" value="Reset" class="btn btn-primary shadow" />
+            {% block submit_btn %}
+            <input
+              type="submit"
+              value="Submit"
+              class="btn btn-success shadow"
+            />
+            {% endblock submit_btn %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
