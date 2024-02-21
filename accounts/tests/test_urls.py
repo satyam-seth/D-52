@@ -13,6 +13,11 @@ class UrlsTestCase(TestCase):
         url = reverse("accounts:profile")
         self.assertEqual(resolve(url).func.view_class, views.ProfileTemplateView)
 
+    def test_profile_update_url(self):
+        """Test profile update url resolve"""
+        url = reverse("accounts:profile_update")
+        self.assertEqual(resolve(url).func.view_class, views.ProfileUpdateView)
+
     def test_login_url(self):
         """Test login url resolve"""
 
