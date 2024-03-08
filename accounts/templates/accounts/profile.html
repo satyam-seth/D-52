@@ -31,7 +31,7 @@
                 <img src="{{request.user.profile.cover_photo.url}}" class="rounded img-fluid" alt="cover photo" style="max-height: 30rem;">
             </div>
             <div class="col">
-                <button type="button" class="btn btn-success">Edit</button>
+                <a role="button" class="btn btn-success" href="{% url 'accounts:profile_update' %}">Edit</a>
             </div>
         </div>
     </div>
