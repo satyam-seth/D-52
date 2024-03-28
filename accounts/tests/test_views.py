@@ -6,16 +6,25 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.views.generic import CreateView, FormView, TemplateView
 
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
+from accounts.forms import (
+    GroupCreateForm,
+    GroupJoinForm,
+    LoginForm,
+    ProfileUpdateForm,
+    SignUpForm,
+)
+from accounts.models import Profile
 from accounts.views import (
     GroupCreateView,
     GroupJoinView,
     GroupTemplateView,
     ProfileTemplateView,
+    ProfileUpdateView,
     UserLoginView,
     UserLogoutView,
     UserSignUpView,
@@ -57,6 +66,33 @@ class TestProfileTemplateView(TestCase):
 
         # Assert that the correct template is used
         self.assertTemplateUsed(response, "accounts/profile.html")
+
+
+class TestProfileUpdateView(TestCase):
+    """Test profile update view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:profile_update")
+
+        # create test user
+        self.user = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        # log in the user
+        self.client.login(username="test-user", password="test-password")
+
+    def test_profile_update_view_attributes(self):
+        """Test profile update view attributes"""
+
+        view = ProfileUpdateView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, SuccessMessageMixin)
+        self.assertIsInstance(view, FormView)
+        self.assertEqual(view.form_class, ProfileUpdateForm)
+        self.assertEqual(view.template_name, "accounts/profile_update.html")
+        self.assertTrue(view.success_url, reverse("accounts:profile"))
+        self.assertEqual(view.success_message, "Profile Updated !!")
 
 
 class TestUserLoginView(TestCase):
