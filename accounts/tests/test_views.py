@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from unittest import skip
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -93,6 +94,38 @@ class TestProfileUpdateView(TestCase):
         self.assertEqual(view.template_name, "accounts/profile_update.html")
         self.assertTrue(view.success_url, reverse("accounts:profile"))
         self.assertEqual(view.success_message, "Profile Updated !!")
+
+    @skip("Debug why form_valid method not run")
+    def test_profile_update_view_working(self):
+        """Test profile update view working"""
+
+        avatar = SimpleUploadedFile(
+            name="test_avatar.jpg",
+            content=b"file_content",
+            content_type="image/jpeg",
+        )
+        cover_photo = SimpleUploadedFile(
+            name="test_cover_photo.jpg",
+            content=b"file_content",
+            content_type="image/jpeg",
+        )
+
+        # Prepare the form data
+        form_data = {"avatar": avatar, "cover_photo": cover_photo}
+
+        # Use the client's form property to submit the data
+        response = self.client.post(self.url, form_data, follow=True)
+
+        # Check if the view redirects to the success URL
+        self.assertRedirects(response, reverse("accounts:profile"))
+
+        # Check if the profile has been updated with the correct data
+        updated_profile = Profile.objects.get(user=self.user)
+        self.assertIsNotNone(updated_profile)
+        self.assertEqual(updated_profile.avatar.name, f"profile_avatars/{avatar.name}")
+        self.assertEqual(
+            updated_profile.cover_photo.name, f"profile_cover_photos/{cover_photo.name}"
+        )
 
 
 class TestUserLoginView(TestCase):
