@@ -21,7 +21,6 @@ from accounts.models import Profile
 
 
 # Create your views here.
-# TODO: Add profile view and profile edit view
 class ProfileTemplateView(LoginRequiredMixin, TemplateView):
     """View to show user profile"""
 
