@@ -10,7 +10,14 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, TemplateView
 
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
+from accounts.forms import (
+    GroupCreateForm,
+    GroupJoinForm,
+    LoginForm,
+    ProfileUpdateForm,
+    SignUpForm,
+)
+from accounts.models import Profile
 
 
 # Create your views here.
@@ -19,6 +26,25 @@ class ProfileTemplateView(LoginRequiredMixin, TemplateView):
     """View to show user profile"""
 
     template_name = "accounts/profile.html"
+
+
+class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
+    """View to show user profile"""
+
+    form_class = ProfileUpdateForm
+    template_name = "accounts/profile_update.html"
+    success_message = "Profile Updated !!"
+    success_url = reverse_lazy("accounts:profile")
+
+    def form_valid(self, form: Any) -> HttpResponse:
+        # Get the current user's profile
+        profile = Profile.objects.get(user=self.request.user)
+
+        # Update the profile with the form data
+        profile.avatar = form.cleaned_data["avatar"]
+        profile.cover_photo = form.cleaned_data["cover_photo"]
+        profile.save()
+        return super().form_valid(form)
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):

@@ -10,7 +10,17 @@ from django.contrib.auth.forms import (
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
+from accounts.models import Profile
+
 User = get_user_model()
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    """Form to update user profile"""
+
+    class Meta:
+        model = Profile
+        fields = ["avatar", "cover_photo"]
 
 
 class LoginForm(AuthenticationForm):
