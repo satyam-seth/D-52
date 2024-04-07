@@ -2,7 +2,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
 
-from accounts.forms import GroupCreateForm, GroupJoinForm, LoginForm, SignUpForm
+from accounts.forms import (
+    GroupCreateForm,
+    GroupJoinForm,
+    LoginForm,
+    ProfileUpdateForm,
+    SignUpForm,
+)
+from accounts.models import Profile
 
 User = get_user_model()
 
@@ -199,3 +206,15 @@ class TestGroupCreateForm(TestCase):
         # assert form save create a group
         group = form.save()
         self.assertIsInstance(group, Group)
+
+
+class TestProfileUpdateForm(TestCase):
+    """Test Profile Update Form"""
+
+    def test_group_create_form_field(self) -> None:
+        """test profile update form field"""
+
+        form = ProfileUpdateForm()
+
+        self.assertEqual(form.Meta.model, Profile)
+        self.assertEqual(form.Meta.fields, ["avatar", "cover_photo"])
