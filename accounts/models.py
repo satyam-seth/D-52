@@ -25,3 +25,17 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.username}'s profile"
+
+
+class Room(models.Model):
+    """Model to store room"""
+
+    name = models.CharField(max_length=100)
+    admin = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created_rooms",
+    )
+
+    def __str__(self) -> str:
+        return self.name
