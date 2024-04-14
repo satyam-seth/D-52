@@ -3,20 +3,13 @@ from typing import Any, Dict
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, TemplateView
 
-from accounts.forms import (
-    GroupCreateForm,
-    GroupJoinForm,
-    LoginForm,
-    ProfileUpdateForm,
-    SignUpForm,
-)
+from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
 from accounts.models import Profile
 
 
@@ -73,7 +66,7 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
 
     form_class = SignUpForm
     success_message = "Account Created Successfully !!"
-    success_url = reverse_lazy("accounts:group")
+    success_url = reverse_lazy("accounts:room")
     template_name = "accounts/signup.html"
     extra_context = {"signup_active": "active"}
 
@@ -85,55 +78,67 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
         return valid
 
 
-class GroupTemplateView(LoginRequiredMixin, TemplateView):
+class RoomTemplateView(LoginRequiredMixin, TemplateView):
     """
-    This view is used to display the group template
-    which contains the links to join or create a group
-    """
-
-    template_name = "accounts/group.html"
-
-
-class GroupJoinView(LoginRequiredMixin, FormView):
-    """
-    This view is used to display the group join form
-    and join the user to the group
+    This view is used to display the room template
+    which contains the links to join or create a room
     """
 
-    form_class = GroupJoinForm
-    template_name = "accounts/group_join.html"
-    success_url = reverse_lazy("core:home")
-
-    def form_valid(self, form: GroupJoinForm) -> HttpResponse:
-        group_name = form.cleaned_data["group_name"]
-        group = Group.objects.get(name=group_name)
-        # TODO: Notify the group admin and members that a new user has joined the group
-        messages.success(
-            self.request, f"You have joined the group {group_name} successfully !!"
-        )
-        # add the user to the group
-        self.request.user.groups.add(group)
-        return super().form_valid(form)
+    template_name = "accounts/room.html"
 
 
-class GroupCreateView(LoginRequiredMixin, CreateView):
+# class RoomJoinView(LoginRequiredMixin, FormView):
+#     """
+#     This view is used to display and handle the room join form
+#     """
+
+#     form_class = RoomJoinForm
+#     template_name = "accounts/room_join.html"
+#     success_url = reverse_lazy("core:home")
+
+#     def form_valid(self, form: RoomJoinForm) -> HttpResponse:
+#         room_id = form.cleaned_data["room_id"]
+#         room = Room.objects.get(id=room_id)
+#         # TODO: also update invitation status
+#         # add the user to the room
+#         membership = RoomMembership(user=self.request.user, room=room)
+
+#         try:
+#             membership.save()
+#             # TODO: Notify the group admin and members that a new user has joined the group
+#             messages.success(
+#                 self.request, f"You have joined the room '{room_id}' successfully !!"
+#             )
+#         except IntegrityError as e:
+#             print(e)
+#             messages.success(
+#                 self.request,
+#                 f"You have already joined the room '{room_id}'",
+#             )
+#         return super().form_valid(form)
+
+
+class RoomCreateView(LoginRequiredMixin, CreateView):
     """
-    This view is used to display the group create form
-    and create a new group then add the user to the group
+    This view is used to display and handle the room create form
     """
 
-    form_class = GroupCreateForm
-    template_name = "accounts/group_create.html"
+    form_class = RoomCreateForm
+    template_name = "accounts/room_create.html"
     # TODO: redirect to invite members view
     success_url = reverse_lazy("core:home")
 
-    def form_valid(self, form: GroupCreateForm) -> HttpResponse:
-        group = form.save()
+    def form_valid(self, form: RoomCreateForm) -> HttpResponse:
+        room = form.save(commit=False)
+        # make current user as admin
+        room.admin = self.request.user
+        room.save()
+        messages.success(self.request, f"Room '{room.name}' created successfully!")
+        # Note: On saving, the admin user is automatically joined
+        # via the Room model's post-save signal
         messages.success(
-            self.request, f"You have joined the group {group.name} successfully !!"
+            self.request, f"You have joined the room {room.name} successfully !!"
         )
-        # add the user to the group
-        self.request.user.groups.add(group)
         return super().form_valid(form)
 
 

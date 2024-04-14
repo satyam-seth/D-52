@@ -3,10 +3,10 @@
 {% block content %}
 
 <div class="container-fluid login py-5 mt-5 h-100">
-    <div class="containerr mt-5">
+    <div class="container mt-5">
         <div class="row">
             <div class="col-lg-4 px-5 mx-auto">
-                <h2 class="text-center alert alert-secondary my-3 shadow">{% block form_heading %}Room Group Form{% endblock form_heading %}</h2>
+                <h2 class="text-center alert alert-secondary my-3 shadow">{% block form_heading %}Room Form{% endblock form_heading %}</h2>
                 <form method="post">
                     {% csrf_token %}
                     {% if form.non_field_errors %}
@@ -22,7 +22,7 @@
                         <small class="shadow text-secondary">{{ field.help_text|safe }}</small>
                     </div>
                     {% endfor %}
-                    <div class="text-center">
+                    <div class="text-center mt-5">
                         <input type="reset" value="Reset" class="btn btn-primary shadow">
                         {% block submit_btn %}
                             <input type="submit" value="Submit" class="btn btn-success shadow">
