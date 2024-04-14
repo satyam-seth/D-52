@@ -39,3 +39,16 @@ class Room(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class RoomMembership(models.Model):
+    """Model to store room membership"""
+
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("user", "room")
+
+    def __str__(self) -> str:
+        return f"{self.room.name}-{self.user.username}"
