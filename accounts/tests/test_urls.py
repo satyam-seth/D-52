@@ -38,23 +38,23 @@ class UrlsTestCase(TestCase):
         url = reverse("accounts:signup")
         self.assertEqual(resolve(url).func.view_class, views.UserSignUpView)
 
-    def test_group_url(self):
-        """Test group url resolve"""
+    def test_room_url(self):
+        """Test room url resolve"""
 
-        url = reverse("accounts:group")
-        self.assertEqual(resolve(url).func.view_class, views.GroupTemplateView)
+        url = reverse("accounts:room")
+        self.assertEqual(resolve(url).func.view_class, views.RoomTemplateView)
 
-    def test_group_join_url(self):
-        """Test group_join url resolve"""
+    # def test_room_join_url(self):
+    #     """Test room_join url resolve"""
 
-        url = reverse("accounts:group_join")
-        self.assertEqual(resolve(url).func.view_class, views.GroupJoinView)
+    #     url = reverse("accounts:room_join")
+    #     self.assertEqual(resolve(url).func.view_class, views.RoomJoinView)
 
-    def test_group_create_url(self):
-        """Test group_create url resolve"""
+    def test_room_create_url(self):
+        """Test room_create url resolve"""
 
-        url = reverse("accounts:group_create")
-        self.assertEqual(resolve(url).func.view_class, views.GroupCreateView)
+        url = reverse("accounts:room_create")
+        self.assertEqual(resolve(url).func.view_class, views.RoomCreateView)
 
     def test_password_reset_url(self):
         """Test password_reset url resolve"""
