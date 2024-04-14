@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from accounts.models import Profile, Room
+from accounts.models import Profile, Room, RoomMembership
 
 # Register your models here.
 
@@ -23,3 +23,10 @@ class RoomAdmin(admin.ModelAdmin):
     """Admin configuration for the Room model"""
 
     list_display = ("id", "name", "admin")
+
+
+@admin.register(RoomMembership)
+class RoomMembershipAdmin(admin.ModelAdmin):
+    """Admin configuration for the RoomMembership model"""
+
+    list_display = ("id", "user", "room")
