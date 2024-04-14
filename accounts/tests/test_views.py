@@ -3,7 +3,6 @@ from unittest import skip
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
