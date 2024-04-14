@@ -137,7 +137,7 @@ class RoomCreateView(LoginRequiredMixin, CreateView):
         # Note: On saving, the admin user is automatically joined
         # via the Room model's post-save signal
         messages.success(
-            self.request, f"You have joined the room {room.name} successfully !!"
+            self.request, f"You have joined the room '{room.name}' successfully !!"
         )
         return super().form_valid(form)
 
