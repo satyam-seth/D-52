@@ -74,7 +74,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "the_split.wsgi.application"
+WSGI_APPLICATION = "the_split.wsgi.app"
 
 
 # Database
