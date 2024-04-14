@@ -7,10 +7,9 @@ from django.contrib.auth.forms import (
     UserCreationForm,
     UsernameField,
 )
-from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import Profile
+from accounts.models import Profile, Room
 
 User = get_user_model()
 
@@ -65,36 +64,37 @@ class SignUpForm(UserCreationForm):
         }
 
 
-class GroupJoinForm(forms.Form):
-    """Form to join a user group"""
+# class RoomJoinForm(forms.Form):
+#     """Form to join a room"""
 
-    group_name = forms.CharField(
-        label="Group Name:",
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-        help_text="Enter the group name to join",
-    )
+#     room_id = forms.IntegerField(
+#         label="Room ID:",
+#         widget=forms.TextInput(attrs={"class": "form-control"}),
+#         help_text="Enter the room id to join",
+#     )
 
-    def clean_group_name(self) -> Group:
-        """Clean and validate the group_name field"""
+#     def clean_room_id(self) -> Group:
+#         """Clean and validate the room id field"""
 
-        group_name = self.cleaned_data["group_name"]
+#         room_id = self.cleaned_data["room_id"]
 
-        try:
-            Group.objects.get(name=group_name)
-        except Group.DoesNotExist as exc:
-            raise forms.ValidationError(
-                _("group with name %(name)s is not found"),
-                params={"name": group_name},
-            ) from exc
+#         # TODO: make sure user can join the room if already invited for room
+#         try:
+#             Room.objects.get(id=room_id)
+#         except Room.DoesNotExist as exc:
+#             raise forms.ValidationError(
+#                 _("room with id %(room_id)d is not found"),
+#                 params={"room_id": room_id},
+#             ) from exc
 
-        return group_name
+#         return room_id
 
 
-class GroupCreateForm(forms.ModelForm):
-    """Form to create a group"""
+class RoomCreateForm(forms.ModelForm):
+    """Form to create a Room"""
 
     class Meta:
-        model = Group
+        model = Room
         fields = ("name",)
-        labels = {"name": "Group Name:"}
+        labels = {"name": "Room Name:"}
         widgets = {"name": forms.TextInput(attrs={"class": "form-control"})}

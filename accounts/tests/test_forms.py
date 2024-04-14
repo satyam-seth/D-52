@@ -1,15 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.test import TestCase
 
-from accounts.forms import (
-    GroupCreateForm,
-    GroupJoinForm,
-    LoginForm,
-    ProfileUpdateForm,
-    SignUpForm,
-)
-from accounts.models import Profile
+from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
+from accounts.models import Profile, Room
 
 User = get_user_model()
 
@@ -118,94 +111,98 @@ class TestSignUpForm(TestCase):
         self.assertEqual(user.last_name, form_data["last_name"])
 
 
-class TestGroupJoinForm(TestCase):
-    """Test Group Join Form"""
+# class TestGroupJoinForm(TestCase):
+#     """Test Group Join Form"""
 
-    def test_group_join_form_field(self) -> None:
-        """test group join form field"""
+#     def test_group_join_form_field(self) -> None:
+#         """test group join form field"""
 
-        form = GroupJoinForm()
+#         form = RoomJoinForm()
 
-        # assert that the form has only one field
-        self.assertEqual(len(form.fields), 1)
+#         # assert that the form has only one field
+#         self.assertEqual(len(form.fields), 1)
 
-        # assert field widget
-        self.assertEqual(form.fields["group_name"].label, "Group Name:")
-        self.assertEqual(
-            form.fields["group_name"].widget.attrs["class"], "form-control"
-        )
-        self.assertEqual(
-            form.fields["group_name"].help_text, "Enter the group name to join"
-        )
+#         # assert field widget
+#         self.assertEqual(form.fields["group_name"].label, "Group Name:")
+#         self.assertEqual(
+#             form.fields["group_name"].widget.attrs["class"], "form-control"
+#         )
+#         self.assertEqual(
+#             form.fields["group_name"].help_text, "Enter the group name to join"
+#         )
 
-    def test_group_join_from_working_for_valid_group_name(self):
-        """Test group join form is working for valid group name"""
+#     def test_group_join_from_working_for_valid_group_name(self):
+#         """Test group join form is working for valid group name"""
 
-        group_name = "test-group"
+#         group_name = "test-group"
 
-        # create group
-        Group.objects.create(name=group_name)
+#         # create group
+#         Group.objects.create(name=group_name)
 
-        # initialize form data
-        form_data = {
-            "group_name": group_name,
-        }
+#         # initialize form data
+#         form_data = {
+#             "group_name": group_name,
+#         }
 
-        form = GroupJoinForm(data=form_data)
+#         form = RoomJoinForm(data=form_data)
 
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["group_name"], group_name)
+#         self.assertTrue(form.is_valid())
+#         self.assertEqual(form.cleaned_data["group_name"], group_name)
 
-    def test_group_join_from_working_for_invalid_group_name(self):
-        """Test group join form is working for invalid group name"""
+#     def test_group_join_from_working_for_invalid_group_name(self):
+#         """Test group join form is working for invalid group name"""
 
-        group_name = "test-group"
+#         group_name = "test-group"
 
-        # initialize form data
-        form_data = {
-            "group_name": group_name,
-        }
+#         # initialize form data
+#         form_data = {
+#             "group_name": group_name,
+#         }
 
-        form = GroupJoinForm(data=form_data)
+#         form = RoomJoinForm(data=form_data)
 
-        self.assertFalse(form.is_valid())
-        self.assertIn("group_name", form.errors)
-        self.assertEqual(
-            form.errors["group_name"],
-            [f"group with name {group_name} is not found"],
-        )
+#         self.assertFalse(form.is_valid())
+#         self.assertIn("group_name", form.errors)
+#         self.assertEqual(
+#             form.errors["group_name"],
+#             [f"group with name {group_name} is not found"],
+#         )
 
 
-class TestGroupCreateForm(TestCase):
-    """Test Group Create Form"""
+class TestRoomCreateForm(TestCase):
+    """Test Room Create Form"""
 
-    def test_group_create_form_field(self) -> None:
-        """test group create form field"""
+    def test_room_create_form_field(self) -> None:
+        """test room create form field"""
 
-        form = GroupCreateForm()
+        form = RoomCreateForm()
 
-        self.assertEqual(form.Meta.model, Group)
+        self.assertEqual(form.Meta.model, Room)
         self.assertEqual(form.Meta.fields, ("name",))
-        self.assertEqual(form.Meta.labels["name"], "Group Name:")
+        self.assertEqual(form.Meta.labels["name"], "Room Name:")
         self.assertEqual(
             form.Meta.widgets["name"].attrs["class"],
             "form-control",
         )
 
-    def test_group_create_form_working(self):
-        """Test group create form working"""
+    def test_room_create_form_working(self):
+        """Test room create form working"""
 
         # initialize form data
-        form_data = {"name": "test-group"}
+        form_data = {"name": "test-room"}
 
-        form = GroupCreateForm(data=form_data)
+        form = RoomCreateForm(data=form_data)
 
         # assert form is valid for valid form data
         self.assertTrue(form.is_valid())
 
-        # assert form save create a group
-        group = form.save()
-        self.assertIsInstance(group, Group)
+        # assert form save create a room
+        room = form.save(commit=False)
+        room.admin = User.objects.create_user(
+            username="test-user", password="test-password"
+        )
+        room.save()
+        self.assertIsInstance(room, Room)
 
 
 class TestProfileUpdateForm(TestCase):
