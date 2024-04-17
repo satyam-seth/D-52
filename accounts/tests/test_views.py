@@ -35,10 +35,10 @@ class TestProfileTemplateView(TestCase):
 
         # create test user
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            email="test@user.com", password="test-password"
         )
         # log in the user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_profile_template_view_attributes(self):
         """Test profile template view attributes"""
@@ -70,10 +70,10 @@ class TestProfileUpdateView(TestCase):
 
         # create test user
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            email="test@user.com", password="test-password"
         )
         # log in the user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_profile_update_view_attributes(self):
         """Test profile update view attributes"""
@@ -87,6 +87,7 @@ class TestProfileUpdateView(TestCase):
         self.assertTrue(view.success_url, reverse("accounts:profile"))
         self.assertEqual(view.success_message, "Profile Updated !!")
 
+    # Upload a valid image. The file you uploaded was either not an image or a corrupted image.
     @skip("Debug why form_valid method not run")
     def test_profile_update_view_working(self):
         """Test profile update view working"""
@@ -198,8 +199,10 @@ class TestUserSignUpView(TestCase):
 
         # Define the form data
         form_data = {
-            "username": "test-user",
+            # "username": "test-user",
             "email": "testuser@example.com",
+            "first_name": "Test",
+            "last_name": "User",
             "password1": "test-password",
             "password2": "test-password",
         }
@@ -215,12 +218,12 @@ class TestUserSignUpView(TestCase):
         self.assertRedirects(response, reverse("accounts:room"))
 
         # Assert that the user is created in the database
-        self.assertTrue(User.objects.filter(username=form_data["username"]).exists())
+        self.assertTrue(User.objects.filter(email=form_data["email"]).exists())
 
         # Assert that the user is logged in
         self.assertTrue(
             self.client.login(
-                username=form_data["username"],
+                username=form_data["email"],
                 password=form_data["password1"],
             )
         )
@@ -235,10 +238,10 @@ class TestRoomTemplateView(TestCase):
 
         # create test user
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            email="test@user.com", password="test-password"
         )
         # log in the user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_room_template_view_attributes(self):
         """Test room template view attributes"""
@@ -315,7 +318,7 @@ class TestRoomCerateView(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            email="test@user.com", password="test-password"
         )
         self.url = reverse("accounts:room_create")
 
@@ -333,7 +336,7 @@ class TestRoomCerateView(TestCase):
         """Test room create view working"""
 
         # Log in the user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
         # Send a POST request to the view with the room name
         response = self.client.post(self.url, data={"name": "test-room"})
