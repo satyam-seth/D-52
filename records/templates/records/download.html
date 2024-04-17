@@ -29,7 +29,7 @@
         {% for user in users %}
         <tr>
           <td class="h5">
-            {% if user.get_full_name %}{{user.get_full_name}}{% else %}{{user.username}}{% endif %} Items Records
+            {{user.get_full_name}} Items Records
             <a class="float-end btn btn-sm btn-danger" href="{% url 'records:user_xls' user.pk %}"
               role="button">Download</a>
           </td>
