@@ -56,13 +56,13 @@ class TestSignUpForm(TestCase):
         form = SignUpForm()
 
         # assert that the form has only two fields
-        self.assertEqual(len(form.fields), 6)
+        self.assertEqual(len(form.fields), 5)
 
         # assert field widgets
-        self.assertEqual(
-            form.fields["username"].widget.attrs["class"],
-            "form-control",
-        )
+        # self.assertEqual(
+        #     form.fields["username"].widget.attrs["class"],
+        #     "form-control",
+        # )
         self.assertEqual(
             form.fields["first_name"].widget.attrs["class"],
             "form-control",
@@ -89,7 +89,7 @@ class TestSignUpForm(TestCase):
 
         # initialize form data
         form_data = {
-            "username": "test-user",
+            # "username": "test-user",
             "email": "test@example.com",
             "first_name": "test-first-name",
             "last_name": "test-last-name",
@@ -105,7 +105,7 @@ class TestSignUpForm(TestCase):
         # assert form save create a user
         user = form.save()
         self.assertIsInstance(user, User)
-        self.assertEqual(user.username, form_data["username"])
+        # self.assertEqual(user.username, form_data["username"])
         self.assertEqual(user.email, form_data["email"])
         self.assertEqual(user.first_name, form_data["first_name"])
         self.assertEqual(user.last_name, form_data["last_name"])
@@ -199,7 +199,7 @@ class TestRoomCreateForm(TestCase):
         # assert form save create a room
         room = form.save(commit=False)
         room.admin = User.objects.create_user(
-            username="test-user", password="test-password"
+            email="test@user.com", password="test-password"
         )
         room.save()
         self.assertIsInstance(room, Room)
