@@ -84,7 +84,7 @@ class TestRecordForm(TestCase):
     def test_record_form_working(self):
         """Test record form working"""
 
-        user = User.objects.create(username="test-user", password="test-password")
+        user = User.objects.create_user(email="test@user.com", password="test-password")
 
         # initialize form data
         form_data = {
