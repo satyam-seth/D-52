@@ -11,7 +11,6 @@ from .models import User
 class UserAdmin(BaseUserAdmin):
     """Admin configuration for User model."""
 
-    # add_form = UserCreationForm
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         (_("Personal info"), {"fields": ("first_name", "last_name")}),

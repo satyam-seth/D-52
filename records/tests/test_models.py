@@ -45,7 +45,7 @@ class RecordModelTest(TestCase):
         # self.assertEqual(record.created_on, timezone.now())
 
         # assert string representation
-        self.assertEqual(str(record), f"{record.item} {record.purchaser.email}")
+        self.assertEqual(str(record), f"{record.item} {record.purchaser}")
 
 
 class WaterModelTest(TestCase):

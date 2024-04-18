@@ -199,7 +199,6 @@ class TestUserSignUpView(TestCase):
 
         # Define the form data
         form_data = {
-            # "username": "test-user",
             "email": "testuser@example.com",
             "first_name": "Test",
             "last_name": "User",
