@@ -7,6 +7,12 @@ from accounts.models import Profile, Room, RoomMembership
 from .models import User
 
 
+class ProfileInline(admin.StackedInline):
+    """Stacked Inline for profile model"""
+
+    model = Profile
+
+
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     """Admin configuration for User model."""
@@ -46,9 +52,9 @@ class UserAdmin(BaseUserAdmin):
     list_display = ("id", "email", "first_name", "last_name", "is_staff", "is_active")
     search_fields = ("email", "first_name", "last_name")
     ordering = ("email",)
+    inlines = [ProfileInline]
 
 
-# TODO: register profile under user model as inline
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     """Admin configuration for the Profile model."""
