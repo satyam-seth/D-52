@@ -34,8 +34,7 @@ class TestAddTemplateView(TestCase):
         self.client = Client()
         self.url = reverse("records:add")
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
 
     def test_add_template_view_attributes(self) -> None:
@@ -57,7 +56,7 @@ class TestAddTemplateView(TestCase):
         """Test add template view working"""
 
         # login user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
         # Send a GET request to the view
         response = self.client.get(self.url)
@@ -79,11 +78,10 @@ class TestRecordAddView(TestCase):
         self.client = Client()
         self.url = reverse("records:add_item")
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
         # login user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_record_add_view_attributes(self) -> None:
         """Test record add view attributes"""
@@ -161,11 +159,10 @@ class TestWaterAddView(TestCase):
         self.client = Client()
         self.url = reverse("records:add_water")
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
         # login user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_water_add_view_attributes(self) -> None:
         """Test water add view attributes"""
@@ -239,7 +236,7 @@ class TestRecordListView(TestCase):
         self.client = Client()
         self.url = reverse("records:records")
         self.user = User.objects.create_user(
-            username="test-user", password="test-password"
+            email="test@user.com", password="test-password"
         )
 
     def test_record_list_view_attributes(self) -> None:
@@ -284,10 +281,10 @@ class TestUserRecordListView(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.user1 = User.objects.create_user(
-            username="test-user-1", password="test-password"
+            email="test@user1.com", password="test-password"
         )
         self.user2 = User.objects.create_user(
-            username="test-user-2", password="test-password"
+            email="test@user2.com", password="test-password"
         )
         self.url = reverse("records:detailed", kwargs={"user_id": self.user1.pk})
 
@@ -339,8 +336,7 @@ class TestWaterListView(TestCase):
         self.client = Client()
         self.url = reverse("records:detailed_water")
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
 
     def test_water_list_view_attributes(self) -> None:
@@ -388,12 +384,10 @@ class TestReportView(TestCase):
 
         # Create test users and add them to the "d52" group
         self.user1 = User.objects.create_user(
-            username="test-user-1",
-            password="test-password",
+            email="test@user1.com", password="test-password"
         )
         self.user2 = User.objects.create_user(
-            username="test-user-2",
-            password="test-password",
+            email="test@user2.com", password="test-password"
         )
         self.user1.groups.add(group)
         self.user2.groups.add(group)
@@ -440,8 +434,7 @@ class TestSearchListView(TestCase):
         self.client = Client()
         self.url = reverse("records:search")
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
 
     def test_search_list_view_attributes(self) -> None:
@@ -493,8 +486,7 @@ class TestDownloadTemplateView(TestCase):
         self.client = Client()
         self.group = Group.objects.create(name="d52")
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
         self.user.groups.add(self.group)
         self.url = reverse("records:download")
@@ -514,7 +506,7 @@ class TestDownloadTemplateView(TestCase):
         users = User.objects.filter(groups__in=[self.group])
 
         # login user
-        self.client.login(username="test-user", password="test-password")
+        self.client.login(email="test@user.com", password="test-password")
 
         # Send a GET request to the view
         response = self.client.get(self.url)
@@ -567,8 +559,7 @@ class TestUserXlsView(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.user = User.objects.create_user(
-            username="test-user",
-            password="test-password",
+            email="test@user.com", password="test-password"
         )
         self.url = reverse("records:user_xls", kwargs={"user_id": self.user.pk})
 

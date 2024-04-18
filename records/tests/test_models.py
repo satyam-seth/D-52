@@ -11,11 +11,11 @@ class RecordModelTest(TestCase):
     """Test Record Model"""
 
     def setUp(self) -> None:
-        self.adder = User.objects.create(
-            username="test-user-1", password="test-password-1"
+        self.adder = User.objects.create_user(
+            email="test@user1.com", password="test-password"
         )
-        self.purchaser = User.objects.create(
-            username="test-user-2", password="test-password-2"
+        self.purchaser = User.objects.create_user(
+            email="test@user2.com", password="test-password"
         )
 
     def test_record_creation(self) -> None:
@@ -45,14 +45,16 @@ class RecordModelTest(TestCase):
         # self.assertEqual(record.created_on, timezone.now())
 
         # assert string representation
-        self.assertEqual(str(record), f"{record.item} {record.purchaser.username}")
+        self.assertEqual(str(record), f"{record.item} {record.purchaser}")
 
 
 class WaterModelTest(TestCase):
     """Test Water Model"""
 
     def setUp(self) -> None:
-        self.adder = User.objects.create(username="test-user", password="test-password")
+        self.adder = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
 
     def test_water_creation(self) -> None:
         """Test water model instance creation"""

@@ -10,7 +10,9 @@ class ProfileModelTest(TestCase):
     """Test Profile Model"""
 
     def setUp(self) -> None:
-        self.user = User.objects.create(username="test-user", password="test-password")
+        self.user = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
 
     def test_profile_creation(self) -> None:
         """Test profile model for default values"""
@@ -26,4 +28,4 @@ class ProfileModelTest(TestCase):
         )
 
         # assert string representation
-        self.assertEqual(str(profile), f"{self.user.username}'s profile")
+        self.assertEqual(str(profile), f"{self.user}'s profile")
