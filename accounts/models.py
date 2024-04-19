@@ -103,3 +103,26 @@ class RoomMembership(models.Model):
 
     def __str__(self) -> str:
         return f"{self.room.name}-{self.user}"
+
+
+class RoomInvitation(models.Model):
+    """Model to store invitations for a room"""
+
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    CANCELED = "canceled"
+
+    STATUS_CHOICES = [
+        (PENDING, "Pending"),
+        (ACCEPTED, "Accepted"),
+        (REJECTED, "Rejected"),
+        (CANCELED, "Canceled"),
+    ]
+
+    room = models.ForeignKey(to=Room, on_delete=models.CASCADE)
+    email = models.EmailField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
+
+    def __str__(self):
+        return f"{self.email} - {self.room.name}"
