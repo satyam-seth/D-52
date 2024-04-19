@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import Profile, Room, RoomMembership
+from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
 from .models import User
 
@@ -79,3 +79,10 @@ class RoomMembershipAdmin(admin.ModelAdmin):
     """Admin configuration for the RoomMembership model"""
 
     list_display = ("id", "user", "room")
+
+
+@admin.register(RoomInvitation)
+class RoomInvitationAdmin(admin.ModelAdmin):
+    """Admin config for RoomInvitaion model"""
+
+    list_display = ("id", "room", "email", "status")
