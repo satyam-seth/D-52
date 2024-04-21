@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .managers import UserManager
+from .managers import RoomInvitationManager, UserManager
 
 
 class User(AbstractUser):
@@ -61,7 +62,7 @@ class RoomMembership(models.Model):
     """Model to store room membership"""
 
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="memberships")
 
     class Meta:
         unique_together = ("user", "room")
@@ -72,6 +73,13 @@ class RoomMembership(models.Model):
 
 class RoomInvitation(models.Model):
     """Model to store invitations for a room"""
+
+    class Meta:
+        # Define unique constraint to ensure no duplicate pending
+        # invitations for the same room and email
+        unique_together = ["room", "email", "status"]
+
+    objects = RoomInvitationManager()
 
     PENDING = "pending"
     ACCEPTED = "accepted"
@@ -91,3 +99,10 @@ class RoomInvitation(models.Model):
 
     def __str__(self):
         return f"{self.email} - {self.room.name}"
+
+    def save(self, *args, **kwargs):
+        if self.room.memberships.filter(user__email=self.email).exists():
+            raise ValidationError(
+                f"The email '{self.email}' has already joined the room '{self.room.name}'"
+            )
+        super().save(*args, **kwargs)
