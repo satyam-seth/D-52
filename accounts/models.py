@@ -100,6 +100,36 @@ class RoomInvitation(models.Model):
     def __str__(self):
         return f"{self.email} - {self.room.name}"
 
+    def accept(self) -> None:
+        """Accept the invitation"""
+
+        if self.status != self.PENDING:
+            raise ValidationError(
+                f"Unable to accept invitation with status '{self.status}'"
+            )
+        self.status = self.ACCEPTED
+        self.save()
+
+    def cancel(self) -> None:
+        """Cancel the invitation"""
+
+        if self.status != self.PENDING:
+            raise ValidationError(
+                f"Unable to cencel invitation with status '{self.status}'"
+            )
+        self.status = self.CANCELED
+        self.save()
+
+    def reject(self) -> None:
+        """Reject the invitation"""
+
+        if self.status != self.PENDING:
+            raise ValidationError(
+                f"Unable to reject invitation with status '{self.status}'"
+            )
+        self.status = self.REJECTED
+        self.save()
+
     def save(self, *args, **kwargs):
         if self.room.memberships.filter(user__email=self.email).exists():
             raise ValidationError(
