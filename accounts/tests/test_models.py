@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -56,7 +58,7 @@ class RoomInvitationModelTest(TestCase):
         # assert string representation
         self.assertEqual(str(invitation), f"{self.member_email} - {self.room.name}")
 
-    def test_accept_pending_invitation(self):
+    def test_accept_pending_invitation(self) -> None:
         """Test accepting a pending room invitation"""
 
         # create room invitation instance
@@ -70,7 +72,7 @@ class RoomInvitationModelTest(TestCase):
         # check that the status of the invitation is updated to 'accepted'
         self.assertEqual(invitation.status, RoomInvitation.ACCEPTED)
 
-    def test_accept_already_accepted_invitation(self):
+    def test_accept_already_accepted_invitation(self) -> None:
         """Test attempting to accept an already accepted room invitation"""
 
         # create room invitation with status 'accepted'
@@ -85,7 +87,7 @@ class RoomInvitationModelTest(TestCase):
         ):
             invitation.accept()
 
-    def test_cancel_pending_invitation(self):
+    def test_cancel_pending_invitation(self) -> None:
         """Test canceling a pending room invitation"""
 
         # create room invitation instance
@@ -99,7 +101,7 @@ class RoomInvitationModelTest(TestCase):
         # check that the status of the invitation is updated to 'canceled'
         self.assertEqual(invitation.status, RoomInvitation.CANCELED)
 
-    def test_cancel_already_accepted_invitation(self):
+    def test_cancel_already_accepted_invitation(self) -> None:
         """Test attempting to cancel an already accepted room invitation"""
 
         # create room invitation with status 'accepted'
@@ -114,7 +116,7 @@ class RoomInvitationModelTest(TestCase):
         ):
             invitation.cancel()
 
-    def test_reject_pending_invitation(self):
+    def test_reject_pending_invitation(self) -> None:
         """Test rejecting a pending room invitation"""
 
         # create room invitation instance
@@ -143,7 +145,7 @@ class RoomInvitationModelTest(TestCase):
         ):
             invitation.reject()
 
-    def test_unable_to_create_invitation_for_an_existing_room_member(self):
+    def test_unable_to_create_invitation_for_an_existing_room_member(self) -> None:
         """Test unable to create room invitation for an existing room member"""
 
         # create user for room member
@@ -158,3 +160,50 @@ class RoomInvitationModelTest(TestCase):
             RoomInvitation.objects.send_invitation(
                 room=self.room, email=self.member_email
             )
+
+    @patch.object(RoomInvitation.objects, "create")
+    @patch.object(RoomInvitation.objects, "_generate_signed_token")
+    def test_send_invitation(self, mock_generate_signed_token, mock_create) -> None:
+        """Test sending an invitation to join a room"""
+
+        # set up mock objects and return values
+        mock_invitation = RoomInvitation(id=1, room=self.room, email=self.member_email)
+        mock_create.return_value = mock_invitation
+        token = "mock_token"
+        mock_generate_signed_token.return_value = token
+
+        # call send_invitation
+        invitation = RoomInvitation.objects.send_invitation(
+            room=self.room, email=self.member_email
+        )
+
+        # assertions
+        self.assertEqual(invitation, mock_invitation)
+        mock_create.assert_called_once_with(room=self.room, email=self.member_email)
+        mock_generate_signed_token.assert_called_once_with(invitation=mock_invitation)
+
+    @patch.object(RoomInvitation, "accept")
+    @patch.object(RoomInvitation.objects, "_unsigned_token")
+    def test_accept_invitation(self, mock_unsigned_token, mock_accept) -> None:
+        """Test accepting an invitation"""
+        # set up mock objects and return values
+        invitation = RoomInvitation.objects.create(
+            room=self.room, email=self.member_email
+        )
+        token = "mock_token"
+        mock_unsigned_token.return_value = {
+            "id": invitation.id,
+            "room": self.room.id,
+            "email": self.member_email,
+        }
+
+        member = User.objects.create_user(
+            email=self.member_email, password="test-password"
+        )
+
+        # call accept_invitation
+        RoomInvitation.objects.accept_invitation(member, token)
+
+        # assertions
+        mock_unsigned_token.assert_called_once_with(token=token)
+        mock_accept.assert_called_once()

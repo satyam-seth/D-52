@@ -51,6 +51,8 @@ class RoomInvitationManager(models.Manager):
         self.salt = "c603df19008728cab0791fab1aec6f2f"
 
     def _get_payload_for_instance(self, invitation):
+        """Construct payload for instance to generate signed token"""
+
         return {
             "id": invitation.id,
             "room": invitation.room.id,
@@ -70,7 +72,7 @@ class RoomInvitationManager(models.Manager):
         signer = Signer(salt=self.salt)
         return signer.unsign_object(token)
 
-    def send_invite(self, room, email: str) -> None:
+    def send_invitation(self, room, email: str):
         """Create and send an invitation to join the specified room"""
 
         invitation = self.create(room=room, email=email)
