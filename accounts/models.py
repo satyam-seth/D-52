@@ -100,6 +100,8 @@ class RoomInvitation(models.Model):
     def __str__(self):
         return f"{self.email} - {self.room.name}"
 
+    # TODO: use signal to send invitation status change notification email
+
     def accept(self) -> None:
         """Accept the invitation"""
 
@@ -115,7 +117,7 @@ class RoomInvitation(models.Model):
 
         if self.status != self.PENDING:
             raise ValidationError(
-                f"Unable to cencel invitation with status '{self.status}'"
+                f"Unable to cancel invitation with status '{self.status}'"
             )
         self.status = self.CANCELED
         self.save()
