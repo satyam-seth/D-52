@@ -34,6 +34,28 @@ class ProfileModelTest(TestCase):
         self.assertEqual(str(profile), f"{self.user}'s profile")
 
 
+class RoomModelTest(TestCase):
+    """Test Room Model"""
+
+    def setUp(self) -> None:
+        self.admin = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+
+    def test_room_creation(self) -> None:
+        """Test room model for default values"""
+
+        # create room instance
+        room = Room.objects.create(name="test-room", admin=self.admin)
+
+        # assert field values
+        self.assertEqual(room.admin, self.admin)
+        self.assertEqual(room.name, "test-room")
+
+        # assert string representation
+        self.assertEqual(str(room), room.name)
+
+
 class RoomInvitationModelTest(TestCase):
     """Test RoomInvitation Model"""
 
