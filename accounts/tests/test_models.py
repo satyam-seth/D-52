@@ -56,6 +56,26 @@ class RoomModelTest(TestCase):
         self.assertEqual(str(room), room.name)
 
 
+class RoomMembershipModelTest(TestCase):
+    """Test Room Membership Model"""
+
+    def setUp(self) -> None:
+        self.admin = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
+
+    def test_room_membership_creation(self) -> None:
+        """Test room membership model for default values"""
+
+        # get room membership instance created by create_room_membership_for_admin signal
+        # to assert membership created
+        room_membership = RoomMembership.objects.get(room=self.room, member=self.admin)
+
+        # assert string representation
+        self.assertEqual(str(room_membership), f"{self.room.name}-{self.admin}")
+
+
 class RoomInvitationModelTest(TestCase):
     """Test RoomInvitation Model"""
 
@@ -174,7 +194,7 @@ class RoomInvitationModelTest(TestCase):
         member = User.objects.create_user(
             email=self.member_email, password="test-password"
         )
-        RoomMembership.objects.create(user=member, room=self.room)
+        RoomMembership.objects.create(member=member, room=self.room)
         with self.assertRaisesMessage(
             ValidationError,
             f"The email '{self.member_email}' has already joined the room '{self.room.name}'",

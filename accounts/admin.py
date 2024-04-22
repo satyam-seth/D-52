@@ -78,7 +78,7 @@ class RoomAdmin(admin.ModelAdmin):
 class RoomMembershipAdmin(admin.ModelAdmin):
     """Admin configuration for the RoomMembership model"""
 
-    list_display = ("id", "user", "room")
+    list_display = ("id", "member", "room")
 
 
 @admin.register(RoomInvitation)
