@@ -174,7 +174,7 @@ class RoomInvitationModelTest(TestCase):
         member = User.objects.create_user(
             email=self.member_email, password="test-password"
         )
-        RoomMembership.objects.create(user=member, room=self.room)
+        RoomMembership.objects.create(member=member, room=self.room)
         with self.assertRaisesMessage(
             ValidationError,
             f"The email '{self.member_email}' has already joined the room '{self.room.name}'",
