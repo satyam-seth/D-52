@@ -61,14 +61,14 @@ class Room(models.Model):
 class RoomMembership(models.Model):
     """Model to store room membership"""
 
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    member = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="memberships")
 
     class Meta:
-        unique_together = ("user", "room")
+        unique_together = ("member", "room")
 
     def __str__(self) -> str:
-        return f"{self.room.name}-{self.user}"
+        return f"{self.room.name}-{self.member}"
 
 
 class RoomInvitation(models.Model):
@@ -133,7 +133,7 @@ class RoomInvitation(models.Model):
         self.save()
 
     def save(self, *args, **kwargs):
-        if self.room.memberships.filter(user__email=self.email).exists():
+        if self.room.memberships.filter(member__email=self.email).exists():
             raise ValidationError(
                 f"The email '{self.email}' has already joined the room '{self.room.name}'"
             )

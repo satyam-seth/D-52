@@ -36,4 +36,4 @@ def create_room_membership_for_admin(
     """Signal receiver function for creating a room membership for admin upon room creation"""
 
     if created:
-        RoomMembership.objects.create(user=instance.admin, room=instance)
+        RoomMembership.objects.create(member=instance.admin, room=instance)
