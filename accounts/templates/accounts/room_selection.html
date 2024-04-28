@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Room Selection{% endblock title %}
+{% block content %}
+<div class="container-fluid pt-5 bg-info min-vh-100">
+    <div class="container-fluid my-5">
+        {% if messages %}
+        {% for message in messages %}
+        <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+            role="alert">
+            <strong>{{message}}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="container bg-white shadow-lg p-4 mb-5 rounded border">
+        <div class="row">
+            <div class="col">
+                  <h2 class="text-center alert alert-secondary my-3 shadow" role="alert">
+                    Room Invitations
+                  </h2>
+                  <div class="table-responsive text-center">
+                    <table class="table table-hover table-striped border">
+                      <thead>
+                        <tr>
+                          <th scope="col">S. No.</th>
+                          <th scope="col">Room</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for room_membership in room_memberships_page %}
+                        <tr>
+                          <th scope="row">{{forloop.counter}}</th>
+                          <td>{{ room_membership.room.name }}</td>
+                          <td>
+                            <form action="{% url 'accounts:room_selection' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="number" name="roomId" hidden value="{{ room_membership.room.id }}">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    Select
+                                </button>
+                            </form>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                    <div>
+                      {% include 'core/pagination.html' with page_obj=room_memberships_page %}
+                    </div>
+                  </div>
+              </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

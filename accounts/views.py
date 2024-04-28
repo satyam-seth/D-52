@@ -5,12 +5,14 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import CreateView, FormView, TemplateView, View
 
 from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
-from accounts.models import Profile
+from accounts.models import Profile, Room, RoomMembership
 
 
 # Create your views here.
@@ -76,6 +78,79 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
         # Login the user
         login(self.request, self.object)
         return valid
+
+
+class RoomSelectionView(LoginRequiredMixin, View):
+    """Room selection view to store current room id in session"""
+
+    http_method_names = ["get", "post"]
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """
+        Handle get request for room selection
+        If the user is a member of only one room, redirect them to the home page
+        with the selected room set in the session. If the user is a member of
+        multiple rooms, display the room selection page.
+        """
+
+        # get room membership
+        room_memberships = RoomMembership.objects.filter(member=request.user)
+
+        # If the user isn't a member of any group, redirect to the room page
+        if room_memberships.count() == 0:
+            return redirect(reverse_lazy("accounts:room"))
+
+        # If the user is a member of only one room, set that room in the session
+        # and redirect to the home page
+        if room_memberships.count() == 1:
+            room = room_memberships.first().room
+            messages.info(request, f"Welcome to the room '{room.name}'")
+            request.session["room_id"] = room.pk
+            return redirect(reverse_lazy("core:home"))
+
+        # If the user is a member of multiple rooms, let the user choose a room as the current room
+
+        paginator = Paginator(room_memberships, per_page=10, orphans=5)
+        page = request.GET.get("page")
+        room_memberships_page = paginator.get_page(page)
+
+        return render(
+            request,
+            "accounts/room_selection.html",
+            {"room_memberships_page": room_memberships_page},
+        )
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """
+        Handles the post request for room selection. If a valid room ID is provided
+        in the post data and the user is a member of that room, it saves the room ID in the session
+        and redirects to the home page. If the room ID is missing or invalid,
+        or if the user is not a member of the room,
+        it redirects back to the room selection page with an appropriate message.
+        """
+        room_id = request.POST.get("roomId")
+
+        # check room id present in post data
+        if room_id is None:
+            messages.warning(request, "Room ID is required")
+            return redirect(reverse_lazy("accounts:room_selection"))
+
+        # check room is exists
+        try:
+            room = Room.objects.get(id=room_id)
+        except Room.DoesNotExist:
+            messages.warning(request, "Room does not exist")
+            return redirect(reverse_lazy("accounts:room_selection"))
+
+        # room membership is exists
+        room_membership = RoomMembership.objects.filter(member=request.user, room=room)
+        if room_membership.exists():
+            messages.info(request, f"Welcome to the room '{room.name}'")
+            request.session["room_id"] = room.pk
+            return redirect(reverse_lazy("core:home"))
+
+        messages.warning(request, "You are not a member of requested Room")
+        return redirect(reverse_lazy("accounts:room_selection"))
 
 
 class RoomTemplateView(LoginRequiredMixin, TemplateView):
