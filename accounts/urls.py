@@ -16,9 +16,9 @@ urlpatterns = [
     path("logout/", views.UserLogoutView.as_view(), name="logout"),
     path("signup/", views.UserSignUpView.as_view(), name="signup"),
     path("room/", views.RoomTemplateView.as_view(), name="room"),
-    path("room/", views.RoomTemplateView.as_view(), name="room"),
-    path("room_create/", views.RoomCreateView.as_view(), name="room_create"),
     # path("room_join/", views.RoomJoinView.as_view(), name="room_join"),
+    path("room_create/", views.RoomCreateView.as_view(), name="room_create"),
+    path("room_selection/", views.RoomSelectionView.as_view(), name="room_selection"),
     path(
         "room_invitation/",
         views.RoomInvitationListView.as_view(),

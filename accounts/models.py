@@ -8,7 +8,7 @@ from .managers import RoomInvitationManager, UserManager
 
 
 class User(AbstractUser):
-    """User model for authntication"""
+    """User model for authentication"""
 
     username = None
     email = models.EmailField(_("email address"), unique=True)
