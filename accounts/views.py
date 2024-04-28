@@ -7,10 +7,10 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetComple
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
-from accounts.models import Profile
+from accounts.models import Profile, Room, RoomInvitation
 
 
 # Create your views here.
@@ -85,6 +85,24 @@ class RoomTemplateView(LoginRequiredMixin, TemplateView):
     """
 
     template_name = "accounts/room.html"
+
+
+# TODO: Only room admin can access this view
+class RoomInvitationListView(LoginRequiredMixin, ListView):
+    """View to render list room invitation"""
+
+    model = RoomInvitation
+    paginate_by = 10
+    paginate_orphans = 5
+    context_object_name = "room_invitation_list"
+    template_name = "accounts/room_invitation_list.html"
+    extra_context = {"room_invitation_active": "active"}
+
+    def get_queryset(self):
+        # TODO: remove this filter once room info for logged in user stored in session
+        room = Room.objects.filter(admin=self.request.user).first()
+        queryset = RoomInvitation.objects.filter(room=room)
+        return queryset
 
 
 # class RoomJoinView(LoginRequiredMixin, FormView):
