@@ -92,7 +92,6 @@ class RoomSelectionView(LoginRequiredMixin, View):
         with the selected room set in the session. If the user is a member of
         multiple rooms, display the room selection page.
         """
-
         # get room membership
         room_memberships = RoomMembership.objects.filter(member=request.user)
 
@@ -114,10 +113,17 @@ class RoomSelectionView(LoginRequiredMixin, View):
         page = request.GET.get("page")
         room_memberships_page = paginator.get_page(page)
 
+        # get next url and pass as context so that
+        # we can pass it as params in room selection post request
+        next_path = self.request.GET.get("next")
+
         return render(
             request,
             "accounts/room_selection.html",
-            {"room_memberships_page": room_memberships_page},
+            {
+                "room_memberships_page": room_memberships_page,
+                "next_path": next_path,
+            },
         )
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -147,7 +153,10 @@ class RoomSelectionView(LoginRequiredMixin, View):
         if room_membership.exists():
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
-            return redirect(reverse_lazy("core:home"))
+            next_path = self.request.GET.get("next")
+            if next_path is None:
+                return redirect(reverse_lazy("core:home"))
+            return redirect(next_path)
 
         messages.warning(request, "You are not a member of requested Room")
         return redirect(reverse_lazy("accounts:room_selection"))

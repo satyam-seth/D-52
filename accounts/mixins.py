@@ -10,6 +10,9 @@ class RoomSessionMixin:
 
         if "room_id" not in request.session:
             # Redirect to the room page
-            return redirect(reverse_lazy("accounts:room_selection"))
+            # Preserve the original URL as the 'next' parameter
+            next_url = request.get_full_path()
+            redirect_url = f"{reverse_lazy('accounts:room_selection')}?next={next_url}"
+            return redirect(redirect_url)
 
         return super().dispatch(request, *args, **kwargs)
