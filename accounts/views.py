@@ -5,13 +5,14 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
 
 from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
+from accounts.mixins import RoomRequiredMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
 
@@ -163,7 +164,7 @@ class RoomTemplateView(LoginRequiredMixin, TemplateView):
 
 
 # TODO: Only room admin can access this view
-class RoomInvitationListView(LoginRequiredMixin, ListView):
+class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render list room invitation"""
 
     model = RoomInvitation
@@ -174,9 +175,8 @@ class RoomInvitationListView(LoginRequiredMixin, ListView):
     extra_context = {"room_invitation_active": "active"}
 
     def get_queryset(self):
-        # TODO: remove this filter once room info for logged in user stored in session
-        room = Room.objects.filter(admin=self.request.user).first()
-        queryset = RoomInvitation.objects.filter(room=room)
+        room_id = self.request.session["room_id"]
+        queryset = RoomInvitation.objects.filter(room__id=room_id)
         return queryset
 
 
