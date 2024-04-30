@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
 
-class RoomSessionMixin:
+class RoomRequiredMixin:
     """Mixin to check if the room id is present in the session."""
 
     def dispatch(self, request, *args, **kwargs):

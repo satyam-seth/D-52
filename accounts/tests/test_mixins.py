@@ -3,7 +3,7 @@ from http import HTTPStatus
 from django.test import RequestFactory, TestCase
 from django.urls import reverse_lazy
 
-from accounts.mixins import RoomSessionMixin
+from accounts.mixins import RoomRequiredMixin
 
 
 class TestRoomRequiredMixin(TestCase):
@@ -21,7 +21,7 @@ class TestRoomRequiredMixin(TestCase):
         request.session = {}
 
         # Create a view instance with the RoomSessionMixin
-        view = RoomSessionMixin()
+        view = RoomRequiredMixin()
 
         # Call the dispatch method with the request
         response = view.dispatch(request)
@@ -39,7 +39,7 @@ class TestRoomRequiredMixin(TestCase):
         request.session = {"room_id": 1}
 
         # Create a view instance with the RoomSessionMixin
-        view = RoomSessionMixin()
+        view = RoomRequiredMixin()
 
         # Assert calling dispatch should call super dispatch
         with self.assertRaisesMessage(
