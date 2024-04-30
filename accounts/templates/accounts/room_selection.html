@@ -36,7 +36,7 @@
                           <th scope="row">{{forloop.counter}}</th>
                           <td>{{ room_membership.room.name }}</td>
                           <td>
-                            <form action="{% url 'accounts:room_selection' %}" method="POST">
+                            <form action="{% url 'accounts:room_selection' %}{% if next_path %}?next={{ next_path }}{% endif %}" method="POST">
                                 {% csrf_token %}
                                 <input type="number" name="roomId" hidden value="{{ room_membership.room.id }}">
                                 <button type="submit" class="btn btn-sm btn-primary">
