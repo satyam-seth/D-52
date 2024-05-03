@@ -15,20 +15,19 @@ class TestRoomRequiredMixin(TestCase):
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
+        self.request = self.factory.get("/")
+
+        # Create a view instance with the RoomSessionMixin
+        self.view = RoomSessionMixin()
 
     def test_redirect_to_room_selection(self) -> None:
         """Test redirect to room selection"""
 
-        # Create a request object without the room ID in the session
-        request = self.factory.get("/")
         # Empty session
-        request.session = {}
-
-        # Create a view instance with the RoomSessionMixin
-        view = RoomSessionMixin()
+        self.request.session = {}
 
         # Call the dispatch method with the request
-        response = view.dispatch(request)
+        response = self.view.dispatch(self.request)
 
         # Check that the response is a redirect to the room selection page
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -37,20 +36,15 @@ class TestRoomRequiredMixin(TestCase):
     def test_not_redirect_to_room_selection(self) -> None:
         """Test not redirect to room selection"""
 
-        # Create a request object without the room ID in the session
-        request = self.factory.get("/")
         # Set room id in session
-        request.session = {"room_id": 1}
-
-        # Create a view instance with the RoomSessionMixin
-        view = RoomSessionMixin()
+        self.request.session = {"room_id": 1}
 
         # Assert calling dispatch should call super dispatch
         with self.assertRaisesMessage(
             AttributeError, "'super' object has no attribute 'dispatch'"
         ):
             # Call the dispatch method with the request
-            view.dispatch(request)
+            self.view.dispatch(self.request)
 
 
 class TestRoomAdminRequiredMixin(TestCase):
