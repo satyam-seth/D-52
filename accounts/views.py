@@ -6,12 +6,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
 
-from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
+from accounts.forms import (
+    LoginForm,
+    ProfileUpdateForm,
+    RoomCreateForm,
+    RoomInvitationForm,
+    SignUpForm,
+)
 from accounts.mixins import RoomAdminRequiredMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
@@ -177,6 +184,38 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
         room_id = self.request.session["room_id"]
         queryset = RoomInvitation.objects.filter(room__id=room_id)
         return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["form"] = RoomInvitationForm()
+        return context
+
+
+class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        form = RoomInvitationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+
+            room_id = self.request.session["room_id"]
+            room = Room.objects.get(id=room_id)
+
+            try:
+                RoomInvitation.objects.send_invitation(room=room, email=email)
+                messages.success(
+                    request,
+                    f"Email: '{email}' is successfully invited to room '{room.name}'",
+                )
+            except IntegrityError:
+                messages.warning(
+                    request,
+                    f"Email: '{email}' is already invited to room '{room.name}'",
+                )
+        else:
+            messages.error(request, "Enter a valid email address.")
+        return redirect(reverse_lazy("accounts:room_invitation"))
 
 
 # class RoomJoinView(LoginRequiredMixin, FormView):

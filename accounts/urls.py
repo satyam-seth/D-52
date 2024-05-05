@@ -25,6 +25,11 @@ urlpatterns = [
         name="room_invitation",
     ),
     path(
+        "room_invite/",
+        views.RoomInviteView.as_view(),
+        name="room_invite",
+    ),
+    path(
         "password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"
     ),
     path(
