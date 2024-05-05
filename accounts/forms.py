@@ -9,7 +9,7 @@ from django.contrib.auth.forms import (
 )
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import Profile, Room
+from accounts.models import Profile, Room, RoomInvitation
 
 User = get_user_model()
 
@@ -96,3 +96,12 @@ class RoomCreateForm(forms.ModelForm):
         fields = ("name",)
         labels = {"name": "Room Name:"}
         widgets = {"name": forms.TextInput(attrs={"class": "form-control"})}
+
+
+class RoomInvitationForm(forms.ModelForm):
+    """Form to invite someone to a room."""
+
+    class Meta:
+        model = RoomInvitation
+        fields = ("email",)
+        widgets = {"email": forms.EmailInput(attrs={"class": "form-control"})}
