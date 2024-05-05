@@ -8,7 +8,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
 
@@ -200,7 +200,7 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
             email = form.cleaned_data["email"]
 
             room_id = self.request.session["room_id"]
-            room = Room.objects.get(id=room_id)
+            room = get_object_or_404(Room, id=room_id)
 
             try:
                 RoomInvitation.objects.send_invitation(room=room, email=email)
@@ -214,7 +214,10 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
                     f"Email: '{email}' is already invited to room '{room.name}'",
                 )
         else:
-            messages.error(request, "Enter a valid email address.")
+            # Display specific form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
         return redirect(reverse_lazy("accounts:room_invitation"))
 
 
