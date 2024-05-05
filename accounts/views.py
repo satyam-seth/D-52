@@ -12,7 +12,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
 
 from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
-from accounts.mixins import RoomRequiredMixin
+from accounts.mixins import RoomAdminRequiredMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
 
@@ -163,8 +163,7 @@ class RoomTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/room.html"
 
 
-# TODO: Only room admin can access this view
-class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
+class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListView):
     """View to render list room invitation"""
 
     model = RoomInvitation
