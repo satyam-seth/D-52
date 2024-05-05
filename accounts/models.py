@@ -79,6 +79,10 @@ class RoomInvitation(models.Model):
         # invitations for the same room and email
         unique_together = ["room", "email", "status"]
 
+        # TODO: in future add created_at field and update ordering to '-created_id'
+        # Order by primary key in descending order
+        ordering = ["-pk"]
+
     objects = RoomInvitationManager()
 
     PENDING = "pending"

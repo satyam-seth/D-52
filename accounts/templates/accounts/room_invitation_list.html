@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Room Invitation{% endblock title %}
+{% block content %}
+<div class="container-fluid pt-5 bg-info min-vh-100">
+    <div class="container-fluid my-5">
+        {% if messages %}
+        {% for message in messages %}
+        <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+            role="alert">
+            <strong>{{message}}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="container bg-white shadow-lg p-4 mb-5 rounded border">
+        <div class="row">
+            <div class="col">
+                  <h2 class="text-center alert alert-secondary my-3 shadow" role="alert">
+                    Room Invitations
+                  </h2>
+                  {% if room_invitation_list %}
+                  <div class="table-responsive text-center">
+                    <table class="table table-hover table-striped border">
+                      <thead>
+                        <tr>
+                          <th scope="col">S. No.</th>
+                          <th scope="col">Email</th>
+                          <th scope="col">Status</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for invitation in room_invitation_list %}
+                        <tr>
+                          <th scope="row">{{forloop.counter0|add:page_obj.start_index }}</th>
+                          <td>{{invitation.email}}</td>
+                          <td>{{invitation.status|upper}}</td>
+                          <td>
+                            {% include 'accounts/room_invitation_action_btn.html' %}
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                    <div>
+                      {% include 'core/pagination.html' %}
+                    </div>
+                  </div>
+                  {% else %}
+                  <h4 class="text-center alert alert-warning">No Invitation Found</h4>
+                  {% endif %}
+              </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
