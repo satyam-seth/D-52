@@ -114,7 +114,7 @@ class RoomSelectionView(LoginRequiredMixin, View):
             room = room_memberships.first().room
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
-            return redirect(reverse_lazy("core:home"))
+            return redirect(reverse_lazy("accounts:room_invitation"))
 
         # If the user is a member of multiple rooms, let the user choose a room as the current room
 
@@ -155,6 +155,7 @@ class RoomSelectionView(LoginRequiredMixin, View):
         if room_membership.exists():
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
+            # TODO: redirect to room dashboard page
             return redirect(reverse_lazy("core:home"))
 
         messages.warning(request, "You are not a member of requested Room")
@@ -259,8 +260,7 @@ class RoomCreateView(LoginRequiredMixin, CreateView):
 
     form_class = RoomCreateForm
     template_name = "accounts/room_create.html"
-    # TODO: redirect to invite members view
-    success_url = reverse_lazy("core:home")
+    success_url = reverse_lazy("accounts:room_invitation")
 
     def form_valid(self, form: RoomCreateForm) -> HttpResponse:
         room = form.save(commit=False)
