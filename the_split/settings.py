@@ -137,7 +137,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
 # Auth
-LOGIN_REDIRECT_URL = "core:home"
+LOGIN_REDIRECT_URL = "accounts:room_selection"
 # Set number of seconds a password reset link is valid for
 PASSWORD_RESET_TIMEOUT = 600000
 
