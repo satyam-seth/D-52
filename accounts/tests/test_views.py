@@ -329,7 +329,7 @@ class TestRoomCerateView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertEqual(view.form_class, RoomCreateForm)
         self.assertEqual(view.template_name, "accounts/room_create.html")
-        self.assertTrue(view.success_url, reverse("core:home"))
+        self.assertEqual(view.success_url, reverse("accounts:room_invitation"))
 
     def test_room_create_view_working(self) -> None:
         """Test room create view working"""
@@ -355,8 +355,12 @@ class TestRoomCerateView(TestCase):
             "You have joined the room 'test-room' successfully !!",
         )
 
-        # Assert that the user is redirected to the home page
-        self.assertRedirects(response, reverse("core:home"))
+        # Assert that the user is redirected to the room invitation page
+        self.assertRedirects(
+            response,
+            reverse("accounts:room_invitation"),
+            fetch_redirect_response=False,
+        )
 
 
 class TestMyPasswordResetCompleteView(TestCase):

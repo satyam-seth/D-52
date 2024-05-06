@@ -9,6 +9,7 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
+    # TODO: make first_name and last_name required
     def _create_user(self, email, password, **extra_fields):
         """Create and save a User with the given email and password."""
 

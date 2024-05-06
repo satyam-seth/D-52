@@ -6,12 +6,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
 
-from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
+from accounts.forms import (
+    LoginForm,
+    ProfileUpdateForm,
+    RoomCreateForm,
+    RoomInvitationForm,
+    SignUpForm,
+)
 from accounts.mixins import RoomAdminRequiredMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
@@ -107,7 +114,7 @@ class RoomSelectionView(LoginRequiredMixin, View):
             room = room_memberships.first().room
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
-            return redirect(reverse_lazy("core:home"))
+            return redirect(reverse_lazy("accounts:room_invitation"))
 
         # If the user is a member of multiple rooms, let the user choose a room as the current room
 
@@ -148,6 +155,7 @@ class RoomSelectionView(LoginRequiredMixin, View):
         if room_membership.exists():
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
+            # TODO: redirect to room dashboard page
             return redirect(reverse_lazy("core:home"))
 
         messages.warning(request, "You are not a member of requested Room")
@@ -177,6 +185,41 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
         room_id = self.request.session["room_id"]
         queryset = RoomInvitation.objects.filter(room__id=room_id)
         return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["form"] = RoomInvitationForm()
+        return context
+
+
+class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        form = RoomInvitationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+
+            room_id = self.request.session["room_id"]
+            room = get_object_or_404(Room, id=room_id)
+
+            try:
+                RoomInvitation.objects.send_invitation(room=room, email=email)
+                messages.success(
+                    request,
+                    f"Email: '{email}' is successfully invited to room '{room.name}'",
+                )
+            except IntegrityError:
+                messages.warning(
+                    request,
+                    f"Email: '{email}' is already invited to room '{room.name}'",
+                )
+        else:
+            # Display specific form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
+        return redirect(reverse_lazy("accounts:room_invitation"))
 
 
 # class RoomJoinView(LoginRequiredMixin, FormView):
@@ -217,8 +260,7 @@ class RoomCreateView(LoginRequiredMixin, CreateView):
 
     form_class = RoomCreateForm
     template_name = "accounts/room_create.html"
-    # TODO: redirect to invite members view
-    success_url = reverse_lazy("core:home")
+    success_url = reverse_lazy("accounts:room_invitation")
 
     def form_valid(self, form: RoomCreateForm) -> HttpResponse:
         room = form.save(commit=False)
