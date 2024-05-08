@@ -1,7 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
+from accounts.forms import (
+    LoginForm,
+    ProfileUpdateForm,
+    RoomCreateForm,
+    RoomInvitation,
+    RoomInvitationForm,
+    SignUpForm,
+)
 from accounts.models import Profile, Room
 
 User = get_user_model()
@@ -201,10 +208,23 @@ class TestRoomCreateForm(TestCase):
 class TestProfileUpdateForm(TestCase):
     """Test Profile Update Form"""
 
-    def test_group_create_form_field(self) -> None:
+    def test_profile_update_form_field(self) -> None:
         """test profile update form field"""
 
         form = ProfileUpdateForm()
 
         self.assertEqual(form.Meta.model, Profile)
         self.assertEqual(form.Meta.fields, ["avatar", "cover_photo"])
+
+
+class TestRoomInviteForm(TestCase):
+    """Test Room Invite From"""
+
+    def test_room_invite_form_field(self) -> None:
+        """test profile update form field"""
+
+        form = RoomInvitationForm()
+
+        self.assertEqual(form.Meta.model, RoomInvitation)
+        self.assertEqual(form.Meta.fields, ("email",))
+        self.assertEqual(form.fields["email"].widget.attrs["class"], "form-control")
