@@ -7,16 +7,24 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import CreateView, FormView, ListView, TemplateView
 
-from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
-from accounts.models import Profile
+from accounts.forms import (
+    LoginForm,
+    ProfileUpdateForm,
+    RoomCreateForm,
+    RoomInvitationForm,
+    SignUpForm,
+)
+from accounts.mixins import RoomAdminRequiredMixin
+from accounts.models import Profile, Room, RoomInvitation
 from accounts.views import (
     ProfileTemplateView,
     ProfileUpdateView,
     RoomCreateView,
+    RoomInvitationListView,
     RoomTemplateView,
     UserLoginView,
     UserLogoutView,
@@ -361,6 +369,68 @@ class TestRoomCerateView(TestCase):
             reverse("accounts:room_invitation"),
             fetch_redirect_response=False,
         )
+
+
+class TestRoomInvitationListView(TransactionTestCase):
+    """Test Room Invitation list view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:room_invitation")
+        self.user = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+    def test_room_invitation_list_view_attributes(self) -> None:
+        "Test Room Invitation list view attributes"
+
+        view = RoomInvitationListView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomAdminRequiredMixin)
+        self.assertIsInstance(view, ListView)
+        self.assertEqual(view.model, RoomInvitation)
+        self.assertEqual(view.paginate_by, 10)
+        self.assertEqual(view.paginate_orphans, 5)
+        self.assertEqual(view.ordering, ["-id"])
+        self.assertEqual(view.context_object_name, "room_invitation_list")
+        self.assertEqual(view.template_name, "accounts/room_invitation_list.html")
+        self.assertEqual(view.extra_context, {"room_invitation_active": "active"})
+
+    def test_room_invitation_list_view_working(self) -> None:
+        """Test Room Invitation list view working"""
+
+        # Create a room invitation
+        RoomInvitation.objects.create(
+            room=self.room,
+            email="test@member.com",
+            status=RoomInvitation.PENDING,
+        )
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # Make a GET request to the view
+        response = self.client.get(self.url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "accounts/room_invitation_list.html")
+
+        # Check that the records are present in the context
+        room_invitations = response.context["room_invitation_list"]
+        self.assertQuerysetEqual(room_invitations, RoomInvitation.objects.all())
+
+        # Check that room invitation form present in the context
+        form = response.context["form"]
+        self.assertIsInstance(form, RoomInvitationForm)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
