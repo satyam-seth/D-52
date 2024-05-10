@@ -194,9 +194,13 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
 
 
 class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+    """View to handle room invite post requests"""
+
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        """Handle POST requests for inviting users to a room"""
+
         form = RoomInvitationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
