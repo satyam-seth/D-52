@@ -177,6 +177,7 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
     model = RoomInvitation
     paginate_by = 10
     paginate_orphans = 5
+    ordering = ["-id"]
     context_object_name = "room_invitation_list"
     template_name = "accounts/room_invitation_list.html"
     extra_context = {"room_invitation_active": "active"}

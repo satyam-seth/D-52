@@ -9,14 +9,16 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from accounts.forms import LoginForm, ProfileUpdateForm, RoomCreateForm, SignUpForm
-from accounts.models import Profile
+from accounts.mixins import RoomAdminRequiredMixin
+from accounts.models import Profile, RoomInvitation
 from accounts.views import (
     ProfileTemplateView,
     ProfileUpdateView,
     RoomCreateView,
+    RoomInvitationListView,
     RoomTemplateView,
     UserLoginView,
     UserLogoutView,
@@ -361,6 +363,32 @@ class TestRoomCerateView(TestCase):
             reverse("accounts:room_invitation"),
             fetch_redirect_response=False,
         )
+
+
+class TestRoomInvitationListView(TestCase):
+    """Test Room Invitation list view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:room_invitation")
+        self.user = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+
+    def test_room_invitation_list_view_attributes(self) -> None:
+        "Test Room Invitation list view attributes"
+
+        view = RoomInvitationListView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomAdminRequiredMixin)
+        self.assertIsInstance(view, ListView)
+        self.assertEqual(view.model, RoomInvitation)
+        self.assertEqual(view.paginate_by, 10)
+        self.assertEqual(view.paginate_orphans, 5)
+        self.assertEqual(view.ordering, ["-id"])
+        self.assertEqual(view.context_object_name, "room_invitation_list")
+        self.assertEqual(view.template_name, "accounts/room_invitation_list.html")
+        self.assertEqual(view.extra_context, {"room_invitation_active": "active"})
 
 
 class TestMyPasswordResetCompleteView(TestCase):
