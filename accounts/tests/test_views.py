@@ -28,6 +28,7 @@ from accounts.views import (
     RoomCreateView,
     RoomInvitationListView,
     RoomInviteView,
+    RoomSelectionView,
     RoomTemplateView,
     UserLoginView,
     UserLogoutView,
@@ -521,6 +522,18 @@ class TestRoomInviteView(TransactionTestCase):
 
         # Check if the view redirects to the room invitations page
         self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+
+class TestRoomSelectionView(TestCase):
+    """Test Room Selection view"""
+
+    def test_room_invite_view_attributes(self) -> None:
+        "Test Room Selection view attributes"
+
+        view = RoomSelectionView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, View)
+        self.assertEqual(view.http_method_names, ["get", "post"])
 
 
 class TestMyPasswordResetCompleteView(TestCase):
