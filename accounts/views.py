@@ -177,6 +177,8 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
     model = RoomInvitation
     paginate_by = 10
     paginate_orphans = 5
+    # TODO: in future add created_at field and update ordering to '-created_id'
+    # Order by primary key in descending order
     ordering = ["-id"]
     context_object_name = "room_invitation_list"
     template_name = "accounts/room_invitation_list.html"
