@@ -102,7 +102,9 @@ class RoomSelectionView(LoginRequiredMixin, View):
         """
 
         # get room membership
-        room_memberships = RoomMembership.objects.filter(member=request.user)
+        room_memberships = RoomMembership.objects.filter(member=request.user).order_by(
+            "-created_on"
+        )
 
         # If the user isn't a member of any group, redirect to the room page
         if room_memberships.count() == 0:
