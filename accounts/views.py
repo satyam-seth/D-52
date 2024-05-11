@@ -186,7 +186,7 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
 
     def get_queryset(self):
         room_id = self.request.session["room_id"]
-        queryset = RoomInvitation.objects.filter(room__id=room_id)
+        queryset = super().get_queryset().filter(room__id=room_id)
         return queryset
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
