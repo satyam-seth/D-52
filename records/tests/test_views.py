@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
-from django.test import Client, TestCase
+from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import ListView, TemplateView, View
@@ -229,7 +229,7 @@ class TestWaterAddView(TestCase):
         self.assertEqual(Water.objects.count(), 0)
 
 
-class TestRecordListView(TestCase):
+class TestRecordListView(TransactionTestCase):
     """Test record list view"""
 
     def setUp(self) -> None:
@@ -272,7 +272,7 @@ class TestRecordListView(TestCase):
 
         # Check that the records are present in the context
         records = response.context["record_list"]
-        self.assertEqual(records.count(), 1)
+        self.assertQuerysetEqual(records, Record.objects.all())
 
 
 class TestUserRecordListView(TestCase):
@@ -296,6 +296,7 @@ class TestUserRecordListView(TestCase):
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
+        self.assertEqual(view.ordering, ["-purchase_date"])
 
     def test_user_record_list_view_working(self) -> None:
         """Test user record list view working"""
@@ -325,11 +326,11 @@ class TestUserRecordListView(TestCase):
 
         # Check that the records purchased by user1 are present in the context
         records = response.context["record_list"]
-        self.assertEqual(records.count(), 1)
+        self.assertQuerysetEqual(records, Record.objects.filter(item="Test Item 1"))
         self.assertTrue(all(record.purchaser == self.user1 for record in records))
 
 
-class TestWaterListView(TestCase):
+class TestWaterListView(TransactionTestCase):
     """Test water list view"""
 
     def setUp(self) -> None:
@@ -369,7 +370,7 @@ class TestWaterListView(TestCase):
 
         # Check that the water records are present in the context
         waters = response.context["water_list"]
-        self.assertEqual(waters.count(), 1)
+        self.assertQuerysetEqual(waters, Water.objects.all())
 
 
 class TestReportView(TestCase):
@@ -427,7 +428,7 @@ class TestReportView(TestCase):
         self.assertEqual(response.context["each_user_records"][1]["user"], self.user2)
 
 
-class TestSearchListView(TestCase):
+class TestSearchListView(TransactionTestCase):
     """Test search list view"""
 
     def setUp(self) -> None:
@@ -475,7 +476,9 @@ class TestSearchListView(TestCase):
 
         # Check that the records contain item "item" are present in the context
         records = response.context["record_list"]
-        self.assertEqual(records.count(), 1)
+        self.assertQuerysetEqual(
+            records, Record.objects.filter(item="Test Item Good 2")
+        )
         self.assertEqual(records[0], second_record)
 
 
