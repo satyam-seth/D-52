@@ -63,6 +63,8 @@ class RoomMembership(models.Model):
 
     member = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="memberships")
+    modified_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("member", "room")
@@ -78,10 +80,6 @@ class RoomInvitation(models.Model):
         # Define unique constraint to ensure no duplicate pending
         # invitations for the same room and email
         unique_together = ["room", "email", "status"]
-
-        # TODO: in future add created_at field and update ordering to '-created_id'
-        # Order by primary key in descending order
-        ordering = ["-pk"]
 
     objects = RoomInvitationManager()
 

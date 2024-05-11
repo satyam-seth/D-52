@@ -102,7 +102,9 @@ class RoomSelectionView(LoginRequiredMixin, View):
         """
 
         # get room membership
-        room_memberships = RoomMembership.objects.filter(member=request.user)
+        room_memberships = RoomMembership.objects.filter(member=request.user).order_by(
+            "-created_on"
+        )
 
         # If the user isn't a member of any group, redirect to the room page
         if room_memberships.count() == 0:
@@ -177,6 +179,8 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
     model = RoomInvitation
     paginate_by = 10
     paginate_orphans = 5
+    # TODO: in future add created_at field and update ordering to '-created_id'
+    # Order by primary key in descending order
     ordering = ["-id"]
     context_object_name = "room_invitation_list"
     template_name = "accounts/room_invitation_list.html"
@@ -184,7 +188,7 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
 
     def get_queryset(self):
         room_id = self.request.session["room_id"]
-        queryset = RoomInvitation.objects.filter(room__id=room_id)
+        queryset = super().get_queryset().filter(room__id=room_id)
         return queryset
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -194,9 +198,13 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
 
 
 class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+    """View to handle room invite post requests"""
+
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        """Handle POST requests for inviting users to a room"""
+
         form = RoomInvitationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
