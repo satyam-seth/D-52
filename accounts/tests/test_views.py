@@ -464,6 +464,24 @@ class TestRoomInviteView(TestCase):
         self.assertIsInstance(view, View)
         self.assertEqual(view.http_method_names, ["post"])
 
+    def test_invite_new_member_form(self):
+        """Test invite new member"""
+
+        # Post form
+        data = {"email": "test@member.com"}
+        response = self.client.post(self.url, data, follow=True)
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            f"Email: '{data['email']}' is successfully invited to room '{self.room.name}'",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
+
     def test_post_invalid_form(self):
         """Test post invalid form"""
 
