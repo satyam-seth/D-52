@@ -436,7 +436,7 @@ class TestRoomInvitationListView(TransactionTestCase):
         self.assertIsInstance(form, RoomInvitationForm)
 
 
-class TestRoomInviteView(TestCase):
+class TestRoomInviteView(TransactionTestCase):
     """Test Room Invite view"""
 
     def setUp(self):
@@ -477,6 +477,29 @@ class TestRoomInviteView(TestCase):
         self.assertEqual(
             str(messages[0]),
             f"Email: '{data['email']}' is successfully invited to room '{self.room.name}'",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+    def test_invite_already_invited_member_form(self):
+        """Test invite already_invited member"""
+
+        member_email = "test@member.com"
+
+        # Create room invitation
+        RoomInvitation.objects.create(room=self.room, email=member_email)
+
+        # Post form
+        data = {"email": member_email}
+        response = self.client.post(self.url, data, follow=True)
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            f"Email: '{member_email}' is already invited to room '{self.room.name}'",
         )
 
         # Check if the view redirects to the room invitations page
