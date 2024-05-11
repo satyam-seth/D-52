@@ -227,7 +227,7 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
             # Display specific form errors
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"{error}")
+                    messages.error(request, f"{field.capitalize()}: {error}")
         return redirect(reverse_lazy("accounts:room_invitation"))
 
 

@@ -5,10 +5,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase, TransactionTestCase
-from django.urls import reverse
+from django.test import Client, RequestFactory, TestCase, TransactionTestCase
+from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from accounts.forms import (
@@ -25,6 +27,7 @@ from accounts.views import (
     ProfileUpdateView,
     RoomCreateView,
     RoomInvitationListView,
+    RoomInviteView,
     RoomTemplateView,
     UserLoginView,
     UserLogoutView,
@@ -431,6 +434,93 @@ class TestRoomInvitationListView(TransactionTestCase):
         # Check that room invitation form present in the context
         form = response.context["form"]
         self.assertIsInstance(form, RoomInvitationForm)
+
+
+class TestRoomInviteView(TransactionTestCase):
+    """Test Room Invite view"""
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("accounts:room_invite")
+        self.user = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+    def test_room_invite_view_attributes(self) -> None:
+        "Test Room Invite view attributes"
+
+        view = RoomInviteView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomAdminRequiredMixin)
+        self.assertIsInstance(view, View)
+        self.assertEqual(view.http_method_names, ["post"])
+
+    def test_invite_new_member_form(self):
+        """Test invite new member"""
+
+        # Post form
+        data = {"email": "test@member.com"}
+        response = self.client.post(self.url, data, follow=True)
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            f"Email: '{data['email']}' is successfully invited to room '{self.room.name}'",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+    def test_invite_already_invited_member_form(self):
+        """Test invite already_invited member"""
+
+        member_email = "test@member.com"
+
+        # Create room invitation
+        RoomInvitation.objects.create(room=self.room, email=member_email)
+
+        # Post form
+        data = {"email": member_email}
+        response = self.client.post(self.url, data, follow=True)
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            f"Email: '{member_email}' is already invited to room '{self.room.name}'",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+    def test_post_invalid_form(self):
+        """Test post invalid form"""
+
+        # Post empty form
+        response = self.client.post(self.url, {}, follow=True)
+
+        # Assert that the success message is displayed
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            "Email: This field is required.",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
 
 
 class TestMyPasswordResetCompleteView(TestCase):
