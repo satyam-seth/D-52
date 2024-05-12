@@ -7,7 +7,12 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetComple
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.http import HttpRequest, HttpResponse
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
@@ -278,10 +283,35 @@ class RoomInvitationJoinView(LoginRequiredMixin, View):
 
     http_method_names = ["get"]
 
+    def check_room_invitation_token_valid(self, token: str) -> bool:
+        """Check room invitation token valid"""
+
+        token_payload = RoomInvitation.objects.unsigned_token(token)
+
+        try:
+            RoomInvitation.objects.get(
+                id=token_payload["id"],
+                status=RoomInvitation.PENDING,
+            )
+            return True
+
+        except RoomInvitation.DoesNotExist:
+            return False
+
     def get(self, request: HttpRequest) -> HttpResponse:
         """Handle get request for room invitation join"""
 
-        return HttpResponse("Hello")
+        token = request.GET.get("token")
+
+        if token is None:
+            return HttpResponseNotFound()
+
+        # check token is valid or not
+        if self.check_room_invitation_token_valid(token) == False:
+            return HttpResponseBadRequest()
+
+        # TODO: pass room details in context
+        return render(request, "accounts/room_invitation_join.html", {"token": token})
 
 
 class RoomCreateView(LoginRequiredMixin, CreateView):
