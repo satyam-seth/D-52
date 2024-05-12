@@ -14,7 +14,10 @@ class ProfileModelTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
 
     def test_profile_creation(self) -> None:
@@ -39,7 +42,10 @@ class RoomModelTest(TestCase):
 
     def setUp(self) -> None:
         self.admin = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
 
     def test_room_creation(self) -> None:
@@ -61,7 +67,10 @@ class RoomMembershipModelTest(TestCase):
 
     def setUp(self) -> None:
         self.admin = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         self.room = Room.objects.create(name="test-room", admin=self.admin)
 
@@ -81,7 +90,10 @@ class RoomInvitationModelTest(TestCase):
 
     def setUp(self) -> None:
         self.admin = User.objects.create_user(
-            email="admin@user.com", password="test-password"
+            email="admin@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         self.room = Room.objects.create(name="test-room", admin=self.admin)
         self.member_email = "member@user.com"
@@ -192,7 +204,10 @@ class RoomInvitationModelTest(TestCase):
 
         # create user for room member
         member = User.objects.create_user(
-            email=self.member_email, password="test-password"
+            email=self.member_email,
+            password="test-password",
+            first_name="member",
+            last_name="user",
         )
         RoomMembership.objects.create(member=member, room=self.room)
         with self.assertRaisesMessage(
@@ -240,7 +255,10 @@ class RoomInvitationModelTest(TestCase):
         }
 
         member = User.objects.create_user(
-            email=self.member_email, password="test-password"
+            email=self.member_email,
+            password="test-password",
+            first_name="member",
+            last_name="user",
         )
 
         # call accept_invitation

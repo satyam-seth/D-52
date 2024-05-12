@@ -47,7 +47,10 @@ class TestProfileTemplateView(TestCase):
 
         # create test user
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         # log in the user
         self.client.login(email="test@user.com", password="test-password")
@@ -82,7 +85,10 @@ class TestProfileUpdateView(TestCase):
 
         # create test user
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         # log in the user
         self.client.login(email="test@user.com", password="test-password")
@@ -249,7 +255,10 @@ class TestRoomTemplateView(TestCase):
 
         # create test user
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         # log in the user
         self.client.login(email="test@user.com", password="test-password")
@@ -282,7 +291,10 @@ class TestRoomTemplateView(TestCase):
 #         self.client = Client()
 #         self.url = reverse("accounts:group_join")
 #         self.user = User.objects.create_user(
-#             username="test-user", password="test-password"
+#             username="test-user",
+#             password="test-password"
+#             first_name="test",
+#             last_name="user",
 #         )
 #         self.group = Group.objects.create(name="test-group")
 
@@ -330,7 +342,10 @@ class TestRoomCerateView(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         self.url = reverse("accounts:room_create")
 
@@ -385,7 +400,10 @@ class TestRoomInvitationListView(TransactionTestCase):
         self.client = Client()
         self.url = reverse("accounts:room_invitation")
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         self.room = Room.objects.create(name="test-room", admin=self.user)
 
@@ -447,7 +465,10 @@ class TestRoomInviteView(TransactionTestCase):
         self.client = Client()
         self.url = reverse("accounts:room_invite")
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         self.room = Room.objects.create(name="test-room", admin=self.user)
 
@@ -534,7 +555,10 @@ class TestRoomSelectionView(TestCase):
         self.client = Client()
         self.url = reverse_lazy("accounts:room_selection")
         self.user = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
 
         # login user
@@ -659,7 +683,10 @@ class TestRoomSelectionView(TestCase):
 
         # Create admin user
         admin = User.objects.create_user(
-            email="admin@user.com", password="test-password"
+            email="admin@user.com",
+            password="test-password",
+            first_name="admin",
+            last_name="user",
         )
 
         # Create a room
