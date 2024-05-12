@@ -108,6 +108,10 @@ class RoomSelectionView(LoginRequiredMixin, View):
 
         # If the user isn't a member of any group, redirect to the room page
         if room_memberships.count() == 0:
+            messages.warning(
+                request,
+                "Please create or join a room before selecting one.",
+            )
             return redirect(reverse_lazy("accounts:room"))
 
         # If the user is a member of only one room, set that room in the session

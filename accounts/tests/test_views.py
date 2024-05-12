@@ -9,7 +9,7 @@ from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, TransactionTestCase
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
@@ -28,6 +28,7 @@ from accounts.views import (
     RoomCreateView,
     RoomInvitationListView,
     RoomInviteView,
+    RoomSelectionView,
     RoomTemplateView,
     UserLoginView,
     UserLogoutView,
@@ -524,6 +525,188 @@ class TestRoomInviteView(TransactionTestCase):
 
         # Check if the view redirects to the room invitations page
         self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+
+class TestRoomSelectionView(TestCase):
+    """Test Room Selection view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_selection")
+        self.user = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
+    def test_room_invite_view_attributes(self) -> None:
+        "Test Room Selection view attributes"
+
+        view = RoomSelectionView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, View)
+        self.assertEqual(view.http_method_names, ["get", "post"])
+
+    def test_get_if_zero_room_memberships(self) -> None:
+        """Test get if zero room membership"""
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            "Please create or join a room before selecting one.",
+        )
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(
+            response, reverse_lazy("accounts:room"), fetch_redirect_response=False
+        )
+
+    def test_get_if_single_room_memberships(self) -> None:
+        """Test get if single room membership"""
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Welcome to the room '{room.name}'",
+        )
+
+        # Check room id set in session
+        self.assertEqual(response.client.session["room_id"], room.id)
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(
+            response,
+            reverse_lazy("accounts:room_invitation"),
+            fetch_redirect_response=False,
+        )
+
+    def test_get_if_multiple_room_memberships(self) -> None:
+        """Test get if zero room membership"""
+
+        # Create multiple rooms
+        for i in range(16):
+            Room.objects.create(name=f"test-room-{i}", admin=self.user)
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "accounts/room_selection.html")
+
+        # Assert that only 10 room memberships are displayed on the page
+        self.assertEqual(len(response.context["room_memberships_page"].object_list), 10)
+
+        # Assert that pagination is working by checking the number of pages
+        self.assertEqual(
+            response.context["room_memberships_page"].paginator.num_pages, 2
+        )
+
+        # Check if the view displays the first page by default
+        self.assertTrue(response.context["room_memberships_page"].has_next())
+        self.assertFalse(response.context["room_memberships_page"].has_previous())
+
+    def test_post_without_room_id(self) -> None:
+        """Test post without room id data"""
+
+        # Post empty form
+        response = self.client.post(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(response_messages[0].message, "Room ID is required")
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_post_room_id_that_does_not_exist(self) -> None:
+        """Test post room id that dose not exist"""
+
+        # Post form
+        response = self.client.post(self.url, {"roomId": 1})
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(response_messages[0].message, "Room does not exist")
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_post_room_id_user_not_member_of_the_room(self) -> None:
+        """Test post room id user not member of the room"""
+
+        # Create admin user
+        admin = User.objects.create_user(
+            email="admin@user.com", password="test-password"
+        )
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=admin)
+
+        # Post form
+        response = self.client.post(self.url, {"roomId": room.id})
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            "You are not a member of requested Room",
+        )
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_post_room_id_user_member_of_the_room(self) -> None:
+        """Test post room id user not member of the room"""
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Post form
+        response = self.client.post(self.url, {"roomId": room.id})
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Welcome to the room '{room.name}'",
+        )
+
+        # Check room id set in session
+        self.assertEqual(response.client.session["room_id"], room.id)
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(
+            response,
+            reverse_lazy("core:home"),
+            fetch_redirect_response=False,
+        )
 
 
 class TestMyPasswordResetCompleteView(TestCase):
