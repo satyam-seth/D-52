@@ -199,7 +199,10 @@ class TestRoomCreateForm(TestCase):
         # assert form save create a room
         room = form.save(commit=False)
         room.admin = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
         room.save()
         self.assertIsInstance(room, Room)

@@ -12,10 +12,16 @@ class RecordModelTest(TestCase):
 
     def setUp(self) -> None:
         self.adder = User.objects.create_user(
-            email="test@user1.com", password="test-password"
+            email="test@user1.com",
+            password="test-password",
+            first_name="test",
+            last_name="user1",
         )
         self.purchaser = User.objects.create_user(
-            email="test@user2.com", password="test-password"
+            email="test@user2.com",
+            password="test-password",
+            first_name="test",
+            last_name="user2",
         )
 
     def test_record_creation(self) -> None:
@@ -53,7 +59,10 @@ class WaterModelTest(TestCase):
 
     def setUp(self) -> None:
         self.adder = User.objects.create_user(
-            email="test@user.com", password="test-password"
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
         )
 
     def test_water_creation(self) -> None:

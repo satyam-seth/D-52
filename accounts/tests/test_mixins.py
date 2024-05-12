@@ -95,11 +95,17 @@ class TestRoomAdminRequiredMixin(TestCase):
 
     def setUp(self) -> None:
         self.admin = User.objects.create_user(
-            email="admin@user.com", password="test-password"
+            email="admin@user.com",
+            password="test-password",
+            first_name="admin",
+            last_name="user",
         )
         self.room = Room.objects.create(name="Test Room", admin=self.admin)
         self.other_user = User.objects.create_user(
-            email="member@user.com", password="test-password"
+            email="member@user.com",
+            password="test-password",
+            first_name="member",
+            last_name="user",
         )
 
         self.factory = RequestFactory()
