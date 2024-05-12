@@ -5,6 +5,7 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import (
@@ -350,6 +351,32 @@ class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
             f"Room '{room.name}' invitation rejected successfully.",
         )
         return redirect(reverse_lazy("core:home"))
+
+
+class RoomInvitationCancelView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+
+        invitation_id = request.POST.get("invitationId")
+
+        if invitation_id is None:
+            return HttpResponseNotFound()
+
+        invitation = RoomInvitation.objects.get(id=invitation_id)
+
+        try:
+            invitation.cancel()
+        except ValidationError:
+            return HttpResponseBadRequest()
+
+        messages.info(
+            request,
+            # pylint: disable=line-too-long
+            f"Invitation to Room '{invitation.room.name}' has been canceled for email '{invitation.email}'.",
+        )
+        return redirect(reverse_lazy("accounts:room_invitation"))
 
 
 class RoomCreateView(LoginRequiredMixin, CreateView):
