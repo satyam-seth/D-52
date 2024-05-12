@@ -604,6 +604,34 @@ class TestRoomSelectionView(TestCase):
         # Check if the view redirects to the room selection page
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
 
+    def test_post_room_id_user_member_of_the_room(self) -> None:
+        """Test post room id user not member of the room"""
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Post form
+        response = self.client.post(self.url, {"roomId": room.id})
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Welcome to the room '{room.name}'",
+        )
+
+        # Check room id set in session
+        self.assertEqual(response.client.session["room_id"], room.id)
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(
+            response,
+            reverse_lazy("core:home"),
+            fetch_redirect_response=False,
+        )
+
 
 class TestMyPasswordResetCompleteView(TestCase):
     """Test my password reset complete view"""
