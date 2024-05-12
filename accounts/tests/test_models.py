@@ -215,7 +215,9 @@ class RoomInvitationModelTest(TestCase):
             f"The email '{self.member_email}' has already joined the room '{self.room.name}'",
         ):
             RoomInvitation.objects.send_invitation(
-                room=self.room, email=self.member_email
+                room=self.room,
+                email=self.member_email,
+                absolute_invitation_url="http://testserver/invitation-join-url",
             )
 
     @patch.object(RoomInvitation.objects, "create")
@@ -231,7 +233,9 @@ class RoomInvitationModelTest(TestCase):
 
         # call send_invitation
         invitation = RoomInvitation.objects.send_invitation(
-            room=self.room, email=self.member_email
+            room=self.room,
+            email=self.member_email,
+            absolute_invitation_url="http://testserver/invitation-join-url",
         )
 
         # assertions
