@@ -564,8 +564,9 @@ class TestRoomSelectionView(TestCase):
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
 
     def test_post_room_id_that_does_not_exist(self) -> None:
-        """Test post without room id that dose not exist"""
+        """Test post room id that dose not exist"""
 
+        # Post form
         response = self.client.post(self.url, {"roomId": 1})
 
         # Assert that the success message is displayed
@@ -573,6 +574,32 @@ class TestRoomSelectionView(TestCase):
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.WARNING)
         self.assertEqual(response_messages[0].message, "Room does not exist")
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_post_room_id_user_not_member_of_the_room(self) -> None:
+        """Test post room id user not member of the room"""
+
+        # Create admin user
+        admin = User.objects.create_user(
+            email="admin@user.com", password="test-password"
+        )
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=admin)
+
+        # Post form
+        response = self.client.post(self.url, {"roomId": room.id})
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            "You are not a member of requested Room",
+        )
 
         # Check if the view redirects to the room selection page
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
