@@ -83,6 +83,7 @@ class RoomInvitation(models.Model):
 
     objects = RoomInvitationManager()
 
+    # TODO: use models choices
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
