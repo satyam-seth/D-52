@@ -266,6 +266,17 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
 #         return super().form_valid(form)
 
 
+class RoomInvitationJoinView(LoginRequiredMixin, View):
+    """View to handle room invitation join requests"""
+
+    http_method_names = ["get"]
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """Handle get request for room invitation join"""
+
+        return HttpResponse("Hello")
+
+
 class RoomCreateView(LoginRequiredMixin, CreateView):
     """
     This view is used to display and handle the room create form
