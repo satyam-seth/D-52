@@ -5,9 +5,7 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.core.signing import BadSignature
 from django.db import IntegrityError
 from django.http import (
     HttpRequest,
@@ -26,7 +24,7 @@ from accounts.forms import (
     RoomInvitationForm,
     SignUpForm,
 )
-from accounts.mixins import RoomAdminRequiredMixin
+from accounts.mixins import RoomAdminRequiredMixin, RoomInvitationTokenMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
 
@@ -285,65 +283,42 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
 #         return super().form_valid(form)
 
 
-class RoomInvitationJoinView(LoginRequiredMixin, View):
+class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
     """View to handle room invitation join requests"""
 
-    http_method_names = ["get", "post"]
-
-    def check_room_invitation_token_valid(
-        self, request: HttpRequest, token: str
-    ) -> bool:
-        """Check room invitation token valid"""
-
-        try:
-            token_payload = RoomInvitation.objects.unsigned_token(token)
-        except BadSignature:
-            return False
-
-        # return false if user is not logged-in
-        # or logged-in user email is not equal to token payload email
-        if request.user.is_anonymous or request.user.email != token_payload["email"]:
-            return False
-
-        try:
-            RoomInvitation.objects.get(
-                id=token_payload["id"],
-                status=RoomInvitation.PENDING,
-            )
-            return True
-
-        except RoomInvitation.DoesNotExist:
-            return False
+    http_method_names = ["get"]
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """Handle get request for room invitation join"""
 
-        token = request.GET.get("token")
+        token_or_response = self.get_token(request)
 
-        # if token missing return 404
-        if token is None:
-            return HttpResponseNotFound()
-
-        # check token is valid or not
-        if self.check_room_invitation_token_valid(request, token) == False:
-            return HttpResponseBadRequest()
+        if isinstance(token_or_response, HttpResponse):
+            return token_or_response
 
         # TODO: pass room details in context
-        return render(request, "accounts/room_invitation_join.html", {"token": token})
+        return render(
+            request,
+            "accounts/room_invitation_join.html",
+            {"token": token_or_response},
+        )
+
+
+class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+
+    http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        token = request.POST.get("token")
 
-        # if token missing return 404
-        if token is None:
-            return HttpResponseNotFound()
+        token_or_response = self.get_token(request)
 
-        # check token is valid or not
-        if self.check_room_invitation_token_valid(request, token) == False:
-            return HttpResponseBadRequest()
+        if isinstance(token_or_response, HttpResponse):
+            return token_or_response
 
-        RoomInvitation.objects.accept_invitation(current_user=request.user, token=token)
-        token_payload = RoomInvitation.objects.unsigned_token(token)
+        RoomInvitation.objects.accept_invitation(
+            current_user=request.user, token=token_or_response
+        )
+        token_payload = RoomInvitation.objects.unsigned_token(token_or_response)
         room = Room.objects.get(id=token_payload["room"])
         messages.success(
             request,
