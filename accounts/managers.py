@@ -138,3 +138,21 @@ class RoomInvitationManager(models.Manager):
             invitation.accept()
         except self.model.DoesNotExist as e:
             raise ValidationError("Invitation not found") from e
+
+    def reject_invitation(self, current_user, token: str) -> None:
+        """Reject the invitation for the current user using the token"""
+
+        payload = self.unsigned_token(token=token)
+
+        if payload.get("email") != current_user.email:
+            raise ValidationError("Invitation token is not for the current user")
+
+        try:
+            invitation = self.model.objects.get(
+                id=payload.get("id"),
+                # TODO: fix status value as models choice instead of hardcoded string
+                status="pending",
+            )
+            invitation.reject()
+        except self.model.DoesNotExist as e:
+            raise ValidationError("Invitation not found") from e
