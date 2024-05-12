@@ -1,15 +1,15 @@
 from http import HTTPStatus
 from unittest import skip
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
-from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, RequestFactory, TestCase, TransactionTestCase
-from django.urls import reverse, reverse_lazy
+from django.test import Client, TestCase, TransactionTestCase
+from django.urls import reverse
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
@@ -312,10 +312,11 @@ class TestRoomTemplateView(TestCase):
 #         self.assertIn(self.group, self.user.groups.all())
 
 #         # Assert that the success message is displayed
-#         messages = list(get_messages(response.wsgi_request))
-#         self.assertEqual(len(messages), 1)
+#         response_messages = tuple(get_messages(response.wsgi_request))
+#         self.assertEqual(len(response_messages), 1)
+#         self.assertEqual(response_messages[0].level, messages.SUCCESS)
 #         self.assertEqual(
-#             str(messages[0]),
+#             response_messages[0].message,
 #             "You have joined the group test-group successfully !!",
 #         )
 
@@ -356,14 +357,16 @@ class TestRoomCerateView(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         # Assert that the success message is displayed
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 2)
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 2)
+        self.assertEqual(response_messages[0].level, messages.SUCCESS)
         self.assertEqual(
-            str(messages[0]),
+            response_messages[0].message,
             "Room 'test-room' created successfully!",
         )
+        self.assertEqual(response_messages[1].level, messages.SUCCESS)
         self.assertEqual(
-            str(messages[1]),
+            response_messages[1].message,
             "You have joined the room 'test-room' successfully !!",
         )
 
@@ -473,10 +476,11 @@ class TestRoomInviteView(TransactionTestCase):
         response = self.client.post(self.url, data, follow=True)
 
         # Assert that the success message is displayed
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.SUCCESS)
         self.assertEqual(
-            str(messages[0]),
+            response_messages[0].message,
             f"Email: '{data['email']}' is successfully invited to room '{self.room.name}'",
         )
 
@@ -495,11 +499,12 @@ class TestRoomInviteView(TransactionTestCase):
         data = {"email": member_email}
         response = self.client.post(self.url, data, follow=True)
 
-        # Assert that the success message is displayed
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
+        # Assert that the warning message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
         self.assertEqual(
-            str(messages[0]),
+            response_messages[0].message,
             f"Email: '{member_email}' is already invited to room '{self.room.name}'",
         )
 
@@ -512,13 +517,11 @@ class TestRoomInviteView(TransactionTestCase):
         # Post empty form
         response = self.client.post(self.url, {}, follow=True)
 
-        # Assert that the success message is displayed
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(
-            str(messages[0]),
-            "Email: This field is required.",
-        )
+        # Assert that the error message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.ERROR)
+        self.assertEqual(response_messages[0].message, "Email: This field is required.")
 
         # Check if the view redirects to the room invitations page
         self.assertRedirects(response, reverse("accounts:room_invitation"))
