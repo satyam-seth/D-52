@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.test import Client, TestCase
@@ -116,9 +117,10 @@ class TestFeedbackCerateView(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         # Assert that the success message is displayed
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), self.success_message)
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.SUCCESS)
+        self.assertEqual(response_messages[0].message, self.success_message)
 
         # Assert that the user is redirected to the home page
         self.assertRedirects(response, reverse("core:home"))
