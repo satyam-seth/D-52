@@ -9,7 +9,7 @@ from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, TransactionTestCase
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
@@ -530,6 +530,17 @@ class TestRoomInviteView(TransactionTestCase):
 class TestRoomSelectionView(TestCase):
     """Test Room Selection view"""
 
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_selection")
+        self.user = User.objects.create_user(
+            email="test@user.com", password="test-password"
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
     def test_room_invite_view_attributes(self) -> None:
         "Test Room Selection view attributes"
 
@@ -537,6 +548,21 @@ class TestRoomSelectionView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, View)
         self.assertEqual(view.http_method_names, ["get", "post"])
+
+    def test_post_without_room_id(self) -> None:
+        """Test post without room id data"""
+
+        # Post empty form
+        response = self.client.post(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(response_messages[0].message, "Room ID is required")
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
