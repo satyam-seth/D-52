@@ -316,7 +316,8 @@ class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
             return token_or_response
 
         RoomInvitation.objects.accept_invitation(
-            current_user=request.user, token=token_or_response
+            current_user=request.user,
+            token=token_or_response,
         )
         token_payload = RoomInvitation.objects.unsigned_token(token_or_response)
         room = Room.objects.get(id=token_payload["room"])
@@ -325,6 +326,30 @@ class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
             f"Room '{room.name}' invitation accepted successfully.",
         )
         return redirect(reverse_lazy("accounts:room_selection"))
+
+
+class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+
+        token_or_response = self.get_token(request)
+
+        if isinstance(token_or_response, HttpResponse):
+            return token_or_response
+
+        RoomInvitation.objects.reject_invitation(
+            current_user=request.user,
+            token=token_or_response,
+        )
+        token_payload = RoomInvitation.objects.unsigned_token(token_or_response)
+        room = Room.objects.get(id=token_payload["room"])
+        messages.info(
+            request,
+            f"Room '{room.name}' invitation rejected successfully.",
+        )
+        return redirect(reverse_lazy("core:home"))
 
 
 class RoomCreateView(LoginRequiredMixin, CreateView):
