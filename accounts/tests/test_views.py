@@ -548,6 +548,26 @@ class TestRoomSelectionView(TestCase):
         self.assertIsInstance(view, View)
         self.assertEqual(view.http_method_names, ["get", "post"])
 
+    def test_get_if_zero_room_memberships(self) -> None:
+        """Test get if zero room membership"""
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            "Please create or join a room before selecting one.",
+        )
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(
+            response, reverse_lazy("accounts:room"), fetch_redirect_response=False
+        )
+
     def test_post_without_room_id(self) -> None:
         """Test post without room id data"""
 
