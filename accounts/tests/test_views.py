@@ -568,6 +568,34 @@ class TestRoomSelectionView(TestCase):
             response, reverse_lazy("accounts:room"), fetch_redirect_response=False
         )
 
+    def test_get_if_single_room_memberships(self) -> None:
+        """Test get if single room membership"""
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Welcome to the room '{room.name}'",
+        )
+
+        # Check room id set in session
+        self.assertEqual(response.client.session["room_id"], room.id)
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(
+            response,
+            reverse_lazy("accounts:room_invitation"),
+            fetch_redirect_response=False,
+        )
+
     def test_post_without_room_id(self) -> None:
         """Test post without room id data"""
 
