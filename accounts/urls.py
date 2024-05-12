@@ -17,6 +17,11 @@ urlpatterns = [
     path("signup/", views.UserSignUpView.as_view(), name="signup"),
     path("room/", views.RoomTemplateView.as_view(), name="room"),
     # path("room_join/", views.RoomJoinView.as_view(), name="room_join"),
+    path(
+        "room_join_invitation/",
+        views.RoomInvitationJoinView.as_view(),
+        name="room_invitation_join",
+    ),
     path("room_create/", views.RoomCreateView.as_view(), name="room_create"),
     path("room_selection/", views.RoomSelectionView.as_view(), name="room_selection"),
     path(
