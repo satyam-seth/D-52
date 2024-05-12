@@ -211,13 +211,13 @@ def overall_xls(request: HttpRequest) -> HttpResponse:
             record.purchase_date.strftime("%d-%m-%Y"),
             record.item,
             record.price,
-            purchaser_name if purchaser_name else record.purchaser.username,
+            purchaser_name,
             record.id,
             record.created_on.strftime("%d-%m-%Y"),
             record.created_on.strftime("%H:%M:%S"),
             record.modified_on.strftime("%d-%m-%Y"),
             record.modified_on.strftime("%H:%M:%S"),
-            adder_name if adder_name else record.adder.username,
+            adder_name,
         ]
         data.append(temp)
 
@@ -253,9 +253,7 @@ def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
 
     # query data from db
     purchaser = User.objects.get(pk=user_id)
-    purchaser_name = (
-        purchaser.get_full_name() if purchaser.get_full_name() else purchaser.username
-    )
+    purchaser_name = purchaser.get_full_name()
     records = Record.objects.filter(purchaser=purchaser).order_by("purchase_date")
 
     # prepare data
@@ -271,7 +269,7 @@ def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
             record.created_on.strftime("%H:%M:%S"),
             record.modified_on.strftime("%d-%m-%Y"),
             record.modified_on.strftime("%H:%M:%S"),
-            adder_name if adder_name else record.adder.username,
+            adder_name,
         ]
         data.append(temp)
 
@@ -319,7 +317,7 @@ def water_xls(request: HttpRequest) -> HttpResponse:
             record.created_on.strftime("%H:%M:%S"),
             record.modified_on.strftime("%d-%m-%Y"),
             record.modified_on.strftime("%H:%M:%S"),
-            adder_name if adder_name else record.adder.username,
+            adder_name,
         ]
         data.append(temp)
 

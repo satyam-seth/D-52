@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.models import BaseUserManager
 from django.core.exceptions import ValidationError
 from django.core.signing import Signer
@@ -10,23 +12,48 @@ class UserManager(BaseUserManager):
     use_in_migrations = True
 
     # TODO: make first_name and last_name required
-    def _create_user(self, email, password, **extra_fields):
+    def _create_user(
+        self,
+        email: str,
+        password: str,
+        first_name: str,
+        last_name: str,
+        **extra_fields: Any,
+    ):
         """Create and save a User with the given email and password."""
 
         if not email:
             raise ValueError("The given email must be set")
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = self.model(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            **extra_fields,
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(
+        self,
+        email: str,
+        password: str,
+        first_name: str,
+        last_name: str,
+        **extra_fields: Any,
+    ):
         """Create and save a regular User with the given email and password."""
 
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(
+            email,
+            password,
+            first_name=first_name,
+            last_name=last_name,
+            **extra_fields,
+        )
 
     def create_superuser(self, email, password, **extra_fields):
         """Create and save a SuperUser with the given email and password."""
