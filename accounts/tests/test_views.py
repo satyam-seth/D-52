@@ -536,7 +536,6 @@ class TestRoomSelectionView(TestCase):
         self.user = User.objects.create_user(
             email="test@user.com", password="test-password"
         )
-        self.room = Room.objects.create(name="test-room", admin=self.user)
 
         # login user
         self.client.login(email="test@user.com", password="test-password")
@@ -560,6 +559,20 @@ class TestRoomSelectionView(TestCase):
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.WARNING)
         self.assertEqual(response_messages[0].message, "Room ID is required")
+
+        # Check if the view redirects to the room selection page
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_post_room_id_that_does_not_exist(self) -> None:
+        """Test post without room id that dose not exist"""
+
+        response = self.client.post(self.url, {"roomId": 1})
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(response_messages[0].message, "Room does not exist")
 
         # Check if the view redirects to the room selection page
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
