@@ -106,13 +106,17 @@ class RoomInvitationManager(models.Manager):
         signer = Signer(salt=self.salt)
         return signer.unsign_object(token)
 
-    def send_invitation(self, room, email: str):
+    def send_invitation(self, room, email: str, absolute_invitation_url: str):
         """Create and send an invitation to join the specified room"""
 
         invitation = self.create(room=room, email=email)
         token = self._generate_signed_token(invitation=invitation)
 
-        # TODO: generate url and send email
+        invitation_url = f"{absolute_invitation_url}?token={token}"
+
+        print(invitation_url)
+
+        # TODO: send email
         return invitation
 
     def accept_invitation(self, current_user, token: str) -> None:
