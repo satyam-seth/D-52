@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Type
 from unittest import mock
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
@@ -111,9 +112,13 @@ class TestRecordAddView(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         # Assert success message
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertIn(str(messages[0]), "Your item record successfully added.")
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.SUCCESS)
+        self.assertEqual(
+            response_messages[0].message,
+            "Your item record successfully added.",
+        )
 
         # Assert that the record is saved in the database
         self.assertEqual(Record.objects.count(), 1)
@@ -127,24 +132,19 @@ class TestRecordAddView(TestCase):
     def test_record_add_view_for_invalid_post_data(self) -> None:
         """Test record add view working for invalid post data"""
 
-        valid_form_data = {
-            "item": "Test Item",
-        }
-
-        response = self.client.post(
-            self.url,
-            data=valid_form_data,
-        )
+        valid_form_data = {"item": "Test Item"}
+        response = self.client.post(self.url, data=valid_form_data)
 
         # Redirects to the specified URL
         self.assertRedirects(response, reverse("records:add"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-        # Assert success message
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertIn(
-            str(messages[0]),
+        # Assert error message
+        response_messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.ERROR)
+        self.assertEqual(
+            response_messages[0].message,
             "Please check and fill all information correctly, Your item record not added.",
         )
 
@@ -190,9 +190,12 @@ class TestWaterAddView(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         # Assert success message
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertIn(str(messages[0]), "Water record successfully added.")
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.SUCCESS)
+        self.assertEqual(
+            response_messages[0].message, "Water record successfully added."
+        )
 
         # Assert that the water is saved in the database
         self.assertEqual(Water.objects.count(), 1)
@@ -204,24 +207,19 @@ class TestWaterAddView(TestCase):
     def test_water_add_view_for_invalid_post_data(self) -> None:
         """Test water add view working for invalid post data"""
 
-        valid_form_data = {
-            "quantity": 1,
-        }
-
-        response = self.client.post(
-            self.url,
-            data=valid_form_data,
-        )
+        valid_form_data = {"quantity": 1}
+        response = self.client.post(self.url, data=valid_form_data)
 
         # Redirects to the specified URL
         self.assertRedirects(response, reverse("records:add"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-        # Assert success message
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertIn(
-            str(messages[0]),
+        # Assert error message
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.ERROR)
+        self.assertEqual(
+            response_messages[0].message,
             "Please check and fill all information correctly, Water record not added.",
         )
 
