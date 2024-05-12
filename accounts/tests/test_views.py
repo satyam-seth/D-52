@@ -597,7 +597,7 @@ class TestRoomSelectionView(TestCase):
         )
 
     def test_get_if_multiple_room_memberships(self) -> None:
-        """Test get if zero room membership"""
+        """Test get if multiple room membership"""
 
         # Create multiple rooms
         for i in range(16):
