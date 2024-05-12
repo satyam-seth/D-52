@@ -5,7 +5,9 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.core.signing import BadSignature
 from django.db import IntegrityError
 from django.http import (
     HttpRequest,
@@ -120,12 +122,17 @@ class RoomSelectionView(LoginRequiredMixin, View):
             return redirect(reverse_lazy("accounts:room"))
 
         # If the user is a member of only one room, set that room in the session
-        # and redirect to the home page
+        # and if user is owner of room redirect to the room invitation page else home page
         if room_memberships.count() == 1:
             room = room_memberships.first().room
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
-            return redirect(reverse_lazy("accounts:room_invitation"))
+
+            # TODO: redirect user to room dashboard instead of home, if not owner of the room
+            if room.admin == request.user:
+                return redirect(reverse_lazy("accounts:room_invitation"))
+
+            return redirect(reverse_lazy("core:home"))
 
         # If the user is a member of multiple rooms, let the user choose a room as the current room
 
@@ -281,12 +288,22 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
 class RoomInvitationJoinView(LoginRequiredMixin, View):
     """View to handle room invitation join requests"""
 
-    http_method_names = ["get"]
+    http_method_names = ["get", "post"]
 
-    def check_room_invitation_token_valid(self, token: str) -> bool:
+    def check_room_invitation_token_valid(
+        self, request: HttpRequest, token: str
+    ) -> bool:
         """Check room invitation token valid"""
 
-        token_payload = RoomInvitation.objects.unsigned_token(token)
+        try:
+            token_payload = RoomInvitation.objects.unsigned_token(token)
+        except BadSignature:
+            return False
+
+        # return false if user is not logged-in
+        # or logged-in user email is not equal to token payload email
+        if request.user.is_anonymous or request.user.email != token_payload["email"]:
+            return False
 
         try:
             RoomInvitation.objects.get(
@@ -303,15 +320,36 @@ class RoomInvitationJoinView(LoginRequiredMixin, View):
 
         token = request.GET.get("token")
 
+        # if token missing return 404
         if token is None:
             return HttpResponseNotFound()
 
         # check token is valid or not
-        if self.check_room_invitation_token_valid(token) == False:
+        if self.check_room_invitation_token_valid(request, token) == False:
             return HttpResponseBadRequest()
 
         # TODO: pass room details in context
         return render(request, "accounts/room_invitation_join.html", {"token": token})
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        token = request.POST.get("token")
+
+        # if token missing return 404
+        if token is None:
+            return HttpResponseNotFound()
+
+        # check token is valid or not
+        if self.check_room_invitation_token_valid(request, token) == False:
+            return HttpResponseBadRequest()
+
+        RoomInvitation.objects.accept_invitation(current_user=request.user, token=token)
+        token_payload = RoomInvitation.objects.unsigned_token(token)
+        room = Room.objects.get(id=token_payload["room"])
+        messages.success(
+            request,
+            f"Room '{room.name}' invitation accepted successfully.",
+        )
+        return redirect(reverse_lazy("accounts:room_selection"))
 
 
 class RoomCreateView(LoginRequiredMixin, CreateView):
