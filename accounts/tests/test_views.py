@@ -596,6 +596,34 @@ class TestRoomSelectionView(TestCase):
             fetch_redirect_response=False,
         )
 
+    def test_get_if_multiple_room_memberships(self) -> None:
+        """Test get if zero room membership"""
+
+        # Create multiple rooms
+        for i in range(16):
+            Room.objects.create(name=f"test-room-{i}", admin=self.user)
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "accounts/room_selection.html")
+
+        # Assert that only 10 room memberships are displayed on the page
+        self.assertEqual(len(response.context["room_memberships_page"].object_list), 10)
+
+        # Assert that pagination is working by checking the number of pages
+        self.assertEqual(
+            response.context["room_memberships_page"].paginator.num_pages, 2
+        )
+
+        # Check if the view displays the first page by default
+        self.assertTrue(response.context["room_memberships_page"].has_next())
+        self.assertFalse(response.context["room_memberships_page"].has_previous())
+
     def test_post_without_room_id(self) -> None:
         """Test post without room id data"""
 
