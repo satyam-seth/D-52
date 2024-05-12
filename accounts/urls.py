@@ -27,6 +27,11 @@ urlpatterns = [
         views.RoomInvitationAcceptView.as_view(),
         name="room_invitation_accept",
     ),
+    path(
+        "room_invitation/reject/",
+        views.RoomInvitationRejectView.as_view(),
+        name="room_invitation_reject",
+    ),
     path("room_create/", views.RoomCreateView.as_view(), name="room_create"),
     path("room_selection/", views.RoomSelectionView.as_view(), name="room_selection"),
     path(

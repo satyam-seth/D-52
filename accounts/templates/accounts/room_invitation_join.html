@@ -25,7 +25,11 @@
                 </form>
             </div>
             <div class="col-md-12 mb-5">
-                <a href="#" class="btn btn-lg btn-warning">Reject Invitation</a>
+                <form action="{% url 'accounts:room_invitation_reject' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ token }}">
+                    <button type="submit" class="btn btn-lg btn-warning">Reject Invitation</button>
+                </form>
             </div>
         </div>
     </div>
