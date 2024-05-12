@@ -216,8 +216,15 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
             room_id = self.request.session["room_id"]
             room = get_object_or_404(Room, id=room_id)
 
+            invitation_url = reverse_lazy("accounts:room_invitation_join")
+            absolute_invitation_url = request.build_absolute_uri(invitation_url)
+
             try:
-                RoomInvitation.objects.send_invitation(room=room, email=email)
+                RoomInvitation.objects.send_invitation(
+                    room=room,
+                    email=email,
+                    absolute_invitation_url=absolute_invitation_url,
+                )
                 messages.success(
                     request,
                     f"Email: '{email}' is successfully invited to room '{room.name}'",
