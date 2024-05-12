@@ -18,7 +18,7 @@
     <div class="containerr mt-5">
         <div class="row text-center">
             <div class="col-md-12 my-5">
-                <form action="{% url 'accounts:room_invitation_join' %}" method="POST">
+                <form action="{% url 'accounts:room_invitation_accept' %}" method="POST">
                     {% csrf_token %}
                     <input type="hidden" name="token" value="{{ token }}">
                     <button type="submit" class="btn btn-lg btn-primary">Accept Invitation</button>
