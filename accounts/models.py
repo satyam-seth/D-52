@@ -103,8 +103,6 @@ class RoomInvitation(models.Model):
     def __str__(self):
         return f"{self.email} - {self.room.name}"
 
-    # TODO: use signal to send invitation status change notification email
-
     def accept(self) -> None:
         """Accept the invitation"""
 

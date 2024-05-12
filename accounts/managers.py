@@ -130,7 +130,11 @@ class RoomInvitationManager(models.Manager):
             raise ValidationError("Invitation token is not for the current user")
 
         try:
-            invitation = self.model.objects.get(id=payload.get("id"))
+            invitation = self.model.objects.get(
+                id=payload.get("id"),
+                # TODO: fix status value as models choice instead of hardcoded string
+                status="pending",
+            )
             invitation.accept()
         except self.model.DoesNotExist as e:
             raise ValidationError("Invitation not found") from e
