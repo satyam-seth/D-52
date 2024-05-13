@@ -92,32 +92,39 @@ class RoomInvitationModelTest(TestCase):
         self.admin = User.objects.create_user(
             email="admin@user.com",
             password="test-password",
-            first_name="test",
+            first_name="admin",
+            last_name="user",
+        )
+        self.member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="member",
             last_name="user",
         )
         self.room = Room.objects.create(name="test-room", admin=self.admin)
-        self.member_email = "member@user.com"
 
     def test_room_invitation_creation(self) -> None:
         """Test room invitations model for default values"""
 
         # create room invitation instance
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email
+            room=self.room,
+            email=self.member.email,
         )
         # assert field values
         self.assertEqual(invitation.room, self.room)
-        self.assertEqual(invitation.email, self.member_email)
+        self.assertEqual(invitation.email, self.member.email)
 
         # assert string representation
-        self.assertEqual(str(invitation), f"{self.member_email} - {self.room.name}")
+        self.assertEqual(str(invitation), f"{self.member.email} - {self.room.name}")
 
     def test_accept_pending_invitation(self) -> None:
         """Test accepting a pending room invitation"""
 
         # create room invitation instance
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email
+            room=self.room,
+            email=self.member.email,
         )
 
         # call the accept method on the room invitation
@@ -131,7 +138,9 @@ class RoomInvitationModelTest(TestCase):
 
         # create room invitation with status 'accepted'
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email, status=RoomInvitation.ACCEPTED
+            room=self.room,
+            email=self.member.email,
+            status=RoomInvitation.ACCEPTED,
         )
 
         # call the accept method on the room invitation
@@ -146,7 +155,8 @@ class RoomInvitationModelTest(TestCase):
 
         # create room invitation instance
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email
+            room=self.room,
+            email=self.member.email,
         )
 
         # call the cancel method on the room invitation
@@ -160,7 +170,9 @@ class RoomInvitationModelTest(TestCase):
 
         # create room invitation with status 'accepted'
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email, status=RoomInvitation.ACCEPTED
+            room=self.room,
+            email=self.member.email,
+            status=RoomInvitation.ACCEPTED,
         )
 
         # call the cancel method on the room invitation
@@ -175,7 +187,8 @@ class RoomInvitationModelTest(TestCase):
 
         # create room invitation instance
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email
+            room=self.room,
+            email=self.member.email,
         )
 
         # call the reject method on the room invitation
@@ -189,7 +202,9 @@ class RoomInvitationModelTest(TestCase):
 
         # create room invitation with status 'accepted'
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email, status=RoomInvitation.ACCEPTED
+            room=self.room,
+            email=self.member.email,
+            status=RoomInvitation.ACCEPTED,
         )
 
         # call the reject method on the room invitation
@@ -202,21 +217,14 @@ class RoomInvitationModelTest(TestCase):
     def test_unable_to_create_invitation_for_an_existing_room_member(self) -> None:
         """Test unable to create room invitation for an existing room member"""
 
-        # create user for room member
-        member = User.objects.create_user(
-            email=self.member_email,
-            password="test-password",
-            first_name="member",
-            last_name="user",
-        )
-        RoomMembership.objects.create(member=member, room=self.room)
+        RoomMembership.objects.create(member=self.member, room=self.room)
         with self.assertRaisesMessage(
             ValidationError,
-            f"The email '{self.member_email}' has already joined the room '{self.room.name}'",
+            f"The email '{self.member.email}' has already joined the room '{self.room.name}'",
         ):
             RoomInvitation.objects.send_invitation(
                 room=self.room,
-                email=self.member_email,
+                email=self.member.email,
                 absolute_invitation_url="http://testserver/invitation-join-url",
             )
 
@@ -226,7 +234,7 @@ class RoomInvitationModelTest(TestCase):
         """Test sending an invitation to join a room"""
 
         # set up mock objects and return values
-        mock_invitation = RoomInvitation(id=1, room=self.room, email=self.member_email)
+        mock_invitation = RoomInvitation(id=1, room=self.room, email=self.member.email)
         mock_create.return_value = mock_invitation
         token = "mock_token"
         mock_generate_signed_token.return_value = token
@@ -234,39 +242,33 @@ class RoomInvitationModelTest(TestCase):
         # call send_invitation
         invitation = RoomInvitation.objects.send_invitation(
             room=self.room,
-            email=self.member_email,
+            email=self.member.email,
             absolute_invitation_url="http://testserver/invitation-join-url",
         )
 
         # assertions
         self.assertEqual(invitation, mock_invitation)
-        mock_create.assert_called_once_with(room=self.room, email=self.member_email)
+        mock_create.assert_called_once_with(room=self.room, email=self.member.email)
         mock_generate_signed_token.assert_called_once_with(invitation=mock_invitation)
 
     @patch.object(RoomInvitation, "accept")
-    @patch.object(RoomInvitation.objects, "_unsigned_token")
+    @patch.object(RoomInvitation.objects, "unsigned_token")
     def test_accept_invitation(self, mock_unsigned_token, mock_accept) -> None:
         """Test accepting an invitation"""
         # set up mock objects and return values
         invitation = RoomInvitation.objects.create(
-            room=self.room, email=self.member_email
+            room=self.room,
+            email=self.member.email,
         )
         token = "mock_token"
         mock_unsigned_token.return_value = {
             "id": invitation.id,
             "room": self.room.id,
-            "email": self.member_email,
+            "email": self.member.email,
         }
 
-        member = User.objects.create_user(
-            email=self.member_email,
-            password="test-password",
-            first_name="member",
-            last_name="user",
-        )
-
         # call accept_invitation
-        RoomInvitation.objects.accept_invitation(member, token)
+        RoomInvitation.objects.accept_invitation(self.member, token)
 
         # assertions
         mock_unsigned_token.assert_called_once_with(token=token)
