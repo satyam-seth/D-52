@@ -21,7 +21,7 @@ from accounts.forms import (
     SignUpForm,
 )
 from accounts.mixins import RoomAdminRequiredMixin
-from accounts.models import Profile, Room, RoomInvitation
+from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 from accounts.views import (
     ProfileTemplateView,
     ProfileUpdateView,
@@ -604,8 +604,8 @@ class TestRoomSelectionView(TestCase):
             response, reverse_lazy("accounts:room"), fetch_redirect_response=False
         )
 
-    def test_get_if_single_room_memberships(self) -> None:
-        """Test get if single room membership"""
+    def test_get_if_single_room_memberships_as_owner(self) -> None:
+        """Test get if single room membership as owner"""
 
         # Create a room
         room = Room.objects.create(name="test-room", admin=self.user)
@@ -625,10 +625,52 @@ class TestRoomSelectionView(TestCase):
         # Check room id set in session
         self.assertEqual(response.client.session["room_id"], room.id)
 
-        # Check if the view redirects to the room selection page
+        # Check if the view redirects to the room invitation page
         self.assertRedirects(
             response,
             reverse_lazy("accounts:room_invitation"),
+            fetch_redirect_response=False,
+        )
+
+    def test_get_if_single_room_memberships_as_member(self) -> None:
+        """Test get if single room membership as member"""
+
+        # Create member user
+        member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="member",
+            last_name="user",
+        )
+
+        # Create a room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Create membership
+        RoomMembership.objects.create(member=member, room=room)
+
+        # login user as member
+        self.client.login(email="member@user.com", password="test-password")
+
+        # Get request
+        response = self.client.get(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        # self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Welcome to the room '{room.name}'",
+        )
+
+        # Check room id set in session
+        self.assertEqual(response.client.session["room_id"], room.id)
+
+        # Check if the view redirects to the home page
+        self.assertRedirects(
+            response,
+            reverse_lazy("core:home"),
             fetch_redirect_response=False,
         )
 
