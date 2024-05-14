@@ -5,9 +5,15 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetCompleteView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.http import HttpRequest, HttpResponse
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView, View
@@ -19,7 +25,7 @@ from accounts.forms import (
     RoomInvitationForm,
     SignUpForm,
 )
-from accounts.mixins import RoomAdminRequiredMixin
+from accounts.mixins import RoomAdminRequiredMixin, RoomInvitationTokenMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
 
@@ -115,12 +121,17 @@ class RoomSelectionView(LoginRequiredMixin, View):
             return redirect(reverse_lazy("accounts:room"))
 
         # If the user is a member of only one room, set that room in the session
-        # and redirect to the home page
+        # and if user is owner of room redirect to the room invitation page else home page
         if room_memberships.count() == 1:
             room = room_memberships.first().room
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
-            return redirect(reverse_lazy("accounts:room_invitation"))
+
+            # TODO: redirect user to room dashboard instead of home, if not owner of the room
+            if room.admin == request.user:
+                return redirect(reverse_lazy("accounts:room_invitation"))
+
+            return redirect(reverse_lazy("core:home"))
 
         # If the user is a member of multiple rooms, let the user choose a room as the current room
 
@@ -216,8 +227,15 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
             room_id = self.request.session["room_id"]
             room = get_object_or_404(Room, id=room_id)
 
+            invitation_url = reverse_lazy("accounts:room_invitation_join")
+            absolute_invitation_url = request.build_absolute_uri(invitation_url)
+
             try:
-                RoomInvitation.objects.send_invitation(room=room, email=email)
+                RoomInvitation.objects.send_invitation(
+                    room=room,
+                    email=email,
+                    absolute_invitation_url=absolute_invitation_url,
+                )
                 messages.success(
                     request,
                     f"Email: '{email}' is successfully invited to room '{room.name}'",
@@ -264,6 +282,101 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
 #                 f"You have already joined the room '{room_id}'",
 #             )
 #         return super().form_valid(form)
+
+
+class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+    """View to handle room invitation join requests"""
+
+    http_method_names = ["get"]
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """Handle get request for room invitation join"""
+
+        token_or_response = self.get_token(request)
+
+        if isinstance(token_or_response, HttpResponse):
+            return token_or_response
+
+        # TODO: pass room details in context
+        return render(
+            request,
+            "accounts/room_invitation_join.html",
+            {"token": token_or_response},
+        )
+
+
+class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+
+        token_or_response = self.get_token(request)
+
+        if isinstance(token_or_response, HttpResponse):
+            return token_or_response
+
+        RoomInvitation.objects.accept_invitation(
+            current_user=request.user,
+            token=token_or_response,
+        )
+        token_payload = RoomInvitation.objects.unsigned_token(token_or_response)
+        room = Room.objects.get(id=token_payload["room"])
+        messages.success(
+            request,
+            f"Room '{room.name}' invitation accepted successfully.",
+        )
+        return redirect(reverse_lazy("accounts:room_selection"))
+
+
+class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+
+        token_or_response = self.get_token(request)
+
+        if isinstance(token_or_response, HttpResponse):
+            return token_or_response
+
+        RoomInvitation.objects.reject_invitation(
+            current_user=request.user,
+            token=token_or_response,
+        )
+        token_payload = RoomInvitation.objects.unsigned_token(token_or_response)
+        room = Room.objects.get(id=token_payload["room"])
+        messages.info(
+            request,
+            f"Room '{room.name}' invitation rejected successfully.",
+        )
+        return redirect(reverse_lazy("core:home"))
+
+
+class RoomInvitationCancelView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+
+    http_method_names = ["post"]
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+
+        invitation_id = request.POST.get("invitationId")
+
+        if invitation_id is None:
+            return HttpResponseNotFound()
+
+        invitation = RoomInvitation.objects.get(id=invitation_id)
+
+        try:
+            invitation.cancel()
+        except ValidationError:
+            return HttpResponseBadRequest()
+
+        messages.info(
+            request,
+            # pylint: disable=line-too-long
+            f"Invitation to Room '{invitation.room.name}' has been canceled for email '{invitation.email}'.",
+        )
+        return redirect(reverse_lazy("accounts:room_invitation"))
 
 
 class RoomCreateView(LoginRequiredMixin, CreateView):

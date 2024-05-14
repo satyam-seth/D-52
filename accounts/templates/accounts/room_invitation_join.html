@@ -1,0 +1,38 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Room Invitation Join{% endblock title %}
+{% block content %}
+
+<div class="container-fluid login py-5 mt-5">
+    <div class="container my-5">
+        {% if messages %}
+            {% for message in messages %}
+                <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+                    role="alert">
+                    <strong>{{message}}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div class="containerr mt-5">
+        <div class="row text-center">
+            <div class="col-md-12 my-5">
+                <form action="{% url 'accounts:room_invitation_accept' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ token }}">
+                    <button type="submit" class="btn btn-lg btn-primary">Accept Invitation</button>
+                </form>
+            </div>
+            <div class="col-md-12 mb-5">
+                <form action="{% url 'accounts:room_invitation_reject' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ token }}">
+                    <button type="submit" class="btn btn-lg btn-warning">Reject Invitation</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

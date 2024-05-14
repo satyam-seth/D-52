@@ -1,11 +1,19 @@
 from typing import Any, Optional
 
-from django.http import HttpRequest, HttpResponseForbidden, HttpResponseRedirect
+from django.core.signing import BadSignature
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+)
 from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from accounts.models import Room
+from accounts.models import Room, RoomInvitation
 
 
 class RoomBaseMixin:
@@ -67,3 +75,51 @@ class RoomAdminRequiredMixin(RoomBaseMixin):
         # else return HttpResponseForbidden
 
         return HttpResponseForbidden()
+
+
+class RoomInvitationTokenMixin:
+    """Mixin to check room invitation token validation"""
+
+    def check_room_invitation_token_valid(
+        self, request: HttpRequest, token: str
+    ) -> bool:
+        """Check room invitation token valid"""
+
+        try:
+            token_payload = RoomInvitation.objects.unsigned_token(token)
+        except BadSignature:
+            return False
+
+        # return false if user is not logged-in
+        # or logged-in user email is not equal to token payload email
+        if request.user.is_anonymous or request.user.email != token_payload["email"]:
+            return False
+
+        try:
+            RoomInvitation.objects.get(
+                id=token_payload["id"],
+                status=RoomInvitation.PENDING,
+            )
+            return True
+
+        except RoomInvitation.DoesNotExist:
+            return False
+
+    def get_token(self, request: HttpRequest) -> HttpResponse | str:
+        """To get room invitation token from request"""
+
+        token = None
+        if request.method == "POST":
+            token = request.POST.get("token")
+        else:
+            token = request.GET.get("token")
+
+        # if token missing return 404
+        if token is None:
+            return HttpResponseNotFound()
+
+        # check token is valid or not
+        if self.check_room_invitation_token_valid(request, token) == False:
+            return HttpResponseBadRequest()
+
+        return token

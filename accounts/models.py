@@ -83,6 +83,7 @@ class RoomInvitation(models.Model):
 
     objects = RoomInvitationManager()
 
+    # TODO: use models choices
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -102,35 +103,30 @@ class RoomInvitation(models.Model):
     def __str__(self):
         return f"{self.email} - {self.room.name}"
 
-    # TODO: use signal to send invitation status change notification email
+    def _check_pending_status(self, action: str):
+        if self.status != self.PENDING:
+            raise ValidationError(
+                f"Unable to {action} invitation with status '{self.status}'"
+            )
 
     def accept(self) -> None:
         """Accept the invitation"""
 
-        if self.status != self.PENDING:
-            raise ValidationError(
-                f"Unable to accept invitation with status '{self.status}'"
-            )
+        self._check_pending_status("accept")
         self.status = self.ACCEPTED
         self.save()
 
     def cancel(self) -> None:
         """Cancel the invitation"""
 
-        if self.status != self.PENDING:
-            raise ValidationError(
-                f"Unable to cancel invitation with status '{self.status}'"
-            )
+        self._check_pending_status("cancel")
         self.status = self.CANCELED
         self.save()
 
     def reject(self) -> None:
         """Reject the invitation"""
 
-        if self.status != self.PENDING:
-            raise ValidationError(
-                f"Unable to reject invitation with status '{self.status}'"
-            )
+        self._check_pending_status("reject")
         self.status = self.REJECTED
         self.save()
 

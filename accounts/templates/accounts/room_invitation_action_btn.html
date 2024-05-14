@@ -1,8 +1,10 @@
 {# TODO: add on click once handlers once ready #}
 {% if invitation.status == 'pending' %}
-<button class="btn btn-sm btn-warning">
-    Cancel
-</button>
+<form action="{% url 'accounts:room_invitation_cancel' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="invitationId" value="{{ invitation.id }}">
+    <button type="submit" class="btn btn-sm btn-warning">Cancel</button>
+</form>
 {% elif invitation.status == 'accepted' %}
 <button class="btn btn-sm btn-danger">
     Remove
