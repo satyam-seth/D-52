@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from unittest import skip
+from unittest import mock, skip
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -489,7 +489,8 @@ class TestRoomInviteView(TransactionTestCase):
         self.assertIsInstance(view, View)
         self.assertEqual(view.http_method_names, ["post"])
 
-    def test_invite_new_member_form(self):
+    @mock.patch("accounts.views.RoomInvitation.objects.send_invitation")
+    def test_invite_new_member_form(self, mock_send_invitation):
         """Test invite new member"""
 
         # Post form
@@ -508,8 +509,19 @@ class TestRoomInviteView(TransactionTestCase):
         # Check if the view redirects to the room invitations page
         self.assertRedirects(response, reverse("accounts:room_invitation"))
 
+        test_server_address = "http://testserver"
+        invitation_url = reverse_lazy("accounts:room_invitation_join")
+        absolute_invitation_url = test_server_address + invitation_url
+
+        # Assert that the method was called with the correct parameters
+        mock_send_invitation.assert_called_once_with(
+            room=self.room,
+            email=data["email"],
+            absolute_invitation_url=absolute_invitation_url,
+        )
+
     def test_invite_already_invited_member_form(self):
-        """Test invite already_invited member"""
+        """Test invite already invited member"""
 
         member_email = "test@member.com"
 
