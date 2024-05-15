@@ -97,8 +97,6 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
 class RoomSelectionView(LoginRequiredMixin, View):
     """Room selection view to store current room id in session"""
 
-    http_method_names = ["get", "post"]
-
     def get(self, request: HttpRequest) -> HttpResponse:
         """
         Handle get request for room selection
@@ -215,8 +213,6 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
 class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
     """View to handle room invite post requests"""
 
-    http_method_names = ["post"]
-
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handle POST requests for inviting users to a room"""
 
@@ -287,8 +283,6 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
 class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
     """View to handle room invitation join requests"""
 
-    http_method_names = ["get"]
-
     def get(self, request: HttpRequest) -> HttpResponse:
         """Handle get request for room invitation join"""
 
@@ -306,8 +300,6 @@ class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View)
 
 
 class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
-
-    http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
 
@@ -331,8 +323,6 @@ class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
 
 class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
 
-    http_method_names = ["post"]
-
     def post(self, request: HttpRequest) -> HttpResponse:
 
         token_or_response = self.get_token(request)
@@ -354,8 +344,6 @@ class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
 
 
 class RoomInvitationCancelView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
-
-    http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
 
