@@ -96,7 +96,6 @@ class TestRecordAddView(TestCase):
         view = RecordAddView()
         self.assertIsInstance(view, View)
         self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertEqual(view.http_method_names, ["post"])
 
     def test_record_add_view_for_valid_post_data(self) -> None:
         """Test record add view working for valid post data"""
@@ -179,7 +178,6 @@ class TestWaterAddView(TestCase):
         view = WaterAddView()
         self.assertIsInstance(view, View)
         self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertEqual(view.http_method_names, ["post"])
 
     def test_water_add_view_for_valid_post_data(self) -> None:
         """Test water add view working for valid post data"""

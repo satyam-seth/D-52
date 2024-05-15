@@ -40,8 +40,6 @@ class AddTemplateView(LoginRequiredMixin, TemplateView):
 class RecordAddView(LoginRequiredMixin, View):
     """View save record form data"""
 
-    http_method_names = ["post"]
-
     # TODO: propagate form.errors to view
     def post(self, request: HttpRequest) -> HttpResponse:
         """Method to validate and save record form post data"""
@@ -64,8 +62,6 @@ class RecordAddView(LoginRequiredMixin, View):
 
 class WaterAddView(LoginRequiredMixin, View):
     """View save water form data"""
-
-    http_method_names = ["post"]
 
     def post(self, request: HttpRequest) -> HttpResponse:
         """Method to validate and save water form post data"""

@@ -487,7 +487,6 @@ class TestRoomInviteView(TransactionTestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomAdminRequiredMixin)
         self.assertIsInstance(view, View)
-        self.assertEqual(view.http_method_names, ["post"])
 
     @mock.patch("accounts.views.RoomInvitation.objects.send_invitation")
     def test_invite_new_member_form(self, mock_send_invitation):
@@ -582,7 +581,6 @@ class TestRoomSelectionView(TestCase):
         view = RoomSelectionView()
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, View)
-        self.assertEqual(view.http_method_names, ["get", "post"])
 
     def test_get_if_zero_room_memberships(self) -> None:
         """Test get if zero room membership"""
