@@ -50,6 +50,12 @@ class UrlsTestCase(TestCase):
     #     url = reverse("accounts:room_join")
     #     self.assertEqual(resolve(url).func.view_class, views.RoomJoinView)
 
+    def test_room_invitation_join_url(self):
+        """Test room_invitation_join url resolve"""
+
+        url = reverse("accounts:room_invitation_join")
+        self.assertEqual(resolve(url).func.view_class, views.RoomInvitationJoinView)
+
     def test_room_create_url(self):
         """Test room_create url resolve"""
 
