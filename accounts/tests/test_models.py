@@ -118,6 +118,33 @@ class RoomInvitationModelTest(TestCase):
         # assert string representation
         self.assertEqual(str(invitation), f"{self.member.email} - {self.room.name}")
 
+    @patch("accounts.managers.Signer")
+    def test_unsigned_token(self, mock_signer) -> None:
+        """Test unsigned token method"""
+
+        token = "test_token"
+        payload = {
+            "id": 1,
+            "room_id": self.room.id,
+            "email": self.member.email,
+        }
+
+        # Create a mock signer and its mock return value for unsign_object
+        mock_signer_instance = mock_signer.return_value
+        mock_signer_instance.unsign_object.return_value = payload
+
+        # Call the unsigned_token method
+        result = RoomInvitation.objects.unsigned_token(token)
+
+        # Ensure the Signer was created with the correct salt
+        mock_signer.assert_called_once_with(salt=RoomInvitation.objects.salt)
+
+        # Ensure the unsign_object method was called with the token
+        mock_signer_instance.unsign_object.assert_called_once_with(token)
+
+        # Assert the result is as expected
+        self.assertEqual(result, payload)
+
     def test_accept_pending_invitation(self) -> None:
         """Test accepting a pending room invitation"""
 
