@@ -18,7 +18,7 @@ urlpatterns = [
     path("room/", views.RoomTemplateView.as_view(), name="room"),
     # path("room_join/", views.RoomJoinView.as_view(), name="room_join"),
     path(
-        "room_invitation_join/",
+        "room_invitation/join/",
         views.RoomInvitationJoinView.as_view(),
         name="room_invitation_join",
     ),
