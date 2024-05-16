@@ -68,6 +68,12 @@ class UrlsTestCase(TestCase):
         url = reverse("accounts:room_invitation_reject")
         self.assertEqual(resolve(url).func.view_class, views.RoomInvitationRejectView)
 
+    def test_room_invitation_cancel_url(self):
+        """Test room_invitation_cancel url resolve"""
+
+        url = reverse("accounts:room_invitation_cancel")
+        self.assertEqual(resolve(url).func.view_class, views.RoomInvitationCancelView)
+
     def test_room_create_url(self):
         """Test room_create url resolve"""
 
