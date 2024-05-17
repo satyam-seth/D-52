@@ -408,3 +408,28 @@ class RoomInvitationModelTest(TestCase):
 
         # assert unsigned token called once with expected token
         mock_unsigned_token.assert_called_once_with(token=token)
+
+    @patch.object(RoomInvitation.objects, "unsigned_token")
+    def test_reject_invitation_if_invitation_not_exists(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test rejecting an invitation if invitation not exists"""
+
+        # set up mock objects and return values
+        token = "mock_token"
+        mock_unsigned_token.return_value = {
+            "id": 100,
+            "room": self.room.id,
+            "email": self.member.email,
+        }
+
+        # call the reject_invitation method
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Invitation not found",
+        ):
+            RoomInvitation.objects.reject_invitation(self.member, token)
+
+        # assert unsigned token called once with expected token
+        mock_unsigned_token.assert_called_once_with(token=token)
