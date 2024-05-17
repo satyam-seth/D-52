@@ -300,3 +300,57 @@ class RoomInvitationModelTest(TestCase):
         # assertions
         mock_unsigned_token.assert_called_once_with(token=token)
         mock_accept.assert_called_once()
+
+    @patch.object(RoomInvitation.objects, "unsigned_token")
+    def test_accept_invitation_if_current_user_is_different(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test accepting an invitation if current user is different"""
+
+        # set up mock objects and return values
+        invitation = RoomInvitation.objects.create(
+            room=self.room,
+            email=self.member.email,
+        )
+        token = "mock_token"
+        mock_unsigned_token.return_value = {
+            "id": invitation.id,
+            "room": self.room.id,
+            "email": self.member.email,
+        }
+
+        # call the accept_invitation method
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Invitation token is not for the current user",
+        ):
+            RoomInvitation.objects.accept_invitation(self.admin, token)
+
+        # assert unsigned token called once with expected token
+        mock_unsigned_token.assert_called_once_with(token=token)
+
+    @patch.object(RoomInvitation.objects, "unsigned_token")
+    def test_accept_invitation_if_invitation_not_exists(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test accepting an invitation if invitation not exists"""
+
+        # set up mock objects and return values
+        token = "mock_token"
+        mock_unsigned_token.return_value = {
+            "id": 100,
+            "room": self.room.id,
+            "email": self.member.email,
+        }
+
+        # call the accept_invitation method
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Invitation not found",
+        ):
+            RoomInvitation.objects.accept_invitation(self.member, token)
+
+        # assert unsigned token called once with expected token
+        mock_unsigned_token.assert_called_once_with(token=token)
