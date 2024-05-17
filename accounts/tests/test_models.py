@@ -404,7 +404,7 @@ class RoomInvitationModelTest(TestCase):
             ValidationError,
             "Invitation token is not for the current user",
         ):
-            RoomInvitation.objects.accept_invitation(self.admin, token)
+            RoomInvitation.objects.reject_invitation(self.admin, token)
 
         # assert unsigned token called once with expected token
         mock_unsigned_token.assert_called_once_with(token=token)
