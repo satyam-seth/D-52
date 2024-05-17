@@ -282,6 +282,7 @@ class RoomInvitationModelTest(TestCase):
     @patch.object(RoomInvitation.objects, "unsigned_token")
     def test_accept_invitation(self, mock_unsigned_token, mock_accept) -> None:
         """Test accepting an invitation"""
+
         # set up mock objects and return values
         invitation = RoomInvitation.objects.create(
             room=self.room,
@@ -354,3 +355,27 @@ class RoomInvitationModelTest(TestCase):
 
         # assert unsigned token called once with expected token
         mock_unsigned_token.assert_called_once_with(token=token)
+
+    @patch.object(RoomInvitation, "reject")
+    @patch.object(RoomInvitation.objects, "unsigned_token")
+    def test_reject_invitation(self, mock_unsigned_token, mock_reject) -> None:
+        """Test rejecting an invitation"""
+
+        # set up mock objects and return values
+        invitation = RoomInvitation.objects.create(
+            room=self.room,
+            email=self.member.email,
+        )
+        token = "mock_token"
+        mock_unsigned_token.return_value = {
+            "id": invitation.id,
+            "room": self.room.id,
+            "email": self.member.email,
+        }
+
+        # call reject_invitation
+        RoomInvitation.objects.reject_invitation(self.member, token)
+
+        # assertions
+        mock_unsigned_token.assert_called_once_with(token=token)
+        mock_reject.assert_called_once()
