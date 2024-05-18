@@ -40,7 +40,10 @@ def create_room_membership_for_admin(
 
 
 @receiver(post_save, sender=RoomInvitation)
-def your_model_post_save(sender, instance, created: bool, **kwarg: Any) -> None:
+def room_invitation_post_save(
+    sender, instance, created: bool, **kwarg: Any  # pylint: disable=unused-argument
+) -> None:
+    """Signal to create relationship on room invitation accept"""
 
     # TODO: send invitation status change notification email
 
