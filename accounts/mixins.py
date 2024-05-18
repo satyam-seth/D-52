@@ -78,7 +78,7 @@ class RoomAdminRequiredMixin(RoomBaseMixin):
 
 
 class RoomInvitationTokenMixin:
-    """Mixin to check room invitation token validation"""
+    """Mixin to get and check room invitation token validation"""
 
     def check_room_invitation_token_valid(
         self, request: HttpRequest, token: str

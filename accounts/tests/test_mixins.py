@@ -1,11 +1,17 @@
 from http import HTTPStatus
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.base import SessionBase
 from django.test import RequestFactory, TestCase
 from django.urls import reverse_lazy
 
-from accounts.mixins import RoomAdminRequiredMixin, RoomBaseMixin, RoomRequiredMixin
+from accounts.mixins import (
+    RoomAdminRequiredMixin,
+    RoomBaseMixin,
+    RoomInvitationTokenMixin,
+    RoomRequiredMixin,
+)
 from accounts.models import Room
 
 User = get_user_model()
@@ -142,3 +148,42 @@ class TestRoomAdminRequiredMixin(TestCase):
 
         # Assert access should be denied with Forbidden status code
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+
+class TestRoomInvitationTokenMixin(TestCase):
+    """Test Room Invitation Token Mixin"""
+
+    def setUp(self) -> None:
+        self.factory = RequestFactory()
+
+        # Create a view instance with the RoomInvitationTokenMixin
+        self.view = RoomInvitationTokenMixin()
+
+    @mock.patch(
+        "accounts.mixins.RoomInvitationTokenMixin.check_room_invitation_token_valid"
+    )
+    def test_get_token_method_retrieve_token_from_get_request(
+        self,
+        mock_check_room_invitation_token_valid,
+    ) -> None:
+        """Test get token method retrieve token from get request"""
+
+        # Set return value true
+        mock_check_room_invitation_token_valid.return_value = True
+
+        test_token = "test_token"
+
+        # Create request
+        request = self.factory.get("/", data={"token": test_token})
+
+        # Call get token method with request
+        token = self.view.get_token(request)
+
+        # Assert token value
+        self.assertEqual(token, test_token)
+
+        # Assert check_room_invitation_token_valid called once with expected args
+        mock_check_room_invitation_token_valid.assert_called_once_with(
+            request,
+            test_token,
+        )
