@@ -187,3 +187,32 @@ class TestRoomInvitationTokenMixin(TestCase):
             request,
             test_token,
         )
+
+    @mock.patch(
+        "accounts.mixins.RoomInvitationTokenMixin.check_room_invitation_token_valid"
+    )
+    def test_get_token_method_retrieve_token_from_post_request(
+        self,
+        mock_check_room_invitation_token_valid,
+    ) -> None:
+        """Test get token method retrieve token from post request"""
+
+        # Set return value true
+        mock_check_room_invitation_token_valid.return_value = True
+
+        test_token = "test_token"
+
+        # Create request
+        request = self.factory.post("/", data={"token": test_token})
+
+        # Call get token method with request
+        token = self.view.get_token(request)
+
+        # Assert token value
+        self.assertEqual(token, test_token)
+
+        # Assert check_room_invitation_token_valid called once with expected args
+        mock_check_room_invitation_token_valid.assert_called_once_with(
+            request,
+            test_token,
+        )
