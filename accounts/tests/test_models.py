@@ -433,3 +433,30 @@ class RoomInvitationModelTest(TestCase):
 
         # assert unsigned token called once with expected token
         mock_unsigned_token.assert_called_once_with(token=token)
+
+    def test_room_membership_created_on_invitation_accept(self):
+        """Test that RoomMembership is created when invitation is accepted"""
+
+        # Create invitation
+        invitation = RoomInvitation.objects.create(
+            room=self.room,
+            email=self.member.email,
+        )
+
+        # Initially, there should be no RoomMembership
+        before_accept_membership = RoomMembership.objects.filter(
+            member=self.member,
+            room=self.room,
+        )
+        self.assertFalse(before_accept_membership.exists())
+
+        # Change the status to ACCEPTED and save the invitation
+        invitation.status = RoomInvitation.ACCEPTED
+        invitation.save()
+
+        # Check that a RoomMembership has been created
+        after_accept_membership = RoomMembership.objects.filter(
+            member=self.member,
+            room=self.room,
+        )
+        self.assertTrue(after_accept_membership.exists())
