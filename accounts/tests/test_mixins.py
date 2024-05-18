@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.base import SessionBase
+from django.http import HttpResponseNotFound
 from django.test import RequestFactory, TestCase
 from django.urls import reverse_lazy
 
@@ -216,3 +217,15 @@ class TestRoomInvitationTokenMixin(TestCase):
             request,
             test_token,
         )
+
+    def test_get_token_method_returns_404_not_found_if_token_missing(self) -> None:
+        """Test get token method returns 404 not found if token missing"""
+
+        # Create request
+        request = self.factory.get("/")
+
+        # Call get token method with request
+        response = self.view.get_token(request)
+
+        # Assert response is HttpResponseNotFound
+        self.assertIsInstance(response, HttpResponseNotFound)
