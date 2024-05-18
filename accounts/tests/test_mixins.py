@@ -3,7 +3,7 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.base import SessionBase
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseBadRequest, HttpResponseNotFound
 from django.test import RequestFactory, TestCase
 from django.urls import reverse_lazy
 
@@ -227,5 +227,34 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Call get token method with request
         response = self.view.get_token(request)
 
-        # Assert response is HttpResponseNotFound
+        # Assert response is 404 not found
         self.assertIsInstance(response, HttpResponseNotFound)
+
+    @mock.patch(
+        "accounts.mixins.RoomInvitationTokenMixin.check_room_invitation_token_valid"
+    )
+    def test_get_token_method_400_bad_request_if_token_is_invalid(
+        self,
+        mock_check_room_invitation_token_valid,
+    ) -> None:
+        """Test get token method returns 400 bad request if token is invalid"""
+
+        # Set return value true
+        mock_check_room_invitation_token_valid.return_value = False
+
+        test_token = "test_token"
+
+        # Create request
+        request = self.factory.post("/", data={"token": test_token})
+
+        # Call get token method with request
+        response = self.view.get_token(request)
+
+        # Assert response is 400 bad request
+        self.assertIsInstance(response, HttpResponseBadRequest)
+
+        # Assert check_room_invitation_token_valid called once with expected args
+        mock_check_room_invitation_token_valid.assert_called_once_with(
+            request,
+            test_token,
+        )
