@@ -852,8 +852,21 @@ class TestRoomInvitationJoinView(TestCase):
         self.assertEqual(response.context["token"], test_token)
 
 
-class TestRoomInvitationJAcceptView(TestCase):
+class TestRoomInvitationAcceptView(TestCase):
     """Test Room Invitation Accept view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_invitation_accept")
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_room_invitation_accept_view_attributes(self) -> None:
         "Test Room Invitation accept view attributes"
@@ -862,6 +875,22 @@ class TestRoomInvitationJAcceptView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomInvitationTokenMixin)
         self.assertIsInstance(view, View)
+
+    @mock.patch("accounts.views.RoomInvitationAcceptView.get_token")
+    def test_returns_response_if_get_token_returns_http_response(
+        self, mock_get_token
+    ) -> None:
+        """Test returns response if get token returns http response"""
+
+        # Set return value
+        mock_response = HttpResponse("Test Response")
+        mock_get_token.return_value = mock_response
+
+        # Send GET request to the view
+        response = self.client.post(self.url)
+
+        # Assert response
+        self.assertEqual(response, mock_response)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
