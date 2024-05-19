@@ -250,6 +250,29 @@ class TestUserSignUpView(TestCase):
         )
 
 
+class TestMyPasswordResetCompleteView(TestCase):
+    """Test my password reset complete view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:password_reset_complete")
+
+    def test_my_password_reset_complete_view_working(self):
+        """Test my password reset complete view working"""
+
+        # Send a GET request to the password reset complete URL
+        response = self.client.get(self.url)
+
+        # Verify that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Verify that the correct template is used
+        self.assertTemplateUsed(response, "registration/password_reset_complete.html")
+
+        # Verify that the 'login_url' variable is included in the context and has the correct value
+        self.assertEqual(response.context["login_url"], "/login/")
+
+
 class TestRoomTemplateView(TestCase):
     """Test room template view"""
 
@@ -1051,26 +1074,3 @@ class TestRoomInvitationRejectView(TestCase):
 
         # Assert unsigned_token called once with expected token
         mock_unsigned_token.assert_called_once_with(test_token)
-
-
-class TestMyPasswordResetCompleteView(TestCase):
-    """Test my password reset complete view"""
-
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("accounts:password_reset_complete")
-
-    def test_my_password_reset_complete_view_working(self):
-        """Test my password reset complete view working"""
-
-        # Send a GET request to the password reset complete URL
-        response = self.client.get(self.url)
-
-        # Verify that the response status code is 200 (OK)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-        # Verify that the correct template is used
-        self.assertTemplateUsed(response, "registration/password_reset_complete.html")
-
-        # Verify that the 'login_url' variable is included in the context and has the correct value
-        self.assertEqual(response.context["login_url"], "/login/")

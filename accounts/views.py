@@ -94,6 +94,16 @@ class UserSignUpView(SuccessMessageMixin, CreateView):
         return valid
 
 
+# TODO: Create custom template or redirect password done view to home
+class MyPasswordResetCompleteView(PasswordResetCompleteView):
+    """View to handle user password complete"""
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["login_url"] = "/login/"
+        return context
+
+
 class RoomSelectionView(LoginRequiredMixin, View):
     """Room selection view to store current room id in session"""
 
@@ -324,8 +334,10 @@ class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
 
 
 class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+    """View to handle room invitation reject requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        """Handle post request for room invitation reject"""
 
         token_or_response = self.get_token(request)
 
@@ -346,8 +358,10 @@ class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
 
 
 class RoomInvitationCancelView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+    """View to handle room invitation cancel requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        """Handle post request for room invitation cancel"""
 
         invitation_id = request.POST.get("invitationId")
 
@@ -390,13 +404,3 @@ class RoomCreateView(LoginRequiredMixin, CreateView):
             self.request, f"You have joined the room '{room.name}' successfully !!"
         )
         return super().form_valid(form)
-
-
-# TODO: Create custom template or redirect password done view to home
-class MyPasswordResetCompleteView(PasswordResetCompleteView):
-    """View to handle user password complete"""
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["login_url"] = "/login/"
-        return context
