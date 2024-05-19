@@ -959,6 +959,26 @@ class TestRoomInvitationAcceptView(TestCase):
 class TestRoomInvitationRejectView(TestCase):
     """Test Room Invitation Reject view"""
 
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_invitation_reject")
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="admin",
+        )
+        self.member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="member",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
+
+        # login user
+        self.client.login(email="member@user.com", password="test-password")
+
     def test_room_invitation_reject_view_attributes(self) -> None:
         "Test Room Invitation reject view attributes"
 
@@ -966,6 +986,22 @@ class TestRoomInvitationRejectView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomInvitationTokenMixin)
         self.assertIsInstance(view, View)
+
+    @mock.patch("accounts.views.RoomInvitationRejectView.get_token")
+    def test_returns_response_if_get_token_returns_http_response(
+        self, mock_get_token
+    ) -> None:
+        """Test returns response if get token returns http response"""
+
+        # Set return value
+        mock_response = HttpResponse("Test Response")
+        mock_get_token.return_value = mock_response
+
+        # Send GET request to the view
+        response = self.client.post(self.url)
+
+        # Assert response
+        self.assertEqual(response, mock_response)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
