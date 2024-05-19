@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.base import SessionBase
+from django.core.signing import BadSignature
 from django.http import HttpResponseBadRequest, HttpResponseNotFound
 from django.test import RequestFactory, TestCase
 from django.urls import reverse_lazy
@@ -156,6 +157,7 @@ class TestRoomInvitationTokenMixin(TestCase):
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
+        self.token = "test_token"
 
         # Create a view instance with the RoomInvitationTokenMixin
         self.view = RoomInvitationTokenMixin()
@@ -172,21 +174,19 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Set return value true
         mock_check_room_invitation_token_valid.return_value = True
 
-        test_token = "test_token"
-
         # Create request
-        request = self.factory.get("/", data={"token": test_token})
+        request = self.factory.get("/", data={"token": self.token})
 
         # Call get token method with request
         token = self.view.get_token(request)
 
         # Assert token value
-        self.assertEqual(token, test_token)
+        self.assertEqual(token, self.token)
 
         # Assert check_room_invitation_token_valid called once with expected args
         mock_check_room_invitation_token_valid.assert_called_once_with(
             request,
-            test_token,
+            self.token,
         )
 
     @mock.patch(
@@ -201,21 +201,19 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Set return value true
         mock_check_room_invitation_token_valid.return_value = True
 
-        test_token = "test_token"
-
         # Create request
-        request = self.factory.post("/", data={"token": test_token})
+        request = self.factory.post("/", data={"token": self.token})
 
         # Call get token method with request
         token = self.view.get_token(request)
 
         # Assert token value
-        self.assertEqual(token, test_token)
+        self.assertEqual(token, self.token)
 
         # Assert check_room_invitation_token_valid called once with expected args
         mock_check_room_invitation_token_valid.assert_called_once_with(
             request,
-            test_token,
+            self.token,
         )
 
     def test_get_token_method_returns_404_not_found_if_token_missing(self) -> None:
@@ -242,10 +240,8 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Set return value true
         mock_check_room_invitation_token_valid.return_value = False
 
-        test_token = "test_token"
-
         # Create request
-        request = self.factory.post("/", data={"token": test_token})
+        request = self.factory.post("/", data={"token": self.token})
 
         # Call get token method with request
         response = self.view.get_token(request)
@@ -256,5 +252,27 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Assert check_room_invitation_token_valid called once with expected args
         mock_check_room_invitation_token_valid.assert_called_once_with(
             request,
-            test_token,
+            self.token,
         )
+
+    @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
+    def test_check_room_invitation_token_valid_returns_false_if_token_invalid(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test check room invitation token valid returns false if token invalid"""
+
+        # Raise BadSignature
+        mock_unsigned_token.side_effect = BadSignature()
+
+        # Create request
+        request = self.factory.post("/")
+
+        # Call check room invitation token method with request and token
+        token_validity = self.view.check_room_invitation_token_valid(
+            request,
+            self.token,
+        )
+
+        # Assert validity is false
+        self.assertEqual(token_validity, False)
