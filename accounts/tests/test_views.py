@@ -30,6 +30,7 @@ from accounts.views import (
     RoomInvitationAcceptView,
     RoomInvitationJoinView,
     RoomInvitationListView,
+    RoomInvitationRejectView,
     RoomInviteView,
     RoomSelectionView,
     RoomTemplateView,
@@ -935,7 +936,7 @@ class TestRoomInvitationAcceptView(TestCase):
             f"Room '{self.room.name}' invitation accepted successfully.",
         )
 
-        # Assert that the user is redirected to the room invitation page
+        # Assert that the user is redirected to the room selection page
         self.assertRedirects(
             response,
             reverse("accounts:room_selection"),
@@ -953,6 +954,18 @@ class TestRoomInvitationAcceptView(TestCase):
 
         # Assert unsigned_token called once with expected token
         mock_unsigned_token.assert_called_once_with(test_token)
+
+
+class TestRoomInvitationRejectView(TestCase):
+    """Test Room Invitation Reject view"""
+
+    def test_room_invitation_reject_view_attributes(self) -> None:
+        "Test Room Invitation reject view attributes"
+
+        view = RoomInvitationRejectView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomInvitationTokenMixin)
+        self.assertIsInstance(view, View)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
