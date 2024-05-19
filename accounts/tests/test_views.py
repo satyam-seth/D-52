@@ -824,11 +824,31 @@ class TestRoomInvitationJoinView(TestCase):
         mock_response = HttpResponse("Test Response")
         mock_get_token.return_value = mock_response
 
-        # Send GET request
+        # Send GET request to the view
         response = self.client.get(self.url)
 
         # Assert response
         self.assertEqual(response, mock_response)
+
+    @mock.patch("accounts.views.RoomInvitationJoinView.get_token")
+    def test_render_template_if_get_token_returns_token(self, mock_get_token) -> None:
+        """Test render template if get token returns token"""
+
+        # Set return value
+        test_token = "test_token"
+        mock_get_token.return_value = test_token
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "accounts/room_invitation_join.html")
+
+        # Assert response context token
+        self.assertEqual(response.context["token"], test_token)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
