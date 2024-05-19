@@ -8,6 +8,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import HttpResponse
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -792,6 +793,19 @@ class TestRoomSelectionView(TestCase):
 class TestRoomInvitationJoinView(TestCase):
     """Test Room Invitation Join view"""
 
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_invitation_join")
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
     def test_room_invitation_join_view_attributes(self) -> None:
         "Test Room Invitation Join view attributes"
 
@@ -799,6 +813,22 @@ class TestRoomInvitationJoinView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomInvitationTokenMixin)
         self.assertIsInstance(view, View)
+
+    @mock.patch("accounts.views.RoomInvitationJoinView.get_token")
+    def test_returns_response_if_get_token_returns_http_response(
+        self, mock_get_token
+    ) -> None:
+        """Test returns response if get token returns http response"""
+
+        # Set return value
+        mock_response = HttpResponse("Test Response")
+        mock_get_token.return_value = mock_response
+
+        # Send GET request
+        response = self.client.get(self.url)
+
+        # Assert response
+        self.assertEqual(response, mock_response)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
