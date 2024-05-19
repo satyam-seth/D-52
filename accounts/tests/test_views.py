@@ -20,12 +20,13 @@ from accounts.forms import (
     RoomInvitationForm,
     SignUpForm,
 )
-from accounts.mixins import RoomAdminRequiredMixin
+from accounts.mixins import RoomAdminRequiredMixin, RoomInvitationTokenMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 from accounts.views import (
     ProfileTemplateView,
     ProfileUpdateView,
     RoomCreateView,
+    RoomInvitationJoinView,
     RoomInvitationListView,
     RoomInviteView,
     RoomSelectionView,
@@ -786,6 +787,18 @@ class TestRoomSelectionView(TestCase):
             reverse_lazy("core:home"),
             fetch_redirect_response=False,
         )
+
+
+class TestRoomInvitationJoinView(TestCase):
+    """Test Room Invitation Join view"""
+
+    def test_room_invitation_join_view_attributes(self) -> None:
+        "Test Room Invitation Join view attributes"
+
+        view = RoomInvitationJoinView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomInvitationTokenMixin)
+        self.assertIsInstance(view, View)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
