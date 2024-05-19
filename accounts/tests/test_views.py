@@ -1,5 +1,6 @@
 from http import HTTPStatus
-from unittest import mock, skip
+from io import BytesIO
+from unittest import mock
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -10,10 +11,11 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
-from django.test import Client, TestCase, TransactionTestCase
+from django.test import Client, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
+from PIL import Image
 
 from accounts.forms import (
     LoginForm,
@@ -42,6 +44,16 @@ from accounts.views import (
 )
 
 User = get_user_model()
+
+
+def get_in_memory_image() -> BytesIO:
+    """Create and return an in-memory image"""
+
+    image = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    image_io = BytesIO()
+    image.save(image_io, format="JPEG")
+    image_io.seek(0)
+    return image_io
 
 
 class TestProfileTemplateView(TestCase):
@@ -111,19 +123,19 @@ class TestProfileUpdateView(TestCase):
         self.assertTrue(view.success_url, reverse("accounts:profile"))
         self.assertEqual(view.success_message, "Profile Updated !!")
 
-    # Upload a valid image. The file you uploaded was either not an image or a corrupted image.
-    @skip("Debug why form_valid method not run")
+    @override_settings(DEFAULT_FILE_STORAGE="django.core.files.storage.InMemoryStorage")
     def test_profile_update_view_working(self):
         """Test profile update view working"""
 
         avatar = SimpleUploadedFile(
             name="test_avatar.jpg",
-            content=b"file_content",
+            content=get_in_memory_image().read(),
             content_type="image/jpeg",
         )
+
         cover_photo = SimpleUploadedFile(
             name="test_cover_photo.jpg",
-            content=b"file_content",
+            content=get_in_memory_image().read(),
             content_type="image/jpeg",
         )
 
@@ -141,7 +153,8 @@ class TestProfileUpdateView(TestCase):
         self.assertIsNotNone(updated_profile)
         self.assertEqual(updated_profile.avatar.name, f"profile_avatars/{avatar.name}")
         self.assertEqual(
-            updated_profile.cover_photo.name, f"profile_cover_photos/{cover_photo.name}"
+            updated_profile.cover_photo.name,
+            f"profile_cover_photos/{cover_photo.name}",
         )
 
 
