@@ -858,15 +858,22 @@ class TestRoomInvitationAcceptView(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.url = reverse_lazy("accounts:room_invitation_accept")
-        self.user = User.objects.create_user(
-            email="test@user.com",
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
             password="test-password",
             first_name="test",
-            last_name="user",
+            last_name="admin",
         )
+        self.member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="member",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
 
         # login user
-        self.client.login(email="test@user.com", password="test-password")
+        self.client.login(email="member@user.com", password="test-password")
 
     def test_room_invitation_accept_view_attributes(self) -> None:
         "Test Room Invitation accept view attributes"
@@ -891,6 +898,55 @@ class TestRoomInvitationAcceptView(TestCase):
 
         # Assert response
         self.assertEqual(response, mock_response)
+
+    @mock.patch("accounts.views.RoomInvitation.objects.unsigned_token")
+    @mock.patch("accounts.views.RoomInvitation.objects.accept_invitation")
+    @mock.patch("accounts.views.RoomInvitationAcceptView.get_token")
+    def test_accept_invitation_if_token_valid(
+        self,
+        mock_get_token,
+        mock_accept_invitation,
+        mock_unsigned_token,
+    ) -> None:
+        """Test accept invitation if token valid"""
+
+        # Set return value
+        test_token = "test_token"
+        test_token_payload = {"id": 1, "room": self.room.pk, "email": self.member.email}
+        mock_get_token.return_value = test_token
+        mock_accept_invitation.return_value = None
+        mock_unsigned_token.return_value = test_token_payload
+
+        # Send a GET request to the view
+        response = self.client.post(self.url)
+
+        # Assert that the success message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.SUCCESS)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Room '{self.room.name}' invitation accepted successfully.",
+        )
+
+        # Assert that the user is redirected to the room invitation page
+        self.assertRedirects(
+            response,
+            reverse("accounts:room_selection"),
+            fetch_redirect_response=False,
+        )
+
+        # Assert get_token called once with expected request
+        mock_get_token.assert_called_once_with(response.wsgi_request)
+
+        # Assert accept_invitation called once with expected args
+        mock_accept_invitation.assert_called_once_with(
+            current_user=self.member,
+            token=test_token,
+        )
+
+        # Assert unsigned_token called once with expected token
+        mock_unsigned_token.assert_called_once_with(test_token)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
