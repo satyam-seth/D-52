@@ -7,8 +7,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -867,7 +868,7 @@ class TestRoomInvitationJoinView(TestCase):
         test_token = "test_token"
         mock_get_token.return_value = test_token
 
-        # Send a GET request to the view
+        # Send a POST request to the view
         response = self.client.get(self.url)
 
         # Assert that the response status code is 200 (OK)
@@ -924,7 +925,7 @@ class TestRoomInvitationAcceptView(TestCase):
         mock_response = HttpResponse("Test Response")
         mock_get_token.return_value = mock_response
 
-        # Send GET request to the view
+        # Send POST request to the view
         response = self.client.post(self.url)
 
         # Assert response
@@ -948,7 +949,7 @@ class TestRoomInvitationAcceptView(TestCase):
         mock_accept_invitation.return_value = None
         mock_unsigned_token.return_value = test_token_payload
 
-        # Send a GET request to the view
+        # Send a POST request to the view
         response = self.client.post(self.url)
 
         # Assert that the success message is displayed
@@ -1021,7 +1022,7 @@ class TestRoomInvitationRejectView(TestCase):
         mock_response = HttpResponse("Test Response")
         mock_get_token.return_value = mock_response
 
-        # Send GET request to the view
+        # Send POST request to the view
         response = self.client.post(self.url)
 
         # Assert response
@@ -1045,7 +1046,7 @@ class TestRoomInvitationRejectView(TestCase):
         mock_reject_invitation.return_value = None
         mock_unsigned_token.return_value = test_token_payload
 
-        # Send a GET request to the view
+        # Send a POST request to the view
         response = self.client.post(self.url)
 
         # Assert that the success message is displayed
@@ -1080,6 +1081,28 @@ class TestRoomInvitationRejectView(TestCase):
 class TestRoomInvitationCancelView(TestCase):
     """Test Room Invitation Cancel view"""
 
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_invitation_cancel")
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="admin",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
+        self.invitation = RoomInvitation.objects.create(
+            room=self.room, email="member@user.com"
+        )
+
+        # login user
+        self.client.login(email="admin@user.com", password="test-password")
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
     def test_room_invitation_cancel_view_attributes(self) -> None:
         "Test Room Invitation cancel view attributes"
 
@@ -1087,3 +1110,33 @@ class TestRoomInvitationCancelView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomAdminRequiredMixin)
         self.assertIsInstance(view, View)
+
+    def test_returns_404_not_found_if_invitation_id_missing(self) -> None:
+        """Test returns 404 not found if invitation id missing"""
+
+        # Send a POST request to the view
+        response = self.client.post(self.url)
+
+        # Assert response is 404 not found
+        self.assertIsInstance(response, HttpResponseNotFound)
+
+    @mock.patch("accounts.views.RoomInvitation.cancel")
+    def test_returns_400_bad_request_if_validation_error_is_raised_on_invitation_cancel(
+        self,
+        mock_cancel,
+    ) -> None:
+        """Test returns 400 bad request if validation error is raised on invitation cancel"""
+
+        # Raise value error
+        mock_cancel.side_effect = ValidationError("test-error-message")
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url, data={"invitation_id": self.invitation.id}
+        )
+
+        # Assert response is 400 bad request
+        self.assertIsInstance(response, HttpResponseBadRequest)
+
+        # Assert invitation cancel called
+        mock_cancel.assert_called_once()

@@ -363,7 +363,7 @@ class RoomInvitationCancelView(LoginRequiredMixin, RoomAdminRequiredMixin, View)
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handle post request for room invitation cancel"""
 
-        invitation_id = request.POST.get("invitationId")
+        invitation_id = request.POST.get("invitation_id")
 
         if invitation_id is None:
             return HttpResponseNotFound()

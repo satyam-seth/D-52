@@ -2,7 +2,7 @@
 {% if invitation.status == 'pending' %}
 <form action="{% url 'accounts:room_invitation_cancel' %}" method="POST">
     {% csrf_token %}
-    <input type="hidden" name="invitationId" value="{{ invitation.id }}">
+    <input type="hidden" name="invitation_id" value="{{ invitation.id }}">
     <button type="submit" class="btn btn-sm btn-warning">Cancel</button>
 </form>
 {% elif invitation.status == 'accepted' %}
