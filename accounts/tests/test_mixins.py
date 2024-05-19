@@ -15,7 +15,7 @@ from accounts.mixins import (
     RoomInvitationTokenMixin,
     RoomRequiredMixin,
 )
-from accounts.models import Room
+from accounts.models import Room, RoomInvitation
 
 User = get_user_model()
 
@@ -293,6 +293,9 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Assert validity is false
         self.assertEqual(token_validity, False)
 
+        # Assert unsigned_token called once with expected token
+        mock_unsigned_token.assert_called_once_with(self.token)
+
     @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
     def test_check_room_invitation_token_valid_returns_false_if_user_for_anonymous_user(
         self,
@@ -315,6 +318,9 @@ class TestRoomInvitationTokenMixin(TestCase):
 
         # Assert validity is false
         self.assertEqual(token_validity, False)
+
+        # Assert unsigned_token called once with expected token
+        mock_unsigned_token.assert_called_once_with(self.token)
 
     @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
     def test_check_room_invitation_token_valid_returns_false_if_user_email_mismatch(
@@ -347,6 +353,9 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Assert validity is false
         self.assertEqual(token_validity, False)
 
+        # Assert unsigned_token called once with expected token
+        mock_unsigned_token.assert_called_once_with(self.token)
+
     @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
     def test_check_room_invitation_token_valid_returns_false_if_room_initiation_not_exists(
         self,
@@ -369,3 +378,43 @@ class TestRoomInvitationTokenMixin(TestCase):
 
         # Assert validity is false
         self.assertEqual(token_validity, False)
+
+        # Assert unsigned_token called once with expected token
+        mock_unsigned_token.assert_called_once_with(self.token)
+
+    @mock.patch("accounts.mixins.RoomInvitation.objects.get")
+    @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
+    def test_check_room_invitation_token_valid_returns_true_if_room_initiation_exists(
+        self,
+        mock_unsigned_token,
+        mock_room_invitation_get,
+    ) -> None:
+        """Test check room invitation token valid returns true if room initiation exists"""
+
+        # Set return value true
+        mock_unsigned_token.return_value = self.token_payload
+
+        # Create room invitation
+        RoomInvitation.objects.create(room=self.room, email=self.member.email)
+
+        # Create request
+        request = self.factory.post("/")
+        request.user = self.member
+
+        # Call check room invitation token method with request and token
+        token_validity = self.view.check_room_invitation_token_valid(
+            request,
+            self.token,
+        )
+
+        # Assert validity is true
+        self.assertEqual(token_validity, True)
+
+        # Assert unsigned_token called once with expected token
+        mock_unsigned_token.assert_called_once_with(self.token)
+
+        # Assert room invitation get with expected token payload id
+        mock_room_invitation_get.assert_called_once_with(
+            id=self.token_payload["id"],
+            status=RoomInvitation.PENDING,
+        )
