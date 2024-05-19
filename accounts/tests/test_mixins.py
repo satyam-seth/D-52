@@ -346,3 +346,26 @@ class TestRoomInvitationTokenMixin(TestCase):
 
         # Assert validity is false
         self.assertEqual(token_validity, False)
+
+    @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
+    def test_check_room_invitation_token_valid_returns_false_if_room_initiation_not_exists(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test check room invitation token valid returns false if room initiation not exists"""
+
+        # Set return value true
+        mock_unsigned_token.return_value = self.token_payload
+
+        # Create request
+        request = self.factory.post("/")
+        request.user = self.member
+
+        # Call check room invitation token method with request and token
+        token_validity = self.view.check_room_invitation_token_valid(
+            request,
+            self.token,
+        )
+
+        # Assert validity is false
+        self.assertEqual(token_validity, False)
