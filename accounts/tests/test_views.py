@@ -831,6 +831,9 @@ class TestRoomInvitationJoinView(TestCase):
         # Assert response
         self.assertEqual(response, mock_response)
 
+        # Assert get_token called once with expected request
+        mock_get_token.assert_called_once_with(response.wsgi_request)
+
     @mock.patch("accounts.views.RoomInvitationJoinView.get_token")
     def test_render_template_if_get_token_returns_token(self, mock_get_token) -> None:
         """Test render template if get token returns token"""
@@ -850,6 +853,9 @@ class TestRoomInvitationJoinView(TestCase):
 
         # Assert response context token
         self.assertEqual(response.context["token"], test_token)
+
+        # Assert get_token called once with expected request
+        mock_get_token.assert_called_once_with(response.wsgi_request)
 
 
 class TestRoomInvitationAcceptView(TestCase):
