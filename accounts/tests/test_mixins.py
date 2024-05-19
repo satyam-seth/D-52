@@ -2,6 +2,7 @@ from http import HTTPStatus
 from unittest import mock
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.signing import BadSignature
 from django.http import HttpResponseBadRequest, HttpResponseNotFound
@@ -267,6 +268,29 @@ class TestRoomInvitationTokenMixin(TestCase):
 
         # Create request
         request = self.factory.post("/")
+
+        # Call check room invitation token method with request and token
+        token_validity = self.view.check_room_invitation_token_valid(
+            request,
+            self.token,
+        )
+
+        # Assert validity is false
+        self.assertEqual(token_validity, False)
+
+    @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
+    def test_check_room_invitation_token_valid_returns_false_if_user_for_anonymous_user(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test check room invitation token valid returns false for anonymous user"""
+
+        # Set return value true
+        mock_unsigned_token.return_value = self.token
+
+        # Create request
+        request = self.factory.post("/")
+        request.user = AnonymousUser()
 
         # Call check room invitation token method with request and token
         token_validity = self.view.check_room_invitation_token_valid(
