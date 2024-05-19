@@ -8,6 +8,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import HttpResponse
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -20,12 +21,13 @@ from accounts.forms import (
     RoomInvitationForm,
     SignUpForm,
 )
-from accounts.mixins import RoomAdminRequiredMixin
+from accounts.mixins import RoomAdminRequiredMixin, RoomInvitationTokenMixin
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 from accounts.views import (
     ProfileTemplateView,
     ProfileUpdateView,
     RoomCreateView,
+    RoomInvitationJoinView,
     RoomInvitationListView,
     RoomInviteView,
     RoomSelectionView,
@@ -786,6 +788,67 @@ class TestRoomSelectionView(TestCase):
             reverse_lazy("core:home"),
             fetch_redirect_response=False,
         )
+
+
+class TestRoomInvitationJoinView(TestCase):
+    """Test Room Invitation Join view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse_lazy("accounts:room_invitation_join")
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
+    def test_room_invitation_join_view_attributes(self) -> None:
+        "Test Room Invitation Join view attributes"
+
+        view = RoomInvitationJoinView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomInvitationTokenMixin)
+        self.assertIsInstance(view, View)
+
+    @mock.patch("accounts.views.RoomInvitationJoinView.get_token")
+    def test_returns_response_if_get_token_returns_http_response(
+        self, mock_get_token
+    ) -> None:
+        """Test returns response if get token returns http response"""
+
+        # Set return value
+        mock_response = HttpResponse("Test Response")
+        mock_get_token.return_value = mock_response
+
+        # Send GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert response
+        self.assertEqual(response, mock_response)
+
+    @mock.patch("accounts.views.RoomInvitationJoinView.get_token")
+    def test_render_template_if_get_token_returns_token(self, mock_get_token) -> None:
+        """Test render template if get token returns token"""
+
+        # Set return value
+        test_token = "test_token"
+        mock_get_token.return_value = test_token
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "accounts/room_invitation_join.html")
+
+        # Assert response context token
+        self.assertEqual(response.context["token"], test_token)
 
 
 class TestMyPasswordResetCompleteView(TestCase):
