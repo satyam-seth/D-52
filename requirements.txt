@@ -1,6 +1,6 @@
 black==23.12.1
 coverage==7.5.1
-Django==4.1.5
+Django==4.2.0
 django-stubs==4.2.7
 isort==5.13.2
 mypy==1.8.0
