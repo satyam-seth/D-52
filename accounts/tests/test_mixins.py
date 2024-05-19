@@ -160,6 +160,21 @@ class TestRoomInvitationTokenMixin(TestCase):
         self.factory = RequestFactory()
         self.token = "test_token"
 
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
+            password="test-password",
+            first_name="admin",
+            last_name="user",
+        )
+        self.member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="admin",
+            last_name="user",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
+        self.token_payload = {"id": 1, "room": self.room, "email": self.member.email}
+
         # Create a view instance with the RoomInvitationTokenMixin
         self.view = RoomInvitationTokenMixin()
 
@@ -286,11 +301,42 @@ class TestRoomInvitationTokenMixin(TestCase):
         """Test check room invitation token valid returns false for anonymous user"""
 
         # Set return value true
-        mock_unsigned_token.return_value = self.token
+        mock_unsigned_token.return_value = self.token_payload
 
         # Create request
         request = self.factory.post("/")
         request.user = AnonymousUser()
+
+        # Call check room invitation token method with request and token
+        token_validity = self.view.check_room_invitation_token_valid(
+            request,
+            self.token,
+        )
+
+        # Assert validity is false
+        self.assertEqual(token_validity, False)
+
+    @mock.patch("accounts.mixins.RoomInvitation.objects.unsigned_token")
+    def test_check_room_invitation_token_valid_returns_false_if_user_email_mismatch(
+        self,
+        mock_unsigned_token,
+    ) -> None:
+        """Test check room invitation token valid returns false if user email mismatch"""
+
+        # Set return value true
+        mock_unsigned_token.return_value = self.token_payload
+
+        # Create test user
+        user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # Create request
+        request = self.factory.post("/")
+        request.user = user
 
         # Call check room invitation token method with request and token
         token_validity = self.view.check_room_invitation_token_valid(
