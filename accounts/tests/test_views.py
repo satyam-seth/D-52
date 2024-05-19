@@ -7,8 +7,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages import get_messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -28,6 +29,7 @@ from accounts.views import (
     ProfileUpdateView,
     RoomCreateView,
     RoomInvitationAcceptView,
+    RoomInvitationCancelView,
     RoomInvitationJoinView,
     RoomInvitationListView,
     RoomInvitationRejectView,
@@ -248,6 +250,29 @@ class TestUserSignUpView(TestCase):
                 password=form_data["password1"],
             )
         )
+
+
+class TestMyPasswordResetCompleteView(TestCase):
+    """Test my password reset complete view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("accounts:password_reset_complete")
+
+    def test_my_password_reset_complete_view_working(self):
+        """Test my password reset complete view working"""
+
+        # Send a GET request to the password reset complete URL
+        response = self.client.get(self.url)
+
+        # Verify that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Verify that the correct template is used
+        self.assertTemplateUsed(response, "registration/password_reset_complete.html")
+
+        # Verify that the 'login_url' variable is included in the context and has the correct value
+        self.assertEqual(response.context["login_url"], "/login/")
 
 
 class TestRoomTemplateView(TestCase):
@@ -615,7 +640,7 @@ class TestRoomSelectionView(TestCase):
         # Get request
         response = self.client.get(self.url)
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.INFO)
@@ -657,10 +682,10 @@ class TestRoomSelectionView(TestCase):
         # Get request
         response = self.client.get(self.url)
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
-        # self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(response_messages[0].level, messages.INFO)
         self.assertEqual(
             response_messages[0].message,
             f"Welcome to the room '{room.name}'",
@@ -772,7 +797,7 @@ class TestRoomSelectionView(TestCase):
         # Post form
         response = self.client.post(self.url, {"roomId": room.id})
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.INFO)
@@ -843,7 +868,7 @@ class TestRoomInvitationJoinView(TestCase):
         test_token = "test_token"
         mock_get_token.return_value = test_token
 
-        # Send a GET request to the view
+        # Send a POST request to the view
         response = self.client.get(self.url)
 
         # Assert that the response status code is 200 (OK)
@@ -900,7 +925,7 @@ class TestRoomInvitationAcceptView(TestCase):
         mock_response = HttpResponse("Test Response")
         mock_get_token.return_value = mock_response
 
-        # Send GET request to the view
+        # Send POST request to the view
         response = self.client.post(self.url)
 
         # Assert response
@@ -924,7 +949,7 @@ class TestRoomInvitationAcceptView(TestCase):
         mock_accept_invitation.return_value = None
         mock_unsigned_token.return_value = test_token_payload
 
-        # Send a GET request to the view
+        # Send a POST request to the view
         response = self.client.post(self.url)
 
         # Assert that the success message is displayed
@@ -997,7 +1022,7 @@ class TestRoomInvitationRejectView(TestCase):
         mock_response = HttpResponse("Test Response")
         mock_get_token.return_value = mock_response
 
-        # Send GET request to the view
+        # Send POST request to the view
         response = self.client.post(self.url)
 
         # Assert response
@@ -1021,10 +1046,10 @@ class TestRoomInvitationRejectView(TestCase):
         mock_reject_invitation.return_value = None
         mock_unsigned_token.return_value = test_token_payload
 
-        # Send a GET request to the view
+        # Send a POST request to the view
         response = self.client.post(self.url)
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.INFO)
@@ -1053,24 +1078,96 @@ class TestRoomInvitationRejectView(TestCase):
         mock_unsigned_token.assert_called_once_with(test_token)
 
 
-class TestMyPasswordResetCompleteView(TestCase):
-    """Test my password reset complete view"""
+class TestRoomInvitationCancelView(TestCase):
+    """Test Room Invitation Cancel view"""
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("accounts:password_reset_complete")
+        self.url = reverse_lazy("accounts:room_invitation_cancel")
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="admin",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
+        self.invitation = RoomInvitation.objects.create(
+            room=self.room, email="member@user.com"
+        )
 
-    def test_my_password_reset_complete_view_working(self):
-        """Test my password reset complete view working"""
+        # login user
+        self.client.login(email="admin@user.com", password="test-password")
 
-        # Send a GET request to the password reset complete URL
-        response = self.client.get(self.url)
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
 
-        # Verify that the response status code is 200 (OK)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+    def test_room_invitation_cancel_view_attributes(self) -> None:
+        "Test Room Invitation cancel view attributes"
 
-        # Verify that the correct template is used
-        self.assertTemplateUsed(response, "registration/password_reset_complete.html")
+        view = RoomInvitationCancelView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomAdminRequiredMixin)
+        self.assertIsInstance(view, View)
 
-        # Verify that the 'login_url' variable is included in the context and has the correct value
-        self.assertEqual(response.context["login_url"], "/login/")
+    def test_returns_404_not_found_if_invitation_id_missing(self) -> None:
+        """Test returns 404 not found if invitation id missing"""
+
+        # Send a POST request to the view
+        response = self.client.post(self.url)
+
+        # Assert response is 404 not found
+        self.assertIsInstance(response, HttpResponseNotFound)
+
+    @mock.patch("accounts.views.RoomInvitation.cancel")
+    def test_returns_400_bad_request_if_validation_error_is_raised_on_invitation_cancel(
+        self,
+        mock_cancel,
+    ) -> None:
+        """Test returns 400 bad request if validation error is raised on invitation cancel"""
+
+        # Raise value error
+        mock_cancel.side_effect = ValidationError("test-error-message")
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url, data={"invitation_id": self.invitation.id}
+        )
+
+        # Assert response is 400 bad request
+        self.assertIsInstance(response, HttpResponseBadRequest)
+
+        # Assert invitation cancel called
+        mock_cancel.assert_called_once()
+
+    @mock.patch("accounts.views.RoomInvitation.cancel")
+    def test_cancel_room_invitation_if_invitation_id_valid(
+        self,
+        mock_cancel,
+    ) -> None:
+        """Test cancel room invitation if invitation id valid"""
+
+        # Set return value
+        mock_cancel.return_value = None
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url, data={"invitation_id": self.invitation.id}
+        )
+
+        # Assert that the info message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Invitation to Room '{self.invitation.room.name}' has been canceled for email '{self.invitation.email}'.",
+        )
+
+        # Assert that the user is redirected to the room invitation page
+        self.assertRedirects(
+            response,
+            reverse("accounts:room_invitation"),
+            fetch_redirect_response=False,
+        )
