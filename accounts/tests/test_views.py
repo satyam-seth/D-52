@@ -28,6 +28,7 @@ from accounts.views import (
     ProfileUpdateView,
     RoomCreateView,
     RoomInvitationAcceptView,
+    RoomInvitationCancelView,
     RoomInvitationJoinView,
     RoomInvitationListView,
     RoomInvitationRejectView,
@@ -1074,3 +1075,15 @@ class TestRoomInvitationRejectView(TestCase):
 
         # Assert unsigned_token called once with expected token
         mock_unsigned_token.assert_called_once_with(test_token)
+
+
+class TestRoomInvitationCancelView(TestCase):
+    """Test Room Invitation Cancel view"""
+
+    def test_room_invitation_cancel_view_attributes(self) -> None:
+        "Test Room Invitation cancel view attributes"
+
+        view = RoomInvitationCancelView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomAdminRequiredMixin)
+        self.assertIsInstance(view, View)
