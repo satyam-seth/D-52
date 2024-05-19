@@ -640,7 +640,7 @@ class TestRoomSelectionView(TestCase):
         # Get request
         response = self.client.get(self.url)
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.INFO)
@@ -682,10 +682,10 @@ class TestRoomSelectionView(TestCase):
         # Get request
         response = self.client.get(self.url)
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
-        # self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(response_messages[0].level, messages.INFO)
         self.assertEqual(
             response_messages[0].message,
             f"Welcome to the room '{room.name}'",
@@ -797,7 +797,7 @@ class TestRoomSelectionView(TestCase):
         # Post form
         response = self.client.post(self.url, {"roomId": room.id})
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.INFO)
@@ -1049,7 +1049,7 @@ class TestRoomInvitationRejectView(TestCase):
         # Send a POST request to the view
         response = self.client.post(self.url)
 
-        # Assert that the success message is displayed
+        # Assert that the info message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.INFO)
@@ -1140,3 +1140,34 @@ class TestRoomInvitationCancelView(TestCase):
 
         # Assert invitation cancel called
         mock_cancel.assert_called_once()
+
+    @mock.patch("accounts.views.RoomInvitation.cancel")
+    def test_cancel_room_invitation_if_invitation_id_valid(
+        self,
+        mock_cancel,
+    ) -> None:
+        """Test cancel room invitation if invitation id valid"""
+
+        # Set return value
+        mock_cancel.return_value = None
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url, data={"invitation_id": self.invitation.id}
+        )
+
+        # Assert that the info message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.INFO)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Invitation to Room '{self.invitation.room.name}' has been canceled for email '{self.invitation.email}'.",
+        )
+
+        # Assert that the user is redirected to the room invitation page
+        self.assertRedirects(
+            response,
+            reverse("accounts:room_invitation"),
+            fetch_redirect_response=False,
+        )
