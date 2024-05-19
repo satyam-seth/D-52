@@ -27,6 +27,7 @@ from accounts.views import (
     ProfileTemplateView,
     ProfileUpdateView,
     RoomCreateView,
+    RoomInvitationAcceptView,
     RoomInvitationJoinView,
     RoomInvitationListView,
     RoomInviteView,
@@ -849,6 +850,18 @@ class TestRoomInvitationJoinView(TestCase):
 
         # Assert response context token
         self.assertEqual(response.context["token"], test_token)
+
+
+class TestRoomInvitationJAcceptView(TestCase):
+    """Test Room Invitation Accept view"""
+
+    def test_room_invitation_accept_view_attributes(self) -> None:
+        "Test Room Invitation accept view attributes"
+
+        view = RoomInvitationAcceptView()
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomInvitationTokenMixin)
+        self.assertIsInstance(view, View)
 
 
 class TestMyPasswordResetCompleteView(TestCase):

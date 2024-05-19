@@ -300,8 +300,10 @@ class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View)
 
 
 class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+    """View to handle room invitation accept requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        """Handle post request for room invitation accept"""
 
         token_or_response = self.get_token(request)
 
