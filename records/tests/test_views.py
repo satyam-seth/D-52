@@ -12,6 +12,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import ListView, TemplateView, View
 
+from accounts.mixins import RoomRequiredMixin
+from accounts.models import Room
 from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
 from records.views import (
@@ -40,6 +42,15 @@ class TestAddTemplateView(TestCase):
             first_name="test",
             last_name="user",
         )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_add_template_view_attributes(self) -> None:
         """Test add template view attributes"""
@@ -47,6 +58,7 @@ class TestAddTemplateView(TestCase):
         view = AddTemplateView()
         self.assertIsInstance(view, TemplateView)
         self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertTrue(view.template_name, "records/add.html")
 
         context = view.get_context_data()
@@ -58,9 +70,6 @@ class TestAddTemplateView(TestCase):
 
     def test_add_template_view_working(self) -> None:
         """Test add template view working"""
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
 
         # Send a GET request to the view
         response = self.client.get(self.url)
@@ -87,6 +96,13 @@ class TestRecordAddView(TestCase):
             first_name="test",
             last_name="user",
         )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
         # login user
         self.client.login(email="test@user.com", password="test-password")
 
@@ -96,6 +112,7 @@ class TestRecordAddView(TestCase):
         view = RecordAddView()
         self.assertIsInstance(view, View)
         self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
 
     def test_record_add_view_for_valid_post_data(self) -> None:
         """Test record add view working for valid post data"""
@@ -169,6 +186,14 @@ class TestWaterAddView(TestCase):
             first_name="test",
             last_name="user",
         )
+
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
         # login user
         self.client.login(email="test@user.com", password="test-password")
 
@@ -178,6 +203,7 @@ class TestWaterAddView(TestCase):
         view = WaterAddView()
         self.assertIsInstance(view, View)
         self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
 
     def test_water_add_view_for_valid_post_data(self) -> None:
         """Test water add view working for valid post data"""
@@ -247,11 +273,23 @@ class TestRecordListView(TransactionTestCase):
             last_name="user",
         )
 
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
     def test_record_list_view_attributes(self) -> None:
         "Test record list view attributes"
 
         view = RecordListView()
         self.assertIsInstance(view, ListView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
@@ -301,12 +339,23 @@ class TestUserRecordListView(TestCase):
             last_name="user2",
         )
         self.url = reverse("records:detailed", kwargs={"user_id": self.user1.pk})
+        self.room = Room.objects.create(name="test-room", admin=self.user1)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user1.com", password="test-password")
 
     def test_record_list_view_attributes(self) -> None:
         "Test user record list view attributes"
 
         view = UserRecordListView()
         self.assertIsInstance(view, ListView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
@@ -356,12 +405,23 @@ class TestWaterListView(TransactionTestCase):
             first_name="test",
             last_name="user",
         )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_water_list_view_attributes(self) -> None:
         "Test water list view attributes"
 
         view = WaterListView()
         self.assertIsInstance(view, ListView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, Water)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
@@ -463,12 +523,23 @@ class TestSearchListView(TransactionTestCase):
             first_name="test",
             last_name="user",
         )
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_search_list_view_attributes(self) -> None:
         """Test search list view attributes"""
 
         view = SearchListView()
         self.assertIsInstance(view, ListView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
@@ -522,6 +593,15 @@ class TestDownloadTemplateView(TestCase):
         )
         self.user.groups.add(self.group)
         self.url = reverse("records:download")
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
 
     def test_download_template_view_attributes(self) -> None:
         """Test download template view attributes"""
@@ -529,6 +609,7 @@ class TestDownloadTemplateView(TestCase):
         view = DownloadTemplateView()
         self.assertIsInstance(view, TemplateView)
         self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertTrue(view.template_name, "records/download.html")
 
     def test_download_template_view_working(self) -> None:
@@ -536,9 +617,6 @@ class TestDownloadTemplateView(TestCase):
 
         # get group users
         users = User.objects.filter(groups__in=[self.group])
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
 
         # Send a GET request to the view
         response = self.client.get(self.url)
