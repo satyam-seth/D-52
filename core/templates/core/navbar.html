@@ -15,16 +15,58 @@
                                 class="sr-only">(current)</span></a>
                     </li>
                     {% if request.user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link {{add_active}}" href="{% url 'records:add' %}">Add Data</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Room
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            {% if room %}
+                                <li>
+                                    <a class="dropdown-item {{add_active}}" href="{% url 'records:add' %}">Add Data</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{records_active}}" href="{% url 'records:records' %}">See Records</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{report_active}}" href="{% url 'records:report' %}">Progress Reports</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{download_active}}" href="{% url 'records:download' %}">Download ExcelSheet</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                {% if room.admin == request.user %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'accounts:room_invitation' %}">Room Invitations</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:room_create' %}">Create New Room</a>
+                            </li>
+                        </ul>
                     </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {{records_active}}" href="{% url 'records:records' %}">See Records</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{report_active}}" href="{% url 'records:report' %}">Progress Reports</a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
@@ -60,34 +102,33 @@
                             More
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            {% if request.user.is_authenticated %}
-                            <li><a class="dropdown-item {{download_active}}"
-                                    href="{% url 'records:download' %}">Download ExcelSheet</a></li>
+                            <li>
+                                <a class="dropdown-item {{feedback_active}}" href="{% url 'core:feedback' %}">Feedback</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% if request.user.is_superuser %}
+                            <li>
+                                <a class="dropdown-item" target="_blank" href="/admin">Admin Panel</a>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             {% endif %}
-                            <li><a class="dropdown-item {{feedback_active}}"
-                                    href="{% url 'core:feedback' %}">Feedback</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" target="_blank" href="/admin">Admin Panel</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
                             <li>
                                 <a class="dropdown-item {{about_active}}" href="{% url 'core:about' %}">About</a>
                             </li>
                         </ul>
                     </li>
-
                 </ul>
-                <form class="d-flex" role="search" action="{% url 'records:search' %}">
-                    <input class="form-control me-2" type="search" placeholder="Search record" aria-label="Search"
-                        name='query'>
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
+                {% if room %}
+                    <form class="d-flex" role="search" action="{% url 'records:search' %}">
+                        <input class="form-control me-2" type="search" placeholder="Search record" aria-label="Search"
+                            name='query'>
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </nav>
