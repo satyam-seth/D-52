@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
 
+from accounts.mixins import RoomRequiredMixin
 from core.excel import get_excel
 from records.forms import RecordFrom, WaterFrom
 from records.models import Electricity, Maid, Record, Water
@@ -18,7 +19,7 @@ from records.models import Electricity, Maid, Record, Water
 User = get_user_model()
 
 
-class AddTemplateView(LoginRequiredMixin, TemplateView):
+class AddTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
     """View to render record and water form"""
 
     template_name = "records/add.html"
@@ -37,7 +38,7 @@ class AddTemplateView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class RecordAddView(LoginRequiredMixin, View):
+class RecordAddView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View save record form data"""
 
     # TODO: propagate form.errors to view
@@ -60,7 +61,7 @@ class RecordAddView(LoginRequiredMixin, View):
         return redirect("records:add")
 
 
-class WaterAddView(LoginRequiredMixin, View):
+class WaterAddView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View save water form data"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -82,8 +83,7 @@ class WaterAddView(LoginRequiredMixin, View):
         return redirect("records:add")
 
 
-# TODO: Add login required once user group login achieved
-class RecordListView(ListView):
+class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render list records"""
 
     model = Record
@@ -93,8 +93,8 @@ class RecordListView(ListView):
     extra_context = {"records_active": "active"}
 
 
-# TODO: Add login required once user group login achieved and only show current user group data
-class UserRecordListView(ListView):
+# TODO: only show current user group data
+class UserRecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render template to show records purchased by specific user"""
 
     model = Record
@@ -111,7 +111,7 @@ class UserRecordListView(ListView):
 
 
 # TODO: only show current user group water records
-class WaterListView(ListView):
+class WaterListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render list of water records"""
 
     model = Water
@@ -123,7 +123,7 @@ class WaterListView(ListView):
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def report(request: HttpRequest) -> HttpResponse:
-    """View to canclulate and render report"""
+    """View to calculate and render report"""
 
     # TODO: remove hardcoded group name
     users = User.objects.filter(groups__name="d52")
@@ -155,8 +155,7 @@ def report(request: HttpRequest) -> HttpResponse:
 
 
 # TODO: only show current user group records
-# TODO: Add login required once user group login achieved
-class SearchListView(ListView):
+class SearchListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render search result record list"""
 
     model = Record
@@ -175,8 +174,7 @@ class SearchListView(ListView):
         return queryset
 
 
-# TODO: Add login required once user group login achieved
-class DownloadTemplateView(LoginRequiredMixin, TemplateView):
+class DownloadTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
     """View to render download template"""
 
     template_name = "records/download.html"
