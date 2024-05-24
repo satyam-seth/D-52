@@ -46,14 +46,12 @@
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                {% if room.admin == request.user %}
-                                    <li>
-                                        <a class="dropdown-item" href="{% url 'accounts:room_invitation' %}">Room Invitations</a>
-                                    </li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:room_invitation' %}">Room Invitations</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room</a>
                                 </li>

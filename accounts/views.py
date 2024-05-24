@@ -25,7 +25,11 @@ from accounts.forms import (
     RoomInvitationForm,
     SignUpForm,
 )
-from accounts.mixins import RoomAdminRequiredMixin, RoomInvitationTokenMixin
+from accounts.mixins import (
+    RoomAdminRequiredMixin,
+    RoomInvitationTokenMixin,
+    RoomRequiredMixin,
+)
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 
 
@@ -196,7 +200,7 @@ class RoomTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/room.html"
 
 
-class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListView):
+class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render list room invitation"""
 
     model = RoomInvitation
@@ -209,14 +213,35 @@ class RoomInvitationListView(LoginRequiredMixin, RoomAdminRequiredMixin, ListVie
     template_name = "accounts/room_invitation_list.html"
     extra_context = {"room_invitation_active": "active"}
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._cached_room = None
+
+    def get_room(self):
+        """Retrieve and cache the room object."""
+
+        if self._cached_room is None:
+            room_id = self.get_room_id(self.request)
+            self._cached_room = Room.objects.get(id=room_id)
+
+        return self._cached_room
+
     def get_queryset(self):
-        room_id = self.request.session["room_id"]
-        queryset = super().get_queryset().filter(room__id=room_id)
-        return queryset
+        room = self.get_room()
+        queryset = super().get_queryset().filter(room=room)
+
+        if room.admin == self.request.user:
+            return queryset
+
+        return queryset.filter(email=self.request.user.email)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        room = self.get_room()
         context = super().get_context_data(**kwargs)
-        context["form"] = RoomInvitationForm()
+
+        if room.admin == self.request.user:
+            context["form"] = RoomInvitationForm()
+
         return context
 
 

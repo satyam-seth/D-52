@@ -17,6 +17,7 @@
   </div>
   <div class="container bg-white shadow-lg p-4 rounded border">
     <div class="row">
+      {% if form and room.admin == request.user %}
       <div class="col-md-6">
         <h2 class="text-center alert alert-secondary my-3 shadow">
           {% block form_heading %}Room Invite Form{% endblock form_heading %}
@@ -43,6 +44,9 @@
         </form>
       </div>
       <div class="col-md-6">
+      {% else %}
+      <div class="col">
+      {% endif %}
         <h2 class="text-center alert alert-secondary my-3 shadow" role="alert">
           Room Invitations
         </h2>
@@ -52,6 +56,7 @@
             <thead>
               <tr>
                 <th scope="col">S. No.</th>
+                <th scope="col">Room</th>
                 <th scope="col">Email</th>
                 <th scope="col">Status</th>
                 <th scope="col">Action</th>
@@ -61,6 +66,7 @@
               {% for invitation in room_invitation_list %}
               <tr>
                 <th scope="row">{{forloop.counter0|add:page_obj.start_index }}</th>
+                <td>{{invitation.room.name}}</td>
                 <td>{{invitation.email}}</td>
                 <td>{{invitation.status|upper}}</td>
                 <td>
