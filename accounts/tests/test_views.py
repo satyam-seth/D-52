@@ -530,6 +530,86 @@ class TestRoomInvitationListView(TransactionTestCase):
         # pylint: disable=protected-access
         self.assertEqual(view._cached_room.name, "test-room")
 
+    def test_room_invitation_list_view_working_for_admin(self) -> None:
+        """Test Room Invitation list view working for admin"""
+
+        # Create a room invitation
+        RoomInvitation.objects.create(
+            room=self.room,
+            email="member@user.com",
+            status=RoomInvitation.PENDING,
+        )
+
+        # login admin user
+        self.client.login(email="admin@user.com", password="test-password")
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # Make a GET request to the view
+        response = self.client.get(self.url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "accounts/room_invitation_list.html")
+
+        # Check that the records are present in the context
+        room_invitations = response.context["room_invitation_list"]
+        self.assertQuerysetEqual(
+            room_invitations,
+            RoomInvitation.objects.filter(room=self.room),
+        )
+
+        # Check that room invitation form present in the context
+        form = response.context["form"]
+        self.assertIsInstance(form, RoomInvitationForm)
+
+    def test_room_invitation_list_view_working_for_member(self) -> None:
+        """Test Room Invitation list view working for member"""
+
+        # Create a room invitation
+        RoomInvitation.objects.create(
+            room=self.room,
+            email="member@user.com",
+            status=RoomInvitation.PENDING,
+        )
+        RoomInvitation.objects.create(
+            room=self.room,
+            email="member1@user.com",
+            status=RoomInvitation.PENDING,
+        )
+
+        # login member user
+        self.client.login(email="member@user.com", password="test-password")
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # Make a GET request to the view
+        response = self.client.get(self.url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "accounts/room_invitation_list.html")
+
+        # Check that the records are present in the context
+        room_invitations = response.context["room_invitation_list"]
+        self.assertQuerysetEqual(
+            room_invitations,
+            RoomInvitation.objects.filter(room=self.room, email=self.member.email),
+        )
+
+        # Check that room invitation form not present in the context
+        self.assertNotIn("form", response.context)
+
 
 class TestRoomInviteView(TransactionTestCase):
     """Test Room Invite view"""
