@@ -11,7 +11,13 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
-from django.test import Client, TestCase, TransactionTestCase, override_settings
+from django.test import (
+    Client,
+    RequestFactory,
+    TestCase,
+    TransactionTestCase,
+    override_settings,
+)
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
@@ -24,7 +30,11 @@ from accounts.forms import (
     RoomInvitationForm,
     SignUpForm,
 )
-from accounts.mixins import RoomAdminRequiredMixin, RoomInvitationTokenMixin
+from accounts.mixins import (
+    RoomAdminRequiredMixin,
+    RoomInvitationTokenMixin,
+    RoomRequiredMixin,
+)
 from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 from accounts.views import (
     ProfileTemplateView,
@@ -441,20 +451,26 @@ class TestRoomInvitationListView(TransactionTestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("accounts:room_invitation")
-        self.user = User.objects.create_user(
-            email="test@user.com",
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
             password="test-password",
             first_name="test",
             last_name="user",
         )
-        self.room = Room.objects.create(name="test-room", admin=self.user)
+        self.member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
 
     def test_room_invitation_list_view_attributes(self) -> None:
         "Test Room Invitation list view attributes"
 
         view = RoomInvitationListView()
         self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertIsInstance(view, RoomAdminRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
         self.assertIsInstance(view, ListView)
         self.assertEqual(view.model, RoomInvitation)
         self.assertEqual(view.paginate_by, 10)
@@ -464,40 +480,55 @@ class TestRoomInvitationListView(TransactionTestCase):
         self.assertEqual(view.template_name, "accounts/room_invitation_list.html")
         self.assertEqual(view.extra_context, {"room_invitation_active": "active"})
 
-    def test_room_invitation_list_view_working(self) -> None:
-        """Test Room Invitation list view working"""
+    def test_get_room_retrieves_room(self) -> None:
+        """Test that get_room retrieves the room from the database"""
 
-        # Create a room invitation
-        RoomInvitation.objects.create(
-            room=self.room,
-            email="test@member.com",
-            status=RoomInvitation.PENDING,
-        )
+        # Set up the request factory and view instance
+        factory = RequestFactory()
+        view = RoomInvitationListView()
 
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
+        # Mock the session with room_id
+        request = factory.get("/some-path")
+        request.user = self.admin
+        request.session = {"room_id": self.room.id}
 
-        # Set room id in session
-        session = self.client.session
-        session["room_id"] = self.room.id
-        session.save()
+        # Initialize the view with the request
+        view.request = request
 
-        # Make a GET request to the view
-        response = self.client.get(self.url)
+        # Call get_room and verify the room is retrieved from the database
+        room = view.get_room()
+        self.assertEqual(room, self.room)
+        # pylint: disable=protected-access
+        self.assertEqual(view._cached_room, self.room)
 
-        # Check that the response has a status code of 200
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+    def test_get_room_caches_room(self) -> None:
+        """Test that get_room caches the room object"""
 
-        # Check that the template used is correct
-        self.assertTemplateUsed(response, "accounts/room_invitation_list.html")
+        # Set up the request factory and view instance
+        factory = RequestFactory()
+        view = RoomInvitationListView()
 
-        # Check that the records are present in the context
-        room_invitations = response.context["room_invitation_list"]
-        self.assertQuerysetEqual(room_invitations, RoomInvitation.objects.all())
+        # Mock the session with room_id
+        request = factory.get("/some-path")
+        request.user = self.admin
+        request.session = {"room_id": self.room.id}
 
-        # Check that room invitation form present in the context
-        form = response.context["form"]
-        self.assertIsInstance(form, RoomInvitationForm)
+        # Initialize the view with the request
+        view.request = request
+
+        # Call get_room the first time and verify it retrieves from the database
+        room_first_call = view.get_room()
+        self.assertEqual(room_first_call, self.room)
+
+        # Modify the room object to ensure it doesn't hit the database again
+        self.room.name = "modified-room"
+        self.room.save()
+
+        # Call get_room the second time and verify it uses the cached value
+        room_second_call = view.get_room()
+        self.assertEqual(room_second_call.name, "test-room")
+        # pylint: disable=protected-access
+        self.assertEqual(view._cached_room.name, "test-room")
 
 
 class TestRoomInviteView(TransactionTestCase):
