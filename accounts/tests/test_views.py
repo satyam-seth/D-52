@@ -617,16 +617,17 @@ class TestRoomInviteView(TransactionTestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse("accounts:room_invite")
-        self.user = User.objects.create_user(
-            email="test@user.com",
+        self.member_email = "member@user.com"
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
             password="test-password",
             first_name="test",
             last_name="user",
         )
-        self.room = Room.objects.create(name="test-room", admin=self.user)
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
 
         # login user
-        self.client.login(email="test@user.com", password="test-password")
+        self.client.login(email="admin@user.com", password="test-password")
 
         # Set room id in session
         session = self.client.session
@@ -642,11 +643,11 @@ class TestRoomInviteView(TransactionTestCase):
         self.assertIsInstance(view, View)
 
     @mock.patch("accounts.views.RoomInvitation.objects.send_invitation")
-    def test_invite_new_member_form(self, mock_send_invitation):
+    def test_invite_new_member(self, mock_send_invitation):
         """Test invite new member"""
 
         # Post form
-        data = {"email": "test@member.com"}
+        data = {"email": self.member_email}
         response = self.client.post(self.url, data, follow=True)
 
         # Assert that the success message is displayed
@@ -672,16 +673,14 @@ class TestRoomInviteView(TransactionTestCase):
             absolute_invitation_url=absolute_invitation_url,
         )
 
-    def test_invite_already_invited_member_form(self):
+    def test_invite_already_invited_member(self):
         """Test invite already invited member"""
 
-        member_email = "test@member.com"
-
         # Create room invitation
-        RoomInvitation.objects.create(room=self.room, email=member_email)
+        RoomInvitation.objects.create(room=self.room, email=self.member_email)
 
         # Post form
-        data = {"email": member_email}
+        data = {"email": self.member_email}
         response = self.client.post(self.url, data, follow=True)
 
         # Assert that the warning message is displayed
@@ -690,7 +689,56 @@ class TestRoomInviteView(TransactionTestCase):
         self.assertEqual(response_messages[0].level, messages.WARNING)
         self.assertEqual(
             response_messages[0].message,
-            f"Email: '{member_email}' is already invited to room '{self.room.name}'",
+            f"Email: '{self.member_email}' is already invited to room '{self.room.name}'",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+    def test_invite_existing_member(self):
+        """Test invite existing member"""
+
+        # Create member
+        member = User.objects.create_user(
+            email=self.member_email,
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # Create room membership
+        RoomMembership.objects.create(room=self.room, member=member)
+
+        # Post form
+        data = {"email": self.member_email}
+        response = self.client.post(self.url, data, follow=True)
+
+        # Assert that the warning message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            f"The email '{self.member_email}' has already joined the room '{self.room.name}'",
+        )
+
+        # Check if the view redirects to the room invitations page
+        self.assertRedirects(response, reverse("accounts:room_invitation"))
+
+    def test_invite_admin(self):
+        """Test invite admin"""
+
+        # Post form
+        data = {"email": self.admin.email}
+        response = self.client.post(self.url, data, follow=True)
+
+        # Assert that the warning message is displayed
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            "Admin cannot invite themselves.",
         )
 
         # Check if the view redirects to the room invitations page
