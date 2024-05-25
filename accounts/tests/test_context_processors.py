@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, TestCase
 
 from accounts.context_processors import room
@@ -32,8 +33,8 @@ class TestRoomContextProcessor(TestCase):
         context = room(request)
 
         # Assertions
-        self.assertIn("room", context)
         self.assertEqual(context["room"], self.room)
+        self.assertEqual(context["room_count"], 1)
 
     def test_work_with_invalid_room_id(self) -> None:
         """Test work with invalid room id"""
@@ -47,11 +48,23 @@ class TestRoomContextProcessor(TestCase):
         context = room(request)
 
         # Assertions
-        self.assertIn("room", context)
         self.assertIsNone(context["room"])
+        self.assertEqual(context["room_count"], 1)
 
-    def test_work_with_no_room_id(self) -> None:
-        """Test work with no room id"""
+    def test_work_with_no_room_id_and_anonymous_user(self) -> None:
+        """Test work with no room id and anonymous user"""
+
+        # Simulate a request without a room_id in the session
+        request = self.factory.get("/")
+        request.user = AnonymousUser()
+        request.session = {}
+
+        context = room(request)
+        self.assertIsNone(context["room"])
+        self.assertEqual(context["room_count"], 0)
+
+    def test_work_with_no_room_id_and_authenticated_user(self) -> None:
+        """Test work with no room id and authenticated user"""
 
         # Simulate a request without a room_id in the session
         request = self.factory.get("/")
@@ -59,5 +72,5 @@ class TestRoomContextProcessor(TestCase):
         request.session = {}
 
         context = room(request)
-        self.assertIn("room", context)
         self.assertIsNone(context["room"])
+        self.assertEqual(context["room_count"], 1)
