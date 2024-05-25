@@ -52,12 +52,14 @@
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
+                                {% if room_count > 1 %}
                                 <li>
                                     <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room</a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
+                                {% endif %}
                             {% endif %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'accounts:room_create' %}">Create New Room</a>
