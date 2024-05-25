@@ -248,12 +248,31 @@ class RoomInvitationModelTest(TestCase):
         with self.assertRaisesMessage(
             ValidationError,
             f"The email '{self.member.email}' has already joined the room '{self.room.name}'",
-        ):
+        ) as cm:
             RoomInvitation.objects.send_invitation(
                 room=self.room,
                 email=self.member.email,
                 absolute_invitation_url="http://testserver/invitation-join-url",
             )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "email_exists")
+
+    def test_unable_to_create_invitation_for_room_admin(self) -> None:
+        """Test unable to create room invitation for room admin"""
+
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Admin cannot invite themselves.",
+        ) as cm:
+            RoomInvitation.objects.send_invitation(
+                room=self.room,
+                email=self.admin.email,
+                absolute_invitation_url="http://testserver/invitation-join-url",
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "admin_invite")
 
     @patch.object(RoomInvitation.objects, "create")
     @patch.object(RoomInvitation.objects, "_generate_signed_token")

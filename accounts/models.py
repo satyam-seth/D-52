@@ -131,8 +131,16 @@ class RoomInvitation(models.Model):
         self.save()
 
     def save(self, *args, **kwargs):
+        if self.email == self.room.admin.email:
+            raise ValidationError(
+                "Admin cannot invite themselves.",
+                code="admin_invite",
+            )
+
         if self.room.memberships.filter(member__email=self.email).exists():
             raise ValidationError(
-                f"The email '{self.email}' has already joined the room '{self.room.name}'"
+                f"The email '{self.email}' has already joined the room '{self.room.name}'",
+                "email_exists",
             )
+
         super().save(*args, **kwargs)

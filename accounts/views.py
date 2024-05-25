@@ -276,6 +276,18 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
                     request,
                     f"Email: '{email}' is already invited to room '{room.name}'",
                 )
+            except ValidationError as e:
+                if e.code == "email_exists":
+                    messages.warning(
+                        request,
+                        f"The email '{email}' has already joined the room '{room.name}'",
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        "Admin cannot invite themselves.",
+                    )
+
         else:
             # Display specific form errors
             for field, errors in form.errors.items():
