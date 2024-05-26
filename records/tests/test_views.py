@@ -316,6 +316,7 @@ class TestRecordListView(TransactionTestCase):
             item="Test Item",
             price=123.45,
             purchaser=self.user,
+            adder=self.user,
             room=self.room,
         )
 
@@ -383,6 +384,7 @@ class TestUserRecordListView(TestCase):
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
+            adder=self.user1,
             room=self.room,
         )
         Record.objects.create(
@@ -390,6 +392,7 @@ class TestUserRecordListView(TestCase):
             item="Test Item 2",
             price=123.45,
             purchaser=self.user2,
+            adder=self.user2,
             room=self.room,
         )
 
@@ -500,18 +503,21 @@ class TestReportView(TestCase):
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             purchaser=self.user1,
+            adder=self.user1,
             price=10,
             room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             purchaser=self.user1,
+            adder=self.user1,
             price=30,
             room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             purchaser=self.user2,
+            adder=self.user2,
             price=70,
             room=self.room,
         )
@@ -577,6 +583,7 @@ class TestSearchListView(TransactionTestCase):
             item="Test Item 1",
             price=123.45,
             purchaser=self.user,
+            adder=self.user,
             room=self.room,
         )
         second_record = Record.objects.create(
@@ -584,6 +591,7 @@ class TestSearchListView(TransactionTestCase):
             item="Test Item Good 2",
             price=123.45,
             purchaser=self.user,
+            adder=self.user,
             room=self.room,
         )
 

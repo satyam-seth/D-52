@@ -133,6 +133,7 @@ class TestRecordForm(TestCase):
         # assert form save create a record
         record = form.save(commit=False)
         record.room = self.room
+        record.adder = self.user1
         record.save()
         self.assertIsInstance(record, Record)
         self.assertEqual(
