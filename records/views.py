@@ -9,6 +9,7 @@ from django.shortcuts import redirect, render
 from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
+from accounts.models import Room
 from core.excel import get_excel
 from records.forms import RecordFrom, WaterFrom
 from records.models import Electricity, Maid, Record, Water
@@ -47,8 +48,12 @@ class RecordAddView(LoginRequiredMixin, RoomRequiredMixin, View):
 
         form = RecordFrom(request.POST)
         if form.is_valid():
+            room_id = self.get_room_id(self.request)
+            assert room_id
+            room = Room.objects.get(id=room_id)
             reg = form.save(commit=False)
             reg.adder = request.user
+            reg.room = room
             reg.save()
             messages.success(request, "Your item record successfully added.")
             # TODO: move this logic in record post save signal
