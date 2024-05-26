@@ -1,13 +1,23 @@
 from datetime import timedelta
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.utils.timezone import localtime, now
 
 from records.models import Record, Water
 
+User = get_user_model()
 
-class RecordFrom(forms.ModelForm):
+
+class RecordForm(forms.ModelForm):
     """Form for item purchase"""
+
+    def __init__(self, *args, **kwargs):
+        self.room = kwargs.pop("room", None)
+        super().__init__(*args, **kwargs)
+        if self.room:
+            room_members = User.objects.filter(room_membership__room=self.room)
+            self.fields["purchaser"].queryset = room_members
 
     class Meta:
         model = Record
@@ -23,9 +33,6 @@ class RecordFrom(forms.ModelForm):
                     "value": localtime(now()).date(),
                 }
             ),
-            # TODO: fix initial selected choice is current logged in user instead of ------
-            # TODO: allowed only current user group user as a choice
-            # TODO: show user full name as choice instead of username in forms
             "purchaser": forms.Select(attrs={"class": "form-control"}),
             "item": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter item name"}

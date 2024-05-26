@@ -7,14 +7,15 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
-from django.test import Client, TestCase, TransactionTestCase
+from django.contrib.sessions.backends.base import SessionBase
+from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
-from accounts.models import Room
-from records.forms import RecordFrom, WaterFrom
+from accounts.models import Room, RoomMembership
+from records.forms import RecordForm, WaterFrom
 from records.models import Record, Water
 from records.views import (
     AddTemplateView,
@@ -55,7 +56,14 @@ class TestAddTemplateView(TestCase):
     def test_add_template_view_attributes(self) -> None:
         """Test add template view attributes"""
 
-        view = AddTemplateView()
+        # Create a mock request object
+        factory = RequestFactory()
+        request = factory.get(self.url)
+        request.user = self.user
+        request.session = SessionBase()
+        request.session["room_id"] = self.room.id
+
+        view = AddTemplateView(request=request)
         self.assertIsInstance(view, TemplateView)
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
@@ -64,9 +72,12 @@ class TestAddTemplateView(TestCase):
         context = view.get_context_data()
 
         # Assert that the values associated with the keys are of the expected types
-        self.assertIsInstance(context["add_active"], str)
-        self.assertIsInstance(context["record_form"], RecordFrom)
+        self.assertEqual(context["add_active"], "active")
+        self.assertIsInstance(context["record_form"], RecordForm)
         self.assertIsInstance(context["water_form"], WaterFrom)
+        self.assertEqual(context["record_form"].label_suffix, "")
+        self.assertEqual(context["record_form"].room, self.room)
+        self.assertEqual(context["record_form"].initial["purchaser"], self.user)
 
     def test_add_template_view_working(self) -> None:
         """Test add template view working"""
@@ -154,8 +165,8 @@ class TestRecordAddView(TestCase):
     def test_record_add_view_for_invalid_post_data(self) -> None:
         """Test record add view working for invalid post data"""
 
-        valid_form_data = {"item": "Test Item"}
-        response = self.client.post(self.url, data=valid_form_data)
+        invalid_form_data = {"item": "Test Item"}
+        response = self.client.post(self.url, data=invalid_form_data)
 
         # Redirects to the specified URL
         self.assertRedirects(response, reverse("records:add"))
@@ -341,6 +352,7 @@ class TestUserRecordListView(TestCase):
         )
         self.url = reverse("records:detailed", kwargs={"user_id": self.user1.pk})
         self.room = Room.objects.create(name="test-room", admin=self.user1)
+        RoomMembership.objects.create(room=self.room, member=self.user2)
 
         # Set room id in session
         session = self.client.session
@@ -482,6 +494,7 @@ class TestReportView(TestCase):
 
         # Create room
         self.room = Room.objects.create(name="test-room", admin=self.user1)
+        RoomMembership.objects.create(room=self.room, member=self.user2)
 
         # Create some test records
         Record.objects.create(

@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils.timezone import localtime, now
 
 from accounts.models import Room
-from records.forms import RecordFrom, WaterFrom
+from records.forms import RecordForm, WaterFrom
 from records.models import Record, Water
 
 User = get_user_model()
@@ -14,10 +14,25 @@ User = get_user_model()
 class TestRecordForm(TestCase):
     """Test Record Form"""
 
+    def setUp(self):
+        self.user1 = User.objects.create_user(
+            email="test@user1.com",
+            password="test-password",
+            first_name="test",
+            last_name="user1",
+        )
+        self.user2 = User.objects.create_user(
+            email="test@user2.com",
+            password="test-password",
+            first_name="test",
+            last_name="user2",
+        )
+        self.room = Room.objects.create(name="test-room", admin=self.user1)
+
     def test_record_form_fields(self):
         """Test water form fields"""
 
-        form = RecordFrom()
+        form = RecordForm()
 
         # assert meta class
         self.assertEqual(form.Meta.model, Record)
@@ -82,34 +97,42 @@ class TestRecordForm(TestCase):
             "5000",
         )
 
-    def test_record_form_working(self):
-        """Test record form working"""
+    def test_purchaser_field_queryset(self):
+        """Test purchaser field queryset"""
 
-        user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
+        form = RecordForm(room=self.room)
+        queryset = form.fields["purchaser"].queryset
+        self.assertQuerysetEqual(
+            queryset,
+            User.objects.filter(room_membership__room=self.room),
         )
 
-        room = Room.objects.create(name="test-room", admin=user)
+    def test_purchaser_field_queryset_no_room(self):
+        """Test purchaser field queryset no room"""
+
+        form = RecordForm()
+        queryset = form.fields["purchaser"].queryset
+        self.assertQuerysetEqual(queryset, User.objects.all(), ordered=False)
+
+    def test_record_form_working(self):
+        """Test record form working"""
 
         # initialize form data
         form_data = {
             "purchase_date": "2023-05-16",
-            "purchaser": user.pk,
+            "purchaser": self.user1.pk,
             "item": "test-item",
             "price": 1234.56,
         }
 
-        form = RecordFrom(data=form_data)
+        form = RecordForm(data=form_data)
 
         # assert form is valid for valid form data
         self.assertTrue(form.is_valid())
 
         # assert form save create a record
         record = form.save(commit=False)
-        record.room = room
+        record.room = self.room
         record.save()
         self.assertIsInstance(record, Record)
         self.assertEqual(
@@ -119,6 +142,38 @@ class TestRecordForm(TestCase):
         self.assertEqual(record.purchaser.id, form_data["purchaser"])
         self.assertEqual(record.item, form_data["item"])
         self.assertEqual(float(record.price), form_data["price"])
+
+    def test_record_form_valid_for_room_with_valid_purchaser(self):
+        """Test record form valid for room valid purchaser"""
+
+        # initialize form data
+        form_data = {
+            "purchase_date": "2023-05-16",
+            "purchaser": self.user1.pk,
+            "item": "test-item",
+            "price": 1234.56,
+        }
+
+        form = RecordForm(room=self.room, data=form_data)
+
+        # assert form is valid for valid form data
+        self.assertTrue(form.is_valid())
+
+    def test_record_form_invalid_for_room_with_invalid_purchaser(self):
+        """Test record form valid for room valid purchaser"""
+
+        # initialize form data
+        form_data = {
+            "purchase_date": "2023-05-16",
+            "purchaser": self.user2.pk,
+            "item": "test-item",
+            "price": 1234.56,
+        }
+
+        form = RecordForm(room=self.room, data=form_data)
+
+        # assert form is valid for valid form data
+        self.assertFalse(form.is_valid())
 
 
 class TestWaterForm(TestCase):

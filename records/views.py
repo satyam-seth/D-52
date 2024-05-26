@@ -3,6 +3,7 @@ from typing import Any, Dict
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -11,7 +12,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
-from records.forms import RecordFrom, WaterFrom
+from records.forms import RecordForm, WaterFrom
 from records.models import Electricity, Maid, Record, Water
 
 # from core.notification import notify_record, notify_water
@@ -26,7 +27,14 @@ class AddTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
     template_name = "records/add.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        record_form = RecordFrom(label_suffix="")
+        room_id = self.get_room_id(self.request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+        record_form = RecordForm(
+            label_suffix="",
+            room=room,
+            initial={"purchaser": self.request.user},
+        )
         water_form = WaterFrom(label_suffix="")
         context = super().get_context_data(**kwargs)
         context.update(
@@ -42,11 +50,13 @@ class AddTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
 class RecordAddView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View save record form data"""
 
-    # TODO: propagate form.errors to view
     def post(self, request: HttpRequest) -> HttpResponse:
         """Method to validate and save record form post data"""
 
-        form = RecordFrom(request.POST)
+        room_id = self.get_room_id(self.request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+        form = RecordForm(data=request.POST, room=room)
         if form.is_valid():
             room_id = self.get_room_id(self.request)
             assert room_id
