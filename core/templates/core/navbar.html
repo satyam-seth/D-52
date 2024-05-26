@@ -54,7 +54,7 @@
                                 </li>
                                 {% if room_count > 1 %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room</a>
+                                    <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room ({{ room.name }})</a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
