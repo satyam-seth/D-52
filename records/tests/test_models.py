@@ -7,7 +7,7 @@ from records.models import Electricity, Maid, Record, Water
 User = get_user_model()
 
 
-class RecordModelTest(TestCase):
+class TestRecordModel(TestCase):
     """Test Record Model"""
 
     def setUp(self) -> None:
@@ -54,7 +54,7 @@ class RecordModelTest(TestCase):
         self.assertEqual(str(record), f"{record.item} {record.purchaser}")
 
 
-class WaterModelTest(TestCase):
+class TestWaterModel(TestCase):
     """Test Water Model"""
 
     def setUp(self) -> None:
@@ -89,7 +89,7 @@ class WaterModelTest(TestCase):
         self.assertEqual(str(water), str(water.purchase_date))
 
 
-class ElectricityModelTest(TestCase):
+class TestElectricityModel(TestCase):
     """Test Electricity Model"""
 
     def test_electricity_creation(self) -> None:
@@ -114,7 +114,7 @@ class ElectricityModelTest(TestCase):
         self.assertEqual(str(electricity), str(electricity.due_date))
 
 
-class MaidModelTest(TestCase):
+class TestMaidModel(TestCase):
     """Test Maid Model"""
 
     def test_maid_creation(self) -> None:

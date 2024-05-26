@@ -3,7 +3,7 @@ from django.test import TestCase
 from core.models import Feedback
 
 
-class FeedBackModelTest(TestCase):
+class TestFeedbackModel(TestCase):
     """Test Feedback Model"""
 
     def test_feedback_creation(self) -> None:

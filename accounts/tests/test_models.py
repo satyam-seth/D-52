@@ -9,7 +9,7 @@ from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 User = get_user_model()
 
 
-class ProfileModelTest(TestCase):
+class TestProfileModel(TestCase):
     """Test Profile Model"""
 
     def setUp(self) -> None:
@@ -37,7 +37,7 @@ class ProfileModelTest(TestCase):
         self.assertEqual(str(profile), f"{self.user}'s profile")
 
 
-class RoomModelTest(TestCase):
+class TestRoomModel(TestCase):
     """Test Room Model"""
 
     def setUp(self) -> None:
@@ -62,7 +62,7 @@ class RoomModelTest(TestCase):
         self.assertEqual(str(room), room.name)
 
 
-class RoomMembershipModelTest(TestCase):
+class TestRoomMembershipModel(TestCase):
     """Test Room Membership Model"""
 
     def setUp(self) -> None:
@@ -85,7 +85,7 @@ class RoomMembershipModelTest(TestCase):
         self.assertEqual(str(room_membership), f"{self.room.name}-{self.admin}")
 
 
-class RoomInvitationModelTest(TestCase):
+class TestRoomInvitationModel(TestCase):
     """Test RoomInvitation Model"""
 
     def setUp(self) -> None:
