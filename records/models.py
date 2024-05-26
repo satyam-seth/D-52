@@ -1,8 +1,11 @@
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from accounts.models import Room, RoomMembership
 
 # Create your models here.
 
@@ -30,12 +33,14 @@ class Record(models.Model):
         on_delete=models.CASCADE,
         related_name="purchaser",
     )
+    # TODO: remove null true
     adder = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name="adder",
         null=True,
     )
+    room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
     # TODO: Add validator for minimum date value is past 6 days and disallow future dates
     purchase_date = models.DateField()
     modified_on = models.DateTimeField(auto_now=True)

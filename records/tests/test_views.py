@@ -305,6 +305,7 @@ class TestRecordListView(TransactionTestCase):
             item="Test Item",
             price=123.45,
             purchaser=self.user,
+            room=self.room,
         )
 
         # Make a GET request to the view
@@ -370,12 +371,14 @@ class TestUserRecordListView(TestCase):
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
+            room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             item="Test Item 2",
             price=123.45,
             purchaser=self.user2,
+            room=self.room,
         )
 
         # Make a GET request to the view
@@ -457,6 +460,7 @@ class TestReportView(TestCase):
         self.client = Client()
         self.url = reverse("records:report")
 
+        # TODO: remove group logic
         # create group named "d52"
         group = Group.objects.create(name="d52")
 
@@ -476,21 +480,27 @@ class TestReportView(TestCase):
         self.user1.groups.add(group)
         self.user2.groups.add(group)
 
+        # Create room
+        self.room = Room.objects.create(name="test-room", admin=self.user1)
+
         # Create some test records
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             purchaser=self.user1,
             price=10,
+            room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             purchaser=self.user1,
             price=30,
+            room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             purchaser=self.user2,
             price=70,
+            room=self.room,
         )
 
     def test_report_view_working(self) -> None:
@@ -554,12 +564,14 @@ class TestSearchListView(TransactionTestCase):
             item="Test Item 1",
             price=123.45,
             purchaser=self.user,
+            room=self.room,
         )
         second_record = Record.objects.create(
             purchase_date=timezone.localdate(timezone.now()),
             item="Test Item Good 2",
             price=123.45,
             purchaser=self.user,
+            room=self.room,
         )
 
         # Make a GET request to the view
