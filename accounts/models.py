@@ -20,6 +20,10 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    def __str__(self) -> str:
+        full_name = self.get_full_name()
+        return full_name if full_name else self.email
+
 
 # TODO: mark user first and last name as required fields
 # for now we are showing username as name in templates if use name is not found
