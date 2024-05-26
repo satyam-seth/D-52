@@ -46,6 +46,33 @@ class Record(models.Model):
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        # Ensure that purchaser and adder are members of the room
+        purchaser_room_membership = RoomMembership.objects.filter(
+            room=self.room,
+            member=self.purchaser,
+        )
+
+        if not purchaser_room_membership.exists():
+            raise ValidationError(
+                message="Purchaser is from the same room as the record.",
+                code="invalid_purchaser",
+            )
+
+        if self.adder:
+            adder_room_membership = RoomMembership.objects.filter(
+                room=self.room,
+                member=self.adder,
+            )
+
+            if not adder_room_membership.exists():
+                raise ValidationError(
+                    message="Adder is from the same room as the record.",
+                    code="invalid_adder",
+                )
+
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         # TODO: finalize str
         return f"{self.item} {self.purchaser}"
