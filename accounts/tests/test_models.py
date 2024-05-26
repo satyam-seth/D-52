@@ -9,7 +9,39 @@ from accounts.models import Profile, Room, RoomInvitation, RoomMembership
 User = get_user_model()
 
 
-class ProfileModelTest(TestCase):
+class TestUserModel(TestCase):
+    """Test User Model"""
+
+    def test_str_method_for_user_with_full_name(self) -> None:
+        """Test str method for user with full name"""
+
+        # Create user
+        user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # Assert that the string representation of the user instance is the user's full name
+        self.assertEqual(str(user), user.get_full_name())
+
+    def test_str_method_for_user_without_full_name(self) -> None:
+        """Test str method for user without full name"""
+
+        # Create user
+        user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="",
+            last_name="",
+        )
+
+        # Assert that the string representation of the user instance is the user's email
+        self.assertEqual(str(user), user.email)
+
+
+class TestProfileModelTest(TestCase):
     """Test Profile Model"""
 
     def setUp(self) -> None:
@@ -37,7 +69,7 @@ class ProfileModelTest(TestCase):
         self.assertEqual(str(profile), f"{self.user}'s profile")
 
 
-class RoomModelTest(TestCase):
+class TestRoomModel(TestCase):
     """Test Room Model"""
 
     def setUp(self) -> None:
@@ -62,7 +94,7 @@ class RoomModelTest(TestCase):
         self.assertEqual(str(room), room.name)
 
 
-class RoomMembershipModelTest(TestCase):
+class TestRoomMembershipModel(TestCase):
     """Test Room Membership Model"""
 
     def setUp(self) -> None:
@@ -85,7 +117,7 @@ class RoomMembershipModelTest(TestCase):
         self.assertEqual(str(room_membership), f"{self.room.name}-{self.admin}")
 
 
-class RoomInvitationModelTest(TestCase):
+class TestRoomInvitationModel(TestCase):
     """Test RoomInvitation Model"""
 
     def setUp(self) -> None:
