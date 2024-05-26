@@ -54,7 +54,7 @@
                                 </li>
                                 {% if room_count > 1 %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room</a>
+                                    <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room ({{ room.name }})</a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
@@ -122,12 +122,20 @@
                         </ul>
                     </li>
                 </ul>
+                <!-- TODO: move this to records list page -->
                 {% if room %}
                     <form class="d-flex" role="search" action="{% url 'records:search' %}">
                         <input class="form-control me-2" type="search" placeholder="Search record" aria-label="Search"
                             name='query'>
                         <button class="btn btn-outline-success" type="submit">Search</button>
                     </form>
+                {% endif %}
+                {% if request.user.is_authenticated %}
+                <div class="mx-md-2 my-sm-2 d-flex align-items-center gap-2">
+                    <!-- TODO: user bootstrap tooltip for title  -->
+                    <img src="{{ request.user.profile.avatar.url }}" class="border border-success rounded-circle" style="width: 40px; height: 40px;"
+                        alt="{{ request.user.get_full_name }}" title="{{request.user.get_full_name}} - {{request.user.email}}" />
+                </div>
                 {% endif %}
             </div>
         </div>
