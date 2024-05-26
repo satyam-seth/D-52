@@ -32,7 +32,6 @@
             <div class="card text-center shadow-lg">
                 <img src="{{ record.user.profile.avatar.url }}" class="card-img-top img-thumbnail" alt="{{record.user.full_name}}">
                 <div class="card-body">
-                <!-- TODO: remove this if condition once first and last name of user is marked as required fields -->
                 <h3 class="card-title">{{record.user}}</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{record.user.purchaser.count}}</span> Items <i
                         class="fas fa-cart-arrow-down"></i></h5>

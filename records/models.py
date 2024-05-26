@@ -33,12 +33,10 @@ class Record(models.Model):
         on_delete=models.CASCADE,
         related_name="purchaser",
     )
-    # TODO: remove null true
     adder = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name="adder",
-        null=True,
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
     # TODO: Add validator for minimum date value is past 6 days and disallow future dates
@@ -59,17 +57,16 @@ class Record(models.Model):
                 code="invalid_purchaser",
             )
 
-        if self.adder:
-            adder_room_membership = RoomMembership.objects.filter(
-                room=self.room,
-                member=self.adder,
-            )
+        adder_room_membership = RoomMembership.objects.filter(
+            room=self.room,
+            member=self.adder,
+        )
 
-            if not adder_room_membership.exists():
-                raise ValidationError(
-                    message="Adder is from the same room as the record.",
-                    code="invalid_adder",
-                )
+        if not adder_room_membership.exists():
+            raise ValidationError(
+                message="Adder is from the same room as the record.",
+                code="invalid_adder",
+            )
 
         super().save(*args, **kwargs)
 

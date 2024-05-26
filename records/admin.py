@@ -15,6 +15,7 @@ class RecordAdmin(admin.ModelAdmin):
         "price",
         "purchaser",
         "adder",
+        "room",
         "purchase_date",
         "created_on",
         "modified_on",
