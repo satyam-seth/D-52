@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 
-from accounts.models import Room
+from accounts.models import Room, RoomMembership
 from records.models import Electricity, Maid, Record, Water
 
 User = get_user_model()
@@ -34,6 +35,9 @@ class TestRecordModel(TestCase):
         price = 99.99
         purchase_date = timezone.now().date()
 
+        # Create room membership for purchaser
+        RoomMembership.objects.create(room=self.room, member=self.purchaser)
+
         # create record instance
         record = Record.objects.create(
             item=item,
@@ -55,6 +59,68 @@ class TestRecordModel(TestCase):
 
         # assert string representation
         self.assertEqual(str(record), f"{record.item} {record.purchaser}")
+
+    def test_record_creation_for_invalid_purchaser(self) -> None:
+        """Test record model instance creation for invalid purchaser"""
+
+        # Create user
+        user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # Create room membership for purchaser
+        RoomMembership.objects.create(room=self.room, member=self.purchaser)
+
+        # Create record instance
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchaser is from the same room as the record.",
+        ) as cm:
+            Record.objects.create(
+                item="test-item",
+                price=99.99,
+                purchaser=user,
+                adder=self.adder,
+                purchase_date=timezone.now().date(),
+                room=self.room,
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchaser")
+
+    def test_record_creation_for_invalid_adder(self) -> None:
+        """Test record model instance creation for invalid adder"""
+
+        # Create user
+        user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # Create room membership for purchaser
+        RoomMembership.objects.create(room=self.room, member=self.purchaser)
+
+        # Create record instance
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Adder is from the same room as the record.",
+        ) as cm:
+            Record.objects.create(
+                item="test-item",
+                price=99.99,
+                purchaser=self.purchaser,
+                adder=user,
+                purchase_date=timezone.now().date(),
+                room=self.room,
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_adder")
 
 
 class TestWaterModel(TestCase):
