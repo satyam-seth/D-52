@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
+from accounts.models import Room
 from records.models import Electricity, Maid, Record, Water
 
 User = get_user_model()
@@ -23,6 +24,7 @@ class TestRecordModel(TestCase):
             first_name="test",
             last_name="user2",
         )
+        self.room = Room.objects.create(name="test-room", admin=self.adder)
 
     def test_record_creation(self) -> None:
         """Test record model instance creation"""
@@ -39,6 +41,7 @@ class TestRecordModel(TestCase):
             purchaser=self.purchaser,
             adder=self.adder,
             purchase_date=purchase_date,
+            room=self.room,
         )
 
         # assert field values

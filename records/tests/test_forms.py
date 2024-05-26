@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.timezone import localtime, now
 
+from accounts.models import Room
 from records.forms import RecordFrom, WaterFrom
 from records.models import Record, Water
 
@@ -91,6 +92,8 @@ class TestRecordForm(TestCase):
             last_name="user",
         )
 
+        room = Room.objects.create(name="test-room", admin=user)
+
         # initialize form data
         form_data = {
             "purchase_date": "2023-05-16",
@@ -101,13 +104,13 @@ class TestRecordForm(TestCase):
 
         form = RecordFrom(data=form_data)
 
-        print(form.errors)
-
         # assert form is valid for valid form data
         self.assertTrue(form.is_valid())
 
-        # assert form save create a group
-        record = form.save()
+        # assert form save create a record
+        record = form.save(commit=False)
+        record.room = room
+        record.save()
         self.assertIsInstance(record, Record)
         self.assertEqual(
             record.purchase_date.strftime("%Y-%m-%d"),
