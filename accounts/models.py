@@ -61,7 +61,11 @@ class Room(models.Model):
 class RoomMembership(models.Model):
     """Model to store room membership"""
 
-    member = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    member = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="room_membership",
+    )
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="memberships")
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
