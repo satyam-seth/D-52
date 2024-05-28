@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.db.utils import IntegrityError
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
@@ -9,7 +10,7 @@ from records.models import Electricity, Maid, Record, Water
 User = get_user_model()
 
 
-class TestRecordModel(TestCase):
+class TestRecordModel(TransactionTestCase):
     """Test Record Model"""
 
     def setUp(self) -> None:
@@ -58,7 +59,9 @@ class TestRecordModel(TestCase):
         # self.assertEqual(record.created_on, timezone.now())
 
         # assert string representation
-        self.assertEqual(str(record), f"{record.item} {record.purchaser}")
+        self.assertEqual(
+            str(record), f"{record.item} {record.purchaser} {self.room.name}"
+        )
 
     def test_record_creation_for_invalid_purchaser(self) -> None:
         """Test record model instance creation for invalid purchaser"""
@@ -121,6 +124,40 @@ class TestRecordModel(TestCase):
 
         # Assert the expected error code
         self.assertEqual(cm.exception.code, "invalid_adder")
+
+    def test_constraint_price_non_negative_and_less_than_100000(self) -> None:
+        """Test constraint price non negative and less than 100000"""
+
+        # Create room membership for purchaser
+        RoomMembership.objects.create(room=self.room, member=self.purchaser)
+
+        # Create record instance with negative price
+        with self.assertRaisesMessage(
+            IntegrityError,
+            "CHECK constraint failed: price_non_negative_and_less_than_100000",
+        ):
+            Record.objects.create(
+                item="test-item",
+                price=-1,
+                purchaser=self.purchaser,
+                adder=self.adder,
+                purchase_date=timezone.now().date(),
+                room=self.room,
+            )
+
+        # Create record instance with price grater than 100000
+        with self.assertRaisesMessage(
+            IntegrityError,
+            "CHECK constraint failed: price_non_negative_and_less_than_100000",
+        ):
+            Record.objects.create(
+                item="test-item",
+                price=2000000,
+                purchaser=self.purchaser,
+                adder=self.adder,
+                purchase_date=timezone.now().date(),
+                room=self.room,
+            )
 
 
 class TestWaterModel(TestCase):
