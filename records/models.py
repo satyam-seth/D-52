@@ -1,9 +1,8 @@
-from decimal import Decimal
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import CheckConstraint, Q
 
 from accounts.models import Room, RoomMembership
 
@@ -13,21 +12,16 @@ from accounts.models import Room, RoomMembership
 class Record(models.Model):
     """Model to store purchase details"""
 
+    class Meta:
+        constraints = [
+            CheckConstraint(
+                check=Q(price__gte=0) & Q(price__lte=100000),
+                name="price_non_negative_and_less_than_100000",
+            )
+        ]
+
     item = models.CharField(max_length=50)
-    # TODO: price can't be negative or zero
-    price = models.DecimalField(
-        decimal_places=2,
-        max_digits=7,
-        validators=[
-            MinValueValidator(
-                Decimal("0"),
-            ),
-            MaxValueValidator(
-                Decimal("5000"),
-            ),
-        ],
-    )
-    # TODO: filter and allow only logged in user group users
+    price = models.DecimalField(decimal_places=2, max_digits=9)
     purchaser = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -71,8 +65,7 @@ class Record(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        # TODO: finalize str
-        return f"{self.item} {self.purchaser}"
+        return f"{self.item} {self.purchaser} {self.room.name}"
 
 
 # TODO: Add price field because price of one gallon of water may change in future
