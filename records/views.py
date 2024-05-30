@@ -69,6 +69,7 @@ class RecordAddView(LoginRequiredMixin, RoomRequiredMixin, View):
             # TODO: move this logic in record post save signal
             # notify_record(reg.id)
         else:
+            # TODO: pass form error to message
             messages.error(
                 request,
                 "Please check and fill all information correctly, Your item record not added.",

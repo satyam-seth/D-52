@@ -37,16 +37,23 @@ class RecordForm(forms.ModelForm):
             "item": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter item name"}
             ),
-            # TODO: Move min and max login to model
             "price": forms.NumberInput(
                 attrs={
                     "class": "form-control",
                     "min": "0",
-                    "max": "5000",
+                    "max": "100000",
                     "placeholder": "Enter item price",
                 }
             ),
         }
+
+    def clean_price(self):
+        """Validate that the price is within the acceptable range"""
+
+        price = self.cleaned_data["price"]
+        if not (0 <= price <= 100000):
+            raise forms.ValidationError("Price must be between 0 and 100000.")
+        return price
 
 
 class WaterFrom(forms.ModelForm):
