@@ -24,57 +24,79 @@
   </div>
   {% endfor %}
   {% endif %}
+  {% if record_form.non_field_errors %}
+  {% for error in record_form.non_field_errors %}
+      <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
+  {% endfor %}
+  {% endif %}
+  {% if water_form.non_field_errors %}
+  {% for error in water_form.non_field_errors %}
+      <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
+  {% endfor %}
+  {% endif %}
 </div>
 <div class="container border rounded shadow-lg mb-5">
   <h1 class="text-center alert alert-secondary mt-4">Add Item Record</h1>
-  <form action="{% url 'records:add_item' %}" method="POST" class="p-2 mb-2">
+  <form action="{% url 'records:add_data' %}" method="POST" class="p-2 mb-2">
     {% csrf_token %}
     <div class="row mb-3">
       <div class="form-group col-md-6">
         {{record_form.purchase_date.label_tag}}
         {{record_form.purchase_date}}
+        <small class="text-danger">{{record_form.purchase_date.errors|striptags}}</small>
+        <small class="text-secondary">{{ record_form.purchase_date.help_text|safe }}</small>
       </div>
       <div class="form-group col-md-6">
         {{record_form.purchaser.label_tag}}
         {{record_form.purchaser}}
+        <small class="text-danger">{{record_form.purchase_date.errors|striptags}}</small>
+        <small class="text-secondary">{{ record_form.purchase_date.help_text|safe }}</small>
       </div>
     </div>
     <div class="row mb-3">
       <div class="form-group col-md-6">
         {{record_form.item.label_tag}}
         {{record_form.item}}
+        <small class="text-danger">{{record_form.item.errors|striptags}}</small>
+        <small class="text-secondary">{{ record_form.item.help_text|safe }}</small>
       </div>
       <div class="form-group col-md-6">
         {{record_form.price.label_tag}}
         {{record_form.price}}
+        <small class="text-danger">{{record_form.price.errors|striptags}}</small>
+        <small class="text-secondary">{{ record_form.price.help_text|safe }}</small>
       </div>
     </div>
     <button type="reset" class="btn btn-sm btn-danger">Reset
       <i class="fas fa-undo-alt"></i>
     </button>
-    <button type="submit" class="btn btn-sm btn-primary">Add
+    <button type="submit" name="record_submit" class="btn btn-sm btn-primary">Add
       <i class="fa fa-paper-plane"></i>
     </button>
   </form>
 </div>
 <div class="container border rounded shadow-lg mb-5">
   <h1 class="text-center alert alert-secondary mt-4">Add Water Record</h1>
-  <form action="{% url 'records:add_water' %}" method="POST" class="p-2 mb-2">
+  <form action="{% url 'records:add_data' %}" method="POST" class="p-2 mb-2">
     {% csrf_token %}
     <div class="row mb-3">
       <div class="form-group col-md-6">
         {{water_form.purchase_date.label_tag}}
         {{water_form.purchase_date}}
+        <small class="text-danger">{{water_form.purchase_date.errors|striptags}}</small>
+        <small class="text-secondary">{{ water_form.purchase_date.help_text|safe }}</small>
       </div>
       <div class="form-group col-md-6">
         {{water_form.quantity.label_tag}}
         {{water_form.quantity}}
+        <small class="text-danger">{{water_form.quantity.errors|striptags}}</small>
+        <small class="text-secondary">{{ water_form.quantity.help_text|safe }}</small>
       </div>
     </div>
     <button type="reset" class="btn btn-sm btn-danger">Reset
       <i class="fas fa-undo-alt"></i>
     </button>
-    <button type="submit" class="btn btn-sm btn-primary">Add
+    <button type="submit" name="water_submit" class="btn btn-sm btn-primary">Add
       <i class="fa fa-paper-plane"></i>
     </button>
   </form>
