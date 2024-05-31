@@ -16,10 +16,11 @@
                     {% endif %}
                     {% for field in form %}
                     <div class="form-group">
-                        {{field.label_tag}} {{field}} <small class="shadow text-danger">{{field.errors|striptags}}</small>
-                            {% if field.help_text %}
-                        {% endif %}
+                        {{field.label_tag}} {{field}} 
+                        <small class="shadow text-danger">{{field.errors|striptags}}</small>
+                        {% if field.help_text %}
                         <small class="shadow text-secondary">{{ field.help_text|safe }}</small>
+                        {% endif %}
                     </div>
                     {% endfor %}
                     <div class="text-center mt-5">
