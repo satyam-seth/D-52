@@ -163,6 +163,23 @@ class TestAddDataView(TestCase):
         self.assertEqual(context["record_form"], mock_get_record_form.return_value)
         self.assertEqual(context["water_form"], mock_get_water_form.return_value)
 
+    def test_get_working(self) -> None:
+        """Test get working"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
+
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
+
 
 class TestRecordListView(TransactionTestCase):
     """Test record list view"""
