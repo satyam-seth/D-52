@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
+from django.core.handlers.wsgi import WSGIRequest
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -18,25 +19,23 @@ from accounts.models import Room, RoomMembership
 from records.forms import RecordForm, WaterFrom
 from records.models import Record, Water
 from records.views import (
-    AddTemplateView,
+    AddDataView,
     DownloadTemplateView,
-    RecordAddView,
     RecordListView,
     SearchListView,
     UserRecordListView,
-    WaterAddView,
     WaterListView,
 )
 
 User = get_user_model()
 
 
-class TestAddTemplateView(TestCase):
-    """Test add template view"""
+class TestAddDataView(TestCase):
+    """Test add data view"""
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("records:add")
+        self.url = reverse("records:add_data")
         self.user = User.objects.create_user(
             email="test@user.com",
             password="test-password",
@@ -53,34 +52,119 @@ class TestAddTemplateView(TestCase):
         # login user
         self.client.login(email="test@user.com", password="test-password")
 
-    def test_add_template_view_attributes(self) -> None:
-        """Test add template view attributes"""
+    def get_mock_request(self) -> WSGIRequest:
+        """To get mock request factory"""
 
-        # Create a mock request object
         factory = RequestFactory()
         request = factory.get(self.url)
         request.user = self.user
         request.session = SessionBase()
         request.session["room_id"] = self.room.id
+        return request
 
-        view = AddTemplateView(request=request)
-        self.assertIsInstance(view, TemplateView)
+    def test_add_data_view_attributes(self) -> None:
+        """Test add data view attributes"""
+
+        # Create a mock request object
+        request = self.get_mock_request()
+
+        # Create view instance
+        view = AddDataView(request=request)
+
+        # Assertions
+        self.assertIsInstance(view, View)
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
-        self.assertTrue(view.template_name, "records/add.html")
 
-        context = view.get_context_data()
+    def test_get_room_working(self) -> None:
+        """Test get_room working"""
 
-        # Assert that the values associated with the keys are of the expected types
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        room = view.get_room()
+
+        # Assertion
+        self.assertEqual(room, self.room)
+
+    def test_get_record_form_working(self) -> None:
+        """Test get_record for working"""
+
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        record_form = view.get_record_form(self.room)
+
+        # Assertions
+        self.assertIsInstance(record_form, RecordForm)
+        self.assertEqual(record_form.label_suffix, "")
+        self.assertEqual(record_form.room, self.room)
+        self.assertEqual(record_form.initial, {"purchaser": request.user})
+
+    def test_get_water_form_working(self) -> None:
+        """Test get_water for working"""
+
+        view = AddDataView()
+        water_form = view.get_water_form()
+
+        # Assertions
+        self.assertIsInstance(water_form, WaterFrom)
+        self.assertEqual(water_form.label_suffix, "")
+
+    @mock.patch("records.views.AddDataView.get_water_form")
+    @mock.patch("records.views.AddDataView.get_record_form")
+    def test_get_context_with_forms(
+        self,
+        mock_get_record_form,
+        mock_get_water_form,
+    ) -> None:
+        """Test get_context_data with forms"""
+
+        # Prepare mock data
+        record_form = mock.MagicMock(spec=RecordForm)
+        water_form = mock.MagicMock(spec=WaterFrom)
+        mock_get_record_form.return_value = record_form
+        mock_get_water_form.return_value = water_form
+
+        # Call get_context method
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        context = view.get_context(
+            room=self.room,
+            record_form=record_form,
+            water_form=water_form,
+        )
+
+        # Assertions
+        mock_get_record_form.assert_not_called()
+        mock_get_water_form.assert_not_called()
+
         self.assertEqual(context["add_active"], "active")
-        self.assertIsInstance(context["record_form"], RecordForm)
-        self.assertIsInstance(context["water_form"], WaterFrom)
-        self.assertEqual(context["record_form"].label_suffix, "")
-        self.assertEqual(context["record_form"].room, self.room)
-        self.assertEqual(context["record_form"].initial["purchaser"], self.user)
+        self.assertEqual(context["record_form"], record_form)
+        self.assertEqual(context["water_form"], water_form)
 
-    def test_add_template_view_working(self) -> None:
-        """Test add template view working"""
+    @mock.patch("records.views.AddDataView.get_water_form")
+    @mock.patch("records.views.AddDataView.get_record_form")
+    def test_get_context_without_forms(
+        self,
+        mock_get_record_form,
+        mock_get_water_form,
+    ) -> None:
+        """Test get_context_data without forms"""
+
+        # Call get_context method
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        context = view.get_context(room=self.room)
+
+        # Assertions
+        mock_get_record_form.assert_called_once_with(room=self.room)
+        mock_get_water_form.assert_called_once()
+
+        self.assertEqual(context["add_active"], "active")
+        self.assertEqual(context["record_form"], mock_get_record_form.return_value)
+        self.assertEqual(context["water_form"], mock_get_water_form.return_value)
+
+    def test_get_working(self) -> None:
+        """Test get working"""
 
         # Send a GET request to the view
         response = self.client.get(self.url)
@@ -89,60 +173,35 @@ class TestAddTemplateView(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         # Assert that the correct template is used
-        self.assertTemplateUsed(response, "records/add.html")
+        self.assertTemplateUsed(response, "records/add_data.html")
 
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
 
+    def test_post_for_valid_record_form_data(self) -> None:
+        """Test post for valid record form data"""
 
-class TestRecordAddView(TestCase):
-    """Test record add view"""
-
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("records:add_item")
-        self.user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
-        )
-        self.room = Room.objects.create(name="test-room", admin=self.user)
-
-        # Set room id in session
-        session = self.client.session
-        session["room_id"] = self.room.id
-        session.save()
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
-
-    def test_record_add_view_attributes(self) -> None:
-        """Test record add view attributes"""
-
-        view = RecordAddView()
-        self.assertIsInstance(view, View)
-        self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertIsInstance(view, RoomRequiredMixin)
-
-    def test_record_add_view_for_valid_post_data(self) -> None:
-        """Test record add view working for valid post data"""
-
-        valid_form_data = {
+        valid_record_form_data = {
             "purchase_date": timezone.localdate(timezone.now()),
             "item": "Test Item",
             "price": 123.45,
             "purchaser": self.user.pk,
+            "record_submit": "",
         }
 
+        # Send a POST request to the view
         response = self.client.post(
             self.url,
-            data=valid_form_data,
+            data=valid_record_form_data,
         )
 
-        # Redirects to the specified URL
-        self.assertRedirects(response, reverse("records:add"))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
 
         # Assert success message
         response_messages = tuple(get_messages(response.wsgi_request))
@@ -153,110 +212,144 @@ class TestRecordAddView(TestCase):
             "Your item record successfully added.",
         )
 
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
+
         # Assert that the record is saved in the database
         self.assertEqual(Record.objects.count(), 1)
         record: Type[Record] = Record.objects.first()  # type: ignore
-        self.assertEqual(record.item, valid_form_data["item"])
-        self.assertEqual(float(str(record.price)), valid_form_data["price"])
+        self.assertEqual(record.item, valid_record_form_data["item"])
+        self.assertEqual(float(str(record.price)), valid_record_form_data["price"])
         self.assertEqual(record.purchaser, self.user)
-        self.assertEqual(record.purchase_date, valid_form_data["purchase_date"])
+        self.assertEqual(record.purchase_date, valid_record_form_data["purchase_date"])
         self.assertEqual(record.adder, self.user)
 
-    def test_record_add_view_for_invalid_post_data(self) -> None:
-        """Test record add view working for invalid post data"""
+    def test_post_for_invalid_record_form_data(self) -> None:
+        """Test post for invalid record form data"""
 
-        invalid_form_data = {"item": "Test Item"}
-        response = self.client.post(self.url, data=invalid_form_data)
+        valid_record_form_data = {
+            "item": "Test Item",
+            "record_submit": "",
+        }
 
-        # Redirects to the specified URL
-        self.assertRedirects(response, reverse("records:add"))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url,
+            data=valid_record_form_data,
+        )
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
 
         # Assert error message
         response_messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.ERROR)
-        self.assertEqual(
-            response_messages[0].message,
-            "Please check and fill all information correctly, Your item record not added.",
-        )
+        self.assertEqual(response_messages[0].message, "Your item record not added.")
+
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
 
         # Assert that the record is not saved in the database
         self.assertEqual(Record.objects.count(), 0)
 
+    def test_post_for_valid_water_form_data(self) -> None:
+        """Test post for valid water form data"""
 
-class TestWaterAddView(TestCase):
-    """Test water add view"""
-
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("records:add_water")
-        self.user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
-        )
-
-        self.room = Room.objects.create(name="test-room", admin=self.user)
-
-        # Set room id in session
-        session = self.client.session
-        session["room_id"] = self.room.id
-        session.save()
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
-
-    def test_water_add_view_attributes(self) -> None:
-        """Test water add view attributes"""
-
-        view = WaterAddView()
-        self.assertIsInstance(view, View)
-        self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertIsInstance(view, RoomRequiredMixin)
-
-    def test_water_add_view_for_valid_post_data(self) -> None:
-        """Test water add view working for valid post data"""
-
-        valid_form_data = {
+        valid_water_form_data = {
             "purchase_date": timezone.localdate(timezone.now()),
             "quantity": 1,
+            "water_submit": "",
         }
 
+        # Send a POST request to the view
         response = self.client.post(
             self.url,
-            data=valid_form_data,
+            data=valid_water_form_data,
         )
 
-        # Redirects to the specified URL
-        self.assertRedirects(response, reverse("records:add"))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
 
         # Assert success message
         response_messages = tuple(get_messages(response.wsgi_request))
         self.assertEqual(len(response_messages), 1)
         self.assertEqual(response_messages[0].level, messages.SUCCESS)
         self.assertEqual(
-            response_messages[0].message, "Water record successfully added."
+            response_messages[0].message,
+            "Water record successfully added.",
         )
+
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
 
         # Assert that the water is saved in the database
         self.assertEqual(Water.objects.count(), 1)
         water: Type[Water] = Water.objects.first()  # type: ignore
-        self.assertEqual(water.quantity, valid_form_data["quantity"])
-        self.assertEqual(water.purchase_date, valid_form_data["purchase_date"])
+        self.assertEqual(water.quantity, valid_water_form_data["quantity"])
+        self.assertEqual(water.purchase_date, valid_water_form_data["purchase_date"])
         self.assertEqual(water.adder, self.user)
 
-    def test_water_add_view_for_invalid_post_data(self) -> None:
-        """Test water add view working for invalid post data"""
+    def test_post_for_invalid_water_form_data(self) -> None:
+        """Test post for invalid water form data"""
 
-        valid_form_data = {"quantity": 1}
-        response = self.client.post(self.url, data=valid_form_data)
+        invalid_water_form_data = {
+            "quantity": 1,
+            "water_submit": "",
+        }
 
-        # Redirects to the specified URL
-        self.assertRedirects(response, reverse("records:add"))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url,
+            data=invalid_water_form_data,
+        )
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
+
+        # Assert error message
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.ERROR)
+        self.assertEqual(response_messages[0].message, "Water record not added.")
+
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
+
+        # Assert that the water is not saved in the database
+        self.assertEqual(Water.objects.count(), 0)
+
+    def test_post_for_without_form_submit_info(self) -> None:
+        """Test post for without form submit info"""
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url,
+            data={},
+        )
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
 
         # Assert error message
         response_messages = tuple(get_messages(response.wsgi_request))
@@ -264,11 +357,13 @@ class TestWaterAddView(TestCase):
         self.assertEqual(response_messages[0].level, messages.ERROR)
         self.assertEqual(
             response_messages[0].message,
-            "Please check and fill all information correctly, Water record not added.",
+            "Please check and fill in all information correctly.",
         )
 
-        # Assert that the water is not saved in the database
-        self.assertEqual(Water.objects.count(), 0)
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
 
 
 class TestRecordListView(TransactionTestCase):
