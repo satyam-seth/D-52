@@ -86,6 +86,19 @@ class TestAddDataView(TestCase):
         # Assertion
         self.assertEqual(room, self.room)
 
+    def test_get_record_form_working(self) -> None:
+        """Test get_record for working"""
+
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        record_form = view.get_record_form(self.room)
+
+        # Assertions
+        self.assertIsInstance(record_form, RecordForm)
+        self.assertEqual(record_form.label_suffix, "")
+        self.assertEqual(record_form.room, self.room)
+        self.assertEqual(record_form.initial, {"purchaser": request.user})
+
 
 class TestRecordListView(TransactionTestCase):
     """Test record list view"""
