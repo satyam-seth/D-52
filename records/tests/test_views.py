@@ -109,6 +109,38 @@ class TestAddDataView(TestCase):
         self.assertIsInstance(water_form, WaterFrom)
         self.assertEqual(water_form.label_suffix, "")
 
+    @mock.patch("records.views.AddDataView.get_water_form")
+    @mock.patch("records.views.AddDataView.get_record_form")
+    def test_get_context_with_forms(
+        self,
+        mock_get_record_form,
+        mock_get_water_form,
+    ) -> None:
+        """Test get_context_data with forms"""
+
+        # Prepare mock data
+        record_form = mock.MagicMock(spec=RecordForm)
+        water_form = mock.MagicMock(spec=WaterFrom)
+        mock_get_record_form.return_value = record_form
+        mock_get_water_form.return_value = water_form
+
+        # Call get_context method
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        context = view.get_context(
+            room=self.room,
+            record_form=record_form,
+            water_form=water_form,
+        )
+
+        # Assertions
+        mock_get_record_form.assert_not_called()
+        mock_get_water_form.assert_not_called()
+
+        self.assertEqual(context["add_active"], "active")
+        self.assertEqual(context["record_form"], record_form)
+        self.assertEqual(context["water_form"], water_form)
+
 
 class TestRecordListView(TransactionTestCase):
     """Test record list view"""
