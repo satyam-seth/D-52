@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -24,10 +23,10 @@ User = get_user_model()
 class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View to render and handle record and water form"""
 
-    def get_room(self, request) -> Room:
+    def get_room(self) -> Room:
         """Returns room"""
 
-        room_id = self.get_room_id(request)
+        room_id = self.get_room_id(self.request)
         assert room_id
         room = Room.objects.get(id=room_id)
         return room
@@ -67,7 +66,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
     def get(self, request: HttpRequest) -> HttpResponse:
         """Render record and water form"""
 
-        room = self.get_room(request=request)
+        room = self.get_room()
         context = self.get_context(room=room)
         return render(request, "records/add_data.html", context)
 
@@ -75,7 +74,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
         """Handle record and water form submission"""
 
         context: Dict[str, Any]
-        room = self.get_room(request=request)
+        room = self.get_room()
 
         if "record_submit" in request.POST:
             record_form = RecordForm(data=request.POST, room=room)
