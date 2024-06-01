@@ -302,6 +302,40 @@ class TestAddDataView(TestCase):
         self.assertEqual(water.purchase_date, valid_water_form_data["purchase_date"])
         self.assertEqual(water.adder, self.user)
 
+    def test_post_for_invalid_water_form_data(self) -> None:
+        """Test post for invalid water form data"""
+
+        invalid_water_form_data = {
+            "quantity": 1,
+            "water_submit": "",
+        }
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url,
+            data=invalid_water_form_data,
+        )
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
+
+        # Assert error message
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.ERROR)
+        self.assertEqual(response_messages[0].message, "Water record not added.")
+
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
+
+        # Assert that the water is not saved in the database
+        self.assertEqual(Water.objects.count(), 0)
+
 
 class TestRecordListView(TransactionTestCase):
     """Test record list view"""
