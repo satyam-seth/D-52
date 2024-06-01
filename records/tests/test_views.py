@@ -99,6 +99,16 @@ class TestAddDataView(TestCase):
         self.assertEqual(record_form.room, self.room)
         self.assertEqual(record_form.initial, {"purchaser": request.user})
 
+    def test_get_water_form_working(self) -> None:
+        """Test get_water for working"""
+
+        view = AddDataView()
+        water_form = view.get_water_form()
+
+        # Assertions
+        self.assertIsInstance(water_form, WaterFrom)
+        self.assertEqual(water_form.label_suffix, "")
+
 
 class TestRecordListView(TransactionTestCase):
     """Test record list view"""
