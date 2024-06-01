@@ -141,6 +141,28 @@ class TestAddDataView(TestCase):
         self.assertEqual(context["record_form"], record_form)
         self.assertEqual(context["water_form"], water_form)
 
+    @mock.patch("records.views.AddDataView.get_water_form")
+    @mock.patch("records.views.AddDataView.get_record_form")
+    def test_get_context_without_forms(
+        self,
+        mock_get_record_form,
+        mock_get_water_form,
+    ) -> None:
+        """Test get_context_data without forms"""
+
+        # Call get_context method
+        request = self.get_mock_request()
+        view = AddDataView(request=request)
+        context = view.get_context(room=self.room)
+
+        # Assertions
+        mock_get_record_form.assert_called_once_with(room=self.room)
+        mock_get_water_form.assert_called_once()
+
+        self.assertEqual(context["add_active"], "active")
+        self.assertEqual(context["record_form"], mock_get_record_form.return_value)
+        self.assertEqual(context["water_form"], mock_get_water_form.return_value)
+
 
 class TestRecordListView(TransactionTestCase):
     """Test record list view"""
