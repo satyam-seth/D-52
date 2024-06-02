@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
@@ -28,6 +30,9 @@ class TestRecordModel(TransactionTestCase):
         )
         self.room = Room.objects.create(name="test-room", admin=self.adder)
 
+        # Create room membership for purchaser
+        RoomMembership.objects.create(room=self.room, member=self.purchaser)
+
     def test_record_creation(self) -> None:
         """Test record model instance creation"""
 
@@ -35,9 +40,6 @@ class TestRecordModel(TransactionTestCase):
         item = "test-item"
         price = 99.99
         purchase_date = timezone.now().date()
-
-        # Create room membership for purchaser
-        RoomMembership.objects.create(room=self.room, member=self.purchaser)
 
         # create record instance
         record = Record.objects.create(
@@ -74,9 +76,6 @@ class TestRecordModel(TransactionTestCase):
             last_name="user",
         )
 
-        # Create room membership for purchaser
-        RoomMembership.objects.create(room=self.room, member=self.purchaser)
-
         # Create record instance
         with self.assertRaisesMessage(
             ValidationError,
@@ -105,9 +104,6 @@ class TestRecordModel(TransactionTestCase):
             last_name="user",
         )
 
-        # Create room membership for purchaser
-        RoomMembership.objects.create(room=self.room, member=self.purchaser)
-
         # Create record instance
         with self.assertRaisesMessage(
             ValidationError,
@@ -127,9 +123,6 @@ class TestRecordModel(TransactionTestCase):
 
     def test_constraint_price_non_negative_and_less_than_100000(self) -> None:
         """Test constraint price non negative and less than 100000"""
-
-        # Create room membership for purchaser
-        RoomMembership.objects.create(room=self.room, member=self.purchaser)
 
         # Create record instance with negative price
         with self.assertRaisesMessage(
@@ -156,6 +149,44 @@ class TestRecordModel(TransactionTestCase):
                 purchaser=self.purchaser,
                 adder=self.adder,
                 purchase_date=timezone.now().date(),
+                room=self.room,
+            )
+
+    def test_record_creation_for_feature_purchaser_date(self) -> None:
+        """Test record model instance creation for feature purchaser date"""
+
+        future_date = timezone.now().date() + timedelta(days=1)
+
+        # Create record instance with price grater than 100000
+        with self.assertRaisesMessage(
+            IntegrityError,
+            "CHECK constraint failed: purchase_date_within_last_six_days",
+        ):
+            Record.objects.create(
+                item="item",
+                price=10,
+                purchaser=self.purchaser,
+                adder=self.adder,
+                purchase_date=future_date,
+                room=self.room,
+            )
+
+    def test_record_creation_for_too_far_in_past_purchaser_date(self) -> None:
+        """Test record model instance creation for too far in past purchaser date"""
+
+        too_far_in_past_date = timezone.now().date() - timedelta(days=7)
+
+        # Create record instance with price grater than 100000
+        with self.assertRaisesMessage(
+            IntegrityError,
+            "CHECK constraint failed: purchase_date_within_last_six_days",
+        ):
+            Record.objects.create(
+                item="item",
+                price=10,
+                purchaser=self.purchaser,
+                adder=self.adder,
+                purchase_date=too_far_in_past_date,
                 room=self.room,
             )
 
