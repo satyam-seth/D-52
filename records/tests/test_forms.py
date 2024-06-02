@@ -295,6 +295,15 @@ class TestWaterForm(TestCase):
     def test_water_form_working(self):
         """Test water form working"""
 
+        user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        room = Room.objects.create(name="test-room", admin=user)
+
         # initialize form data
         form_data = {
             "purchase_date": timezone.now().date(),
@@ -307,7 +316,8 @@ class TestWaterForm(TestCase):
         self.assertTrue(form.is_valid())
 
         # assert form save create a group
-        water = form.save()
+        water = form.save(commit=False)
+        water.room = room
         self.assertIsInstance(water, Water)
         self.assertEqual(water.purchase_date, form_data["purchase_date"])
         self.assertEqual(water.quantity, form_data["quantity"])

@@ -545,8 +545,9 @@ class TestWaterListView(TransactionTestCase):
 
         # Create a water record
         Water.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             quantity=1,
+            room=self.room,
         )
 
         # Make a GET request to the view

@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
@@ -79,9 +79,6 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
         if "record_submit" in request.POST:
             record_form = RecordForm(data=request.POST, room=room)
             if record_form.is_valid():
-                room_id = self.get_room_id(self.request)
-                assert room_id
-                room = Room.objects.get(id=room_id)
                 reg = record_form.save(commit=False)
                 reg.adder = request.user
                 reg.room = room
@@ -99,6 +96,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
             if water_form.is_valid():
                 reg = water_form.save(commit=False)
                 reg.adder = request.user
+                reg.room = room
                 reg.save()
                 messages.success(request, "Water record successfully added.")
                 context = self.get_context(room=room)
