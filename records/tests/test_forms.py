@@ -321,3 +321,36 @@ class TestWaterForm(TestCase):
         self.assertIsInstance(water, Water)
         self.assertEqual(water.purchase_date, form_data["purchase_date"])
         self.assertEqual(water.quantity, form_data["quantity"])
+
+    def test_water_form_invalid_for_feature_purchaser_date(self) -> None:
+        """Test water form invalid for feature purchaser date"""
+
+        future_date = timezone.now().date() + timedelta(days=1)
+
+        # initialize form data
+        form_data = {
+            "purchase_date": future_date,
+            "quantity": 1,
+        }
+
+        form = WaterFrom(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("Future dates are not allowed.", form.errors["purchase_date"])
+
+    def test_water_form_invalid_for_too_far_in_past_purchaser_date(self) -> None:
+        """Test water form invalid for too far in past purchaser date"""
+
+        too_far_in_past_date = timezone.now().date() - timedelta(days=7)
+
+        # initialize form data
+        form_data = {
+            "purchase_date": too_far_in_past_date,
+            "quantity": 1,
+        }
+
+        form = WaterFrom(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            "Date should be at least 6 days in the past.",
+            form.errors["purchase_date"],
+        )
