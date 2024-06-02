@@ -202,6 +202,8 @@ class TestWaterModel(TestCase):
             last_name="user",
         )
 
+        self.room = Room.objects.create(name="test-room", admin=self.adder)
+
     def test_water_creation(self) -> None:
         """Test water model instance creation"""
 
@@ -213,6 +215,7 @@ class TestWaterModel(TestCase):
         water = Water.objects.create(
             quantity=quantity,
             adder=self.adder,
+            room=self.room,
             purchase_date=purchase_date,
         )
 
