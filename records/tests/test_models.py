@@ -62,7 +62,8 @@ class TestRecordModel(TransactionTestCase):
 
         # assert string representation
         self.assertEqual(
-            str(record), f"{record.item} {record.purchaser} {self.room.name}"
+            str(record),
+            f"{record.item} {record.purchaser} {record.purchase_date} {self.room.name}",
         )
 
     def test_record_creation_for_invalid_purchaser(self) -> None:
@@ -226,7 +227,7 @@ class TestWaterModel(TestCase):
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(water), str(water.purchase_date))
+        self.assertEqual(str(water), f"{water.purchase_date} {self.room.name}")
 
     def test_record_creation_for_invalid_adder(self) -> None:
         """Test record model instance creation for invalid adder"""
