@@ -104,7 +104,7 @@ class Water(models.Model):
         related_name="water_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="waters")
-    purchase_date = models.DateField()
+    purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
