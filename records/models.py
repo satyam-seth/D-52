@@ -1,10 +1,11 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import CheckConstraint, Q
+from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
 from records.validators import validate_past_date_within_past_6_days
@@ -17,10 +18,17 @@ class Record(models.Model):
 
     class Meta:
         constraints = [
-            CheckConstraint(
-                check=Q(price__gte=0) & Q(price__lte=100000),
+            models.CheckConstraint(
+                check=models.Q(price__gte=0) & models.Q(price__lte=100000),
                 name="price_non_negative_and_less_than_100000",
-            )
+            ),
+            models.CheckConstraint(
+                check=models.Q(purchase_date__lte=timezone.now().date())
+                & models.Q(
+                    purchase_date__gte=timezone.now().date() - timedelta(days=6)
+                ),
+                name="purchase_date_within_last_six_days",
+            ),
         ]
 
     item = models.CharField(max_length=50)
