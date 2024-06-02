@@ -228,6 +228,32 @@ class TestWaterModel(TestCase):
         # assert string representation
         self.assertEqual(str(water), str(water.purchase_date))
 
+    def test_record_creation_for_invalid_adder(self) -> None:
+        """Test record model instance creation for invalid adder"""
+
+        # Create user
+        user = User.objects.create_user(
+            email="test@user1.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # Create record instance
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Adder is from the same room as the water.",
+        ) as cm:
+            Water.objects.create(
+                quantity=1,
+                adder=user,
+                room=self.room,
+                purchase_date=timezone.now().date(),
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_adder")
+
 
 class TestElectricityModel(TestCase):
     """Test Electricity Model"""
