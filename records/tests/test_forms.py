@@ -177,22 +177,8 @@ class TestRecordForm(TestCase):
         # assert form is valid for valid form data
         self.assertFalse(form.is_valid())
 
-    def test_clean_price_for_valid_price(self) -> None:
-        """Test clean price for valid price"""
-
-        # initialize form data
-        form_data = {
-            "purchase_date": timezone.now().date(),
-            "purchaser": self.user1.pk,
-            "item": "test-item",
-            "price": 999.99,
-        }
-
-        form = RecordForm(room=self.room, data=form_data)
-        self.assertTrue(form.is_valid())
-
-    def test_clean_price_for_negative_price(self) -> None:
-        """Test clean price for negative price"""
+    def test_record_form_for_negative_price(self) -> None:
+        """Test record form for negative price"""
 
         # initialize form data
         form_data = {
@@ -204,10 +190,13 @@ class TestRecordForm(TestCase):
 
         form = RecordForm(room=self.room, data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn("Price must be between 0 and 100000.", form.errors["price"])
+        self.assertIn(
+            "Ensure this value is greater than or equal to 0.",
+            form.errors["price"],
+        )
 
-    def test_clean_price_for_price_grater_than_100000(self) -> None:
-        """Test clean price for price grater than 100000"""
+    def test_record_form_for_price_grater_than_100000(self) -> None:
+        """Test record form for price grater than 100000"""
 
         # initialize form data
         form_data = {
@@ -219,7 +208,10 @@ class TestRecordForm(TestCase):
 
         form = RecordForm(room=self.room, data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn("Price must be between 0 and 100000.", form.errors["price"])
+        self.assertIn(
+            "Ensure this value is less than or equal to 100000.",
+            form.errors["price"],
+        )
 
     def test_record_form_invalid_for_feature_purchaser_date(self) -> None:
         """Test record form invalid for feature purchaser date"""
