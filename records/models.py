@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -22,7 +24,14 @@ class Record(models.Model):
         ]
 
     item = models.CharField(max_length=50)
-    price = models.DecimalField(decimal_places=2, max_digits=9)
+    price = models.DecimalField(
+        decimal_places=2,
+        max_digits=9,
+        validators=[
+            MinValueValidator(Decimal("0")),
+            MaxValueValidator(Decimal("100000")),
+        ],
+    )
     purchaser = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
