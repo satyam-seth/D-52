@@ -322,6 +322,38 @@ class TestWaterForm(TestCase):
         self.assertEqual(water.purchase_date, form_data["purchase_date"])
         self.assertEqual(water.quantity, form_data["quantity"])
 
+    def test_water_form_for_quantity_less_than_1(self) -> None:
+        """Test water form for quantity less than 1"""
+
+        # initialize form data
+        form_data = {
+            "purchase_date": timezone.now().date(),
+            "quantity": 0,
+        }
+
+        form = WaterFrom(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            "Ensure this value is greater than or equal to 1.",
+            form.errors["quantity"],
+        )
+
+    def test_record_form_for_quantity_grater_than_5(self) -> None:
+        """Test record form for quantity grater than 5"""
+
+        # initialize form data
+        form_data = {
+            "purchase_date": timezone.now().date(),
+            "quantity": 6,
+        }
+
+        form = WaterFrom(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            "Ensure this value is less than or equal to 5.",
+            form.errors["quantity"],
+        )
+
     def test_water_form_invalid_for_feature_purchaser_date(self) -> None:
         """Test water form invalid for feature purchaser date"""
 
