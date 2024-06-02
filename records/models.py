@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import CheckConstraint, Q
 
 from accounts.models import Room, RoomMembership
+from records.validators import validate_past_date_within_past_6_days
 
 # Create your models here.
 
@@ -33,8 +34,7 @@ class Record(models.Model):
         related_name="adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
-    # TODO: Add validator for minimum date value is past 6 days and disallow future dates
-    purchase_date = models.DateField()
+    purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
