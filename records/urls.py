@@ -5,9 +5,7 @@ from records import views
 app_name = "records"
 
 urlpatterns = [
-    path("add/", views.AddTemplateView.as_view(), name="add"),
-    path("item/", views.RecordAddView.as_view(), name="add_item"),
-    path("water/", views.WaterAddView.as_view(), name="add_water"),
+    path("add_data/", views.AddDataView.as_view(), name="add_data"),
     path("records/", views.RecordListView.as_view(), name="records"),
     path(
         "detailed/<int:user_id>/",

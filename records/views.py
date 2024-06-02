@@ -1,9 +1,8 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -21,82 +20,101 @@ from records.models import Electricity, Maid, Record, Water
 User = get_user_model()
 
 
-class AddTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
-    """View to render record and water form"""
+class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """View to render and handle record and water form"""
 
-    template_name = "records/add.html"
+    def get_room(self) -> Room:
+        """Returns room"""
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         room_id = self.get_room_id(self.request)
         assert room_id
         room = Room.objects.get(id=room_id)
-        record_form = RecordForm(
+        return room
+
+    def get_record_form(self, room: Room) -> RecordForm:
+        """Returns an empty record form"""
+
+        return RecordForm(
             label_suffix="",
             room=room,
             initial={"purchaser": self.request.user},
         )
-        water_form = WaterFrom(label_suffix="")
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "add_active": "active",
-                "record_form": record_form,
-                "water_form": water_form,
-            }
-        )
+
+    def get_water_form(self) -> WaterFrom:
+        """Returns an water empty form"""
+
+        return WaterFrom(label_suffix="")
+
+    def get_context(
+        self,
+        room: Room,
+        record_form: Optional[RecordForm] = None,
+        water_form: Optional[WaterFrom] = None,
+    ) -> dict[str, Any]:
+        """Returns context"""
+
+        _record_form = record_form if record_form else self.get_record_form(room=room)
+        _water_form = water_form if water_form else self.get_water_form()
+
+        context = {
+            "add_active": "active",
+            "record_form": _record_form,
+            "water_form": _water_form,
+        }
         return context
 
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """Render record and water form"""
 
-class RecordAddView(LoginRequiredMixin, RoomRequiredMixin, View):
-    """View save record form data"""
-
-    def post(self, request: HttpRequest) -> HttpResponse:
-        """Method to validate and save record form post data"""
-
-        room_id = self.get_room_id(self.request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-        form = RecordForm(data=request.POST, room=room)
-        if form.is_valid():
-            room_id = self.get_room_id(self.request)
-            assert room_id
-            room = Room.objects.get(id=room_id)
-            reg = form.save(commit=False)
-            reg.adder = request.user
-            reg.room = room
-            reg.save()
-            messages.success(request, "Your item record successfully added.")
-            # TODO: move this logic in record post save signal
-            # notify_record(reg.id)
-        else:
-            # TODO: pass form error to message
-            messages.error(
-                request,
-                "Please check and fill all information correctly, Your item record not added.",
-            )
-        return redirect("records:add")
-
-
-class WaterAddView(LoginRequiredMixin, RoomRequiredMixin, View):
-    """View save water form data"""
+        room = self.get_room()
+        context = self.get_context(room=room)
+        return render(request, "records/add_data.html", context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Method to validate and save water form post data"""
+        """Handle record and water form submission"""
 
-        form = WaterFrom(request.POST)
-        if form.is_valid():
-            reg = form.save(commit=False)
-            reg.adder = request.user
-            reg.save()
-            messages.success(request, "Water record successfully added.")
-            # TODO: move this logic in water post save signal
-            # notify_record(reg.id)
+        context: Dict[str, Any]
+        room = self.get_room()
+
+        if "record_submit" in request.POST:
+            record_form = RecordForm(data=request.POST, room=room)
+            if record_form.is_valid():
+                room_id = self.get_room_id(self.request)
+                assert room_id
+                room = Room.objects.get(id=room_id)
+                reg = record_form.save(commit=False)
+                reg.adder = request.user
+                reg.room = room
+                reg.save()
+                messages.success(request, "Your item record successfully added.")
+                context = self.get_context(room=room)
+                # TODO: move this logic in record post save signal
+                # notify_record(reg.id)
+            else:
+                messages.error(request, "Your item record not added.")
+                context = self.get_context(room=room, record_form=record_form)
+
+        elif "water_submit" in request.POST:
+            water_form = WaterFrom(request.POST)
+            if water_form.is_valid():
+                reg = water_form.save(commit=False)
+                reg.adder = request.user
+                reg.save()
+                messages.success(request, "Water record successfully added.")
+                context = self.get_context(room=room)
+                # TODO: move this logic in water post save signal
+                # notify_record(reg.id)
+            else:
+                context = self.get_context(room=room, water_form=water_form)
+                messages.error(request, "Water record not added.")
         else:
             messages.error(
                 request,
-                "Please check and fill all information correctly, Water record not added.",
+                "Please check and fill in all information correctly.",
             )
-        return redirect("records:add")
+            context = self.get_context(room=room)
+
+        return render(request, "records/add_data.html", context)
 
 
 class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):

@@ -7,23 +7,11 @@ from records import views
 class TestUrls(TestCase):
     """Test url patterns"""
 
-    def test_add_url(self):
-        """Test add url resolve"""
+    def test_add_data_url(self):
+        """Test add data url resolve"""
 
-        url = reverse("records:add")
-        self.assertEqual(resolve(url).func.view_class, views.AddTemplateView)
-
-    def test_add_item_url(self):
-        """Test add item url resolve"""
-
-        url = reverse("records:add_item")
-        self.assertEqual(resolve(url).func.view_class, views.RecordAddView)
-
-    def test_add_water_url(self):
-        """Test add water url resolve"""
-
-        url = reverse("records:add_water")
-        self.assertEqual(resolve(url).func.view_class, views.WaterAddView)
+        url = reverse("records:add_data")
+        self.assertEqual(resolve(url).func.view_class, views.AddDataView)
 
     def test_records_url(self):
         """Test records url resolve"""
