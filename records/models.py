@@ -108,6 +108,21 @@ class Water(models.Model):
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        # Ensure that adder is members of the room
+        adder_room_membership = RoomMembership.objects.filter(
+            room=self.room,
+            member=self.adder,
+        )
+
+        if not adder_room_membership.exists():
+            raise ValidationError(
+                message="Adder is from the same room as the water.",
+                code="invalid_adder",
+            )
+
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         # TODO: finalize str
         return str(self.purchase_date)
