@@ -48,7 +48,7 @@ class Record(models.Model):
     adder = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="adder",
+        related_name="record_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
     purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
@@ -100,8 +100,8 @@ class Water(models.Model):
     )
     adder = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
+        related_name="water_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="waters")
     purchase_date = models.DateField()
