@@ -82,7 +82,7 @@ class Record(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.item} {self.purchaser} {self.room.name}"
+        return f"{self.item} {self.purchaser} {self.purchase_date} {self.room.name}"
 
 
 # TODO: Add price field because price of one gallon of water may change in future
@@ -124,8 +124,7 @@ class Water(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        # TODO: finalize str
-        return str(self.purchase_date)
+        return f"{self.purchase_date} {self.room.name}"
 
 
 # TODO: Create a common model to store electricity and maid data
