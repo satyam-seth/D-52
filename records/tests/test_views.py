@@ -548,6 +548,7 @@ class TestWaterListView(TransactionTestCase):
             purchase_date=timezone.now().date(),
             quantity=1,
             room=self.room,
+            adder=self.user,
         )
 
         # Make a GET request to the view
