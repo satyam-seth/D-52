@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from django.utils.timezone import localtime, now
 
 from accounts.models import Room
@@ -119,7 +120,7 @@ class TestRecordForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-16",
+            "purchase_date": timezone.now().date(),
             "purchaser": self.user1.pk,
             "item": "test-item",
             "price": 1234.56,
@@ -137,7 +138,7 @@ class TestRecordForm(TestCase):
         record.save()
         self.assertIsInstance(record, Record)
         self.assertEqual(
-            record.purchase_date.strftime("%Y-%m-%d"),
+            record.purchase_date,
             form_data["purchase_date"],
         )
         self.assertEqual(record.purchaser.id, form_data["purchaser"])
@@ -149,7 +150,7 @@ class TestRecordForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-16",
+            "purchase_date": timezone.now().date(),
             "purchaser": self.user1.pk,
             "item": "test-item",
             "price": 1234.56,
@@ -165,7 +166,7 @@ class TestRecordForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-16",
+            "purchase_date": timezone.now().date(),
             "purchaser": self.user2.pk,
             "item": "test-item",
             "price": 1234.56,
@@ -181,7 +182,7 @@ class TestRecordForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-16",
+            "purchase_date": timezone.now().date(),
             "purchaser": self.user1.pk,
             "item": "test-item",
             "price": 999.99,
@@ -195,7 +196,7 @@ class TestRecordForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-16",
+            "purchase_date": timezone.now().date(),
             "purchaser": self.user1.pk,
             "item": "test-item",
             "price": -10,
@@ -210,7 +211,7 @@ class TestRecordForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-16",
+            "purchase_date": timezone.now().date(),
             "purchaser": self.user1.pk,
             "item": "test-item",
             "price": 200000,
@@ -267,7 +268,7 @@ class TestWaterForm(TestCase):
 
         # initialize form data
         form_data = {
-            "purchase_date": "2023-05-15",
+            "purchase_date": timezone.now().date(),
             "quantity": 1,
         }
 
@@ -279,8 +280,5 @@ class TestWaterForm(TestCase):
         # assert form save create a group
         water = form.save()
         self.assertIsInstance(water, Water)
-        self.assertEqual(
-            water.purchase_date.strftime("%Y-%m-%d"),
-            form_data["purchase_date"],
-        )
+        self.assertEqual(water.purchase_date, form_data["purchase_date"])
         self.assertEqual(water.quantity, form_data["quantity"])
