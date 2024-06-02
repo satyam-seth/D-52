@@ -103,6 +103,7 @@ class Water(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
+    room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="waters")
     purchase_date = models.DateField()
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
