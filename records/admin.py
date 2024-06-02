@@ -30,6 +30,7 @@ class WaterAdmin(admin.ModelAdmin):
         "id",
         "quantity",
         "adder",
+        "room",
         "purchase_date",
         "created_on",
         "modified_on",
