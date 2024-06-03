@@ -82,12 +82,12 @@ class Record(models.Model):
 class Water(models.Model):
     """Model to store water purchase details"""
 
-    # currently we only allow maximum 5 quantity
-    # TODO: add validator for allowed max quantity is 5 for a day
+    max_allowed_quality = 5
+
     quantity = models.PositiveIntegerField(
         default=1,
         validators=[
-            MaxValueValidator(5),
+            MaxValueValidator(max_allowed_quality),
             MinValueValidator(1),
         ],
     )
@@ -102,6 +102,26 @@ class Water(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        # Ensure that maximum `max_allowed_quality` quantity allowed per day
+        total_water_quantity = self.quantity
+
+        if total_water_quantity <= 5:
+            water_entires = Water.objects.filter(
+                room=self.room,
+                purchase_date=self.purchase_date,
+            )
+            if water_entires.count() > 0:
+                stored_water_quantity = water_entires.aggregate(
+                    stored_quantity=models.Sum("quantity")
+                )["stored_quantity"]
+                total_water_quantity += stored_water_quantity
+
+        if total_water_quantity > self.max_allowed_quality:
+            raise ValidationError(
+                f"Maximum {self.max_allowed_quality} water quantity allowed per day.",
+                code="exceeds_max_quantity",
+            )
+
         # Ensure that adder is members of the room
         adder_room_membership = RoomMembership.objects.filter(
             room=self.room,
