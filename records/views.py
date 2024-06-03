@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -11,7 +12,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
-from records.forms import RecordForm, WaterFrom
+from records.forms import RecordForm, WaterForm
 from records.models import Electricity, Maid, Record, Water
 
 # from core.notification import notify_record, notify_water
@@ -40,16 +41,16 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
             initial={"purchaser": self.request.user},
         )
 
-    def get_water_form(self) -> WaterFrom:
+    def get_water_form(self) -> WaterForm:
         """Returns an water empty form"""
 
-        return WaterFrom(label_suffix="")
+        return WaterForm(label_suffix="")
 
     def get_context(
         self,
         room: Room,
         record_form: Optional[RecordForm] = None,
-        water_form: Optional[WaterFrom] = None,
+        water_form: Optional[WaterForm] = None,
     ) -> dict[str, Any]:
         """Returns context"""
 
@@ -78,6 +79,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
 
         if "record_submit" in request.POST:
             record_form = RecordForm(data=request.POST, room=room)
+
             if record_form.is_valid():
                 reg = record_form.save(commit=False)
                 reg.adder = request.user
@@ -92,19 +94,25 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
                 context = self.get_context(room=room, record_form=record_form)
 
         elif "water_submit" in request.POST:
-            water_form = WaterFrom(request.POST)
+            water_form = WaterForm(request.POST)
+
             if water_form.is_valid():
                 reg = water_form.save(commit=False)
                 reg.adder = request.user
                 reg.room = room
-                reg.save()
-                messages.success(request, "Water record successfully added.")
-                context = self.get_context(room=room)
-                # TODO: move this logic in water post save signal
-                # notify_record(reg.id)
+
+                try:
+                    reg.save()
+                    messages.success(request, "Water record successfully added.")
+                    context = self.get_context(room=room)
+                    # TODO: move this logic in water post save signal
+                    # notify_record(reg.id)
+                except ValidationError as e:
+                    messages.warning(request, e.message)
+                    context = self.get_context(room=room, water_form=water_form)
             else:
-                context = self.get_context(room=room, water_form=water_form)
                 messages.error(request, "Water record not added.")
+                context = self.get_context(room=room, water_form=water_form)
         else:
             messages.error(
                 request,

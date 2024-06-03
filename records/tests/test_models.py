@@ -232,8 +232,8 @@ class TestWaterModel(TestCase):
         # assert string representation
         self.assertEqual(str(water), f"{water.purchase_date} {self.room.name}")
 
-    def test_record_creation_for_invalid_adder(self) -> None:
-        """Test record model instance creation for invalid adder"""
+    def test_water_creation_for_invalid_adder(self) -> None:
+        """Test water model instance creation for invalid adder"""
 
         # Create user
         user = User.objects.create_user(
@@ -257,6 +257,49 @@ class TestWaterModel(TestCase):
 
         # Assert the expected error code
         self.assertEqual(cm.exception.code, "invalid_adder")
+
+    def test_water_creation_exceeds_max_quantity(self) -> None:
+        """Test record model instance creation exceeds max quantity"""
+
+        today = timezone.now().date()
+
+        # Create record instance with quantity 6
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Maximum 5 water quantity allowed per day.",
+        ) as cm1:
+            Water.objects.create(
+                quantity=6,
+                adder=self.adder,
+                room=self.room,
+                purchase_date=today,
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm1.exception.code, "exceeds_max_quantity")
+
+        # Create record instance with quantity 5
+        Water.objects.create(
+            quantity=5,
+            adder=self.adder,
+            room=self.room,
+            purchase_date=today,
+        )
+
+        # Create record instance with quantity 5
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Maximum 5 water quantity allowed per day.",
+        ) as cm2:
+            Water.objects.create(
+                quantity=1,
+                adder=self.adder,
+                room=self.room,
+                purchase_date=today,
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm2.exception.code, "exceeds_max_quantity")
 
 
 class TestElectricityModel(TestCase):
