@@ -21,14 +21,7 @@ class Record(models.Model):
             models.CheckConstraint(
                 check=models.Q(price__gte=0) & models.Q(price__lte=100000),
                 name="price_non_negative_and_less_than_100000",
-            ),
-            models.CheckConstraint(
-                check=models.Q(purchase_date__lte=timezone.now().date())
-                & models.Q(
-                    purchase_date__gte=timezone.now().date() - timedelta(days=6)
-                ),
-                name="purchase_date_within_last_six_days",
-            ),
+            )
         ]
 
     item = models.CharField(max_length=50)
