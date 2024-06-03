@@ -184,7 +184,7 @@ class TestAddDataView(TestCase):
         """Test post for valid record form data"""
 
         valid_record_form_data = {
-            "purchase_date": timezone.localdate(timezone.now()),
+            "purchase_date": timezone.now().date(),
             "item": "Test Item",
             "price": 123.45,
             "purchaser": self.user.pk,
@@ -264,7 +264,7 @@ class TestAddDataView(TestCase):
         """Test post for valid water form data"""
 
         valid_water_form_data = {
-            "purchase_date": timezone.localdate(timezone.now()),
+            "purchase_date": timezone.now().date(),
             "quantity": 1,
             "water_submit": "",
         }
@@ -407,7 +407,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create a record
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             item="Test Item",
             price=123.45,
             purchaser=self.user,
@@ -475,7 +475,7 @@ class TestUserRecordListView(TestCase):
 
         # Create some records
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
@@ -483,7 +483,7 @@ class TestUserRecordListView(TestCase):
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             item="Test Item 2",
             price=123.45,
             purchaser=self.user2,
@@ -598,21 +598,21 @@ class TestReportView(TestCase):
 
         # Create some test records
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             purchaser=self.user1,
             adder=self.user1,
             price=10,
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             purchaser=self.user1,
             adder=self.user1,
             price=30,
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             purchaser=self.user2,
             adder=self.user2,
             price=70,
@@ -676,7 +676,7 @@ class TestSearchListView(TransactionTestCase):
 
         # Create some records
         Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user,
@@ -684,7 +684,7 @@ class TestSearchListView(TransactionTestCase):
             room=self.room,
         )
         second_record = Record.objects.create(
-            purchase_date=timezone.localdate(timezone.now()),
+            purchase_date=timezone.now().date(),
             item="Test Item Good 2",
             price=123.45,
             purchaser=self.user,
