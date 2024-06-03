@@ -65,5 +65,13 @@ class WaterFrom(forms.ModelForm):
                     "value": localtime(now()).date(),
                 }
             ),
-            "quantity": forms.NumberInput(attrs={"class": "form-control"}),
+            "quantity": forms.NumberInput(
+                # TODO: fix it min value still 0 in html input tag
+                # and it can be inhabited from model field validator
+                attrs={
+                    "class": "form-control",
+                    "min": 1,
+                    "max": 5,
+                }
+            ),
         }
