@@ -12,7 +12,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
-from records.forms import RecordForm, WaterFrom
+from records.forms import RecordForm, WaterForm
 from records.models import Electricity, Maid, Record, Water
 
 # from core.notification import notify_record, notify_water
@@ -41,16 +41,16 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
             initial={"purchaser": self.request.user},
         )
 
-    def get_water_form(self) -> WaterFrom:
+    def get_water_form(self) -> WaterForm:
         """Returns an water empty form"""
 
-        return WaterFrom(label_suffix="")
+        return WaterForm(label_suffix="")
 
     def get_context(
         self,
         room: Room,
         record_form: Optional[RecordForm] = None,
-        water_form: Optional[WaterFrom] = None,
+        water_form: Optional[WaterForm] = None,
     ) -> dict[str, Any]:
         """Returns context"""
 
@@ -94,7 +94,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
                 context = self.get_context(room=room, record_form=record_form)
 
         elif "water_submit" in request.POST:
-            water_form = WaterFrom(request.POST)
+            water_form = WaterForm(request.POST)
 
             if water_form.is_valid():
                 reg = water_form.save(commit=False)

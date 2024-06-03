@@ -16,7 +16,7 @@ from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
-from records.forms import RecordForm, WaterFrom
+from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
 from records.views import (
     AddDataView,
@@ -106,7 +106,7 @@ class TestAddDataView(TestCase):
         water_form = view.get_water_form()
 
         # Assertions
-        self.assertIsInstance(water_form, WaterFrom)
+        self.assertIsInstance(water_form, WaterForm)
         self.assertEqual(water_form.label_suffix, "")
 
     @mock.patch("records.views.AddDataView.get_water_form")
@@ -120,7 +120,7 @@ class TestAddDataView(TestCase):
 
         # Prepare mock data
         record_form = mock.MagicMock(spec=RecordForm)
-        water_form = mock.MagicMock(spec=WaterFrom)
+        water_form = mock.MagicMock(spec=WaterForm)
         mock_get_record_form.return_value = record_form
         mock_get_water_form.return_value = water_form
 
@@ -178,7 +178,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
     def test_post_for_valid_record_form_data(self) -> None:
         """Test post for valid record form data"""
@@ -215,7 +215,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
         # Assert that the record is saved in the database
         self.assertEqual(Record.objects.count(), 1)
@@ -255,7 +255,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
         # Assert that the record is not saved in the database
         self.assertEqual(Record.objects.count(), 0)
@@ -293,7 +293,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
         # Assert that the water is saved in the database
         self.assertEqual(Water.objects.count(), 1)
@@ -331,7 +331,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
         # Assert that the water is not saved in the database
         self.assertEqual(Water.objects.count(), 0)
@@ -379,7 +379,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
         # Assert that the water is not saved in the database
         self.assertEqual(Water.objects.count(), 1)
@@ -411,7 +411,7 @@ class TestAddDataView(TestCase):
         # Assert context is correct
         self.assertEqual(response.context["add_active"], "active")
         self.assertIsInstance(response.context["record_form"], RecordForm)
-        self.assertIsInstance(response.context["water_form"], WaterFrom)
+        self.assertIsInstance(response.context["water_form"], WaterForm)
 
 
 class TestRecordListView(TransactionTestCase):

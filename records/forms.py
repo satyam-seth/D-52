@@ -48,7 +48,7 @@ class RecordForm(forms.ModelForm):
         }
 
 
-class WaterFrom(forms.ModelForm):
+class WaterForm(forms.ModelForm):
     """Form for water purchase"""
 
     class Meta:

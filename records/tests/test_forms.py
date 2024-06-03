@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.timezone import localtime, now
 
 from accounts.models import Room
-from records.forms import RecordForm, WaterFrom
+from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
 
 User = get_user_model()
@@ -257,7 +257,7 @@ class TestWaterForm(TestCase):
     def test_water_form_fields(self):
         """Test water form fields"""
 
-        form = WaterFrom()
+        form = WaterForm()
 
         # assert meta class
         self.assertEqual(form.Meta.model, Water)
@@ -310,7 +310,7 @@ class TestWaterForm(TestCase):
             "quantity": 1,
         }
 
-        form = WaterFrom(data=form_data)
+        form = WaterForm(data=form_data)
 
         # assert form is valid for valid form data
         self.assertTrue(form.is_valid())
@@ -331,7 +331,7 @@ class TestWaterForm(TestCase):
             "quantity": 0,
         }
 
-        form = WaterFrom(data=form_data)
+        form = WaterForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn(
             "Ensure this value is greater than or equal to 1.",
@@ -347,7 +347,7 @@ class TestWaterForm(TestCase):
             "quantity": 6,
         }
 
-        form = WaterFrom(data=form_data)
+        form = WaterForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn(
             "Ensure this value is less than or equal to 5.",
@@ -365,7 +365,7 @@ class TestWaterForm(TestCase):
             "quantity": 1,
         }
 
-        form = WaterFrom(data=form_data)
+        form = WaterForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn("Future dates are not allowed.", form.errors["purchase_date"])
 
@@ -380,7 +380,7 @@ class TestWaterForm(TestCase):
             "quantity": 1,
         }
 
-        form = WaterFrom(data=form_data)
+        form = WaterForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn(
             "Date should be at least 6 days in the past.",
