@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -78,6 +79,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
 
         if "record_submit" in request.POST:
             record_form = RecordForm(data=request.POST, room=room)
+
             if record_form.is_valid():
                 reg = record_form.save(commit=False)
                 reg.adder = request.user
@@ -93,18 +95,24 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
 
         elif "water_submit" in request.POST:
             water_form = WaterFrom(request.POST)
+
             if water_form.is_valid():
                 reg = water_form.save(commit=False)
                 reg.adder = request.user
                 reg.room = room
-                reg.save()
-                messages.success(request, "Water record successfully added.")
-                context = self.get_context(room=room)
-                # TODO: move this logic in water post save signal
-                # notify_record(reg.id)
+
+                try:
+                    reg.save()
+                    messages.success(request, "Water record successfully added.")
+                    context = self.get_context(room=room)
+                    # TODO: move this logic in water post save signal
+                    # notify_record(reg.id)
+                except ValidationError as e:
+                    messages.warning(request, e.message)
+                    context = self.get_context(room=room, water_form=water_form)
             else:
-                context = self.get_context(room=room, water_form=water_form)
                 messages.error(request, "Water record not added.")
+                context = self.get_context(room=room, water_form=water_form)
         else:
             messages.error(
                 request,
