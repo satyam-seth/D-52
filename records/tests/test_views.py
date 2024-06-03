@@ -336,6 +336,54 @@ class TestAddDataView(TestCase):
         # Assert that the water is not saved in the database
         self.assertEqual(Water.objects.count(), 0)
 
+    def test_post_for_invalid_water_form_quantity_data(self) -> None:
+        """Test post for invalid water form quantity data"""
+
+        today = timezone.now().date()
+
+        # Create record instance with quantity 5
+        Water.objects.create(
+            quantity=5,
+            adder=self.user,
+            room=self.room,
+            purchase_date=today,
+        )
+
+        invalid_water_form_data = {
+            "purchase_date": today,
+            "quantity": 1,
+            "water_submit": "",
+        }
+
+        # Send a POST request to the view
+        response = self.client.post(
+            self.url,
+            data=invalid_water_form_data,
+        )
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/add_data.html")
+
+        # Assert error message
+        response_messages = tuple(get_messages(response.wsgi_request))
+        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(response_messages[0].level, messages.WARNING)
+        self.assertEqual(
+            response_messages[0].message,
+            f"Maximum 5 water quantity allowed per day.",
+        )
+
+        # Assert context is correct
+        self.assertEqual(response.context["add_active"], "active")
+        self.assertIsInstance(response.context["record_form"], RecordForm)
+        self.assertIsInstance(response.context["water_form"], WaterFrom)
+
+        # Assert that the water is not saved in the database
+        self.assertEqual(Water.objects.count(), 1)
+
     def test_post_for_without_form_submit_info(self) -> None:
         """Test post for without form submit info"""
 
