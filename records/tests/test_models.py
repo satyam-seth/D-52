@@ -1,5 +1,4 @@
 from datetime import timedelta
-from unittest import skip
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -154,7 +153,6 @@ class TestRecordModel(TransactionTestCase):
                 room=self.room,
             )
 
-    @skip("Enable once validation is added in the save method")
     def test_record_creation_for_feature_purchaser_date(self) -> None:
         """Test record model instance creation for feature purchaser date"""
 
@@ -162,9 +160,9 @@ class TestRecordModel(TransactionTestCase):
 
         # Create record instance with price grater than 100000
         with self.assertRaisesMessage(
-            IntegrityError,
-            "CHECK constraint failed: purchase_date_within_last_six_days",
-        ):
+            ValidationError,
+            "Purchase date should be within the past 6 days.",
+        ) as cm:
             Record.objects.create(
                 item="item",
                 price=10,
@@ -174,7 +172,9 @@ class TestRecordModel(TransactionTestCase):
                 room=self.room,
             )
 
-    @skip("Enable once validation is added in the save method")
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_date")
+
     def test_record_creation_for_too_far_in_past_purchaser_date(self) -> None:
         """Test record model instance creation for too far in past purchaser date"""
 
@@ -182,9 +182,9 @@ class TestRecordModel(TransactionTestCase):
 
         # Create record instance with price grater than 100000
         with self.assertRaisesMessage(
-            IntegrityError,
-            "CHECK constraint failed: purchase_date_within_last_six_days",
-        ):
+            ValidationError,
+            "Purchase date should be within the past 6 days.",
+        ) as cm:
             Record.objects.create(
                 item="item",
                 price=10,
@@ -193,6 +193,9 @@ class TestRecordModel(TransactionTestCase):
                 purchase_date=too_far_in_past_date,
                 room=self.room,
             )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_date")
 
 
 class TestWaterModel(TestCase):
