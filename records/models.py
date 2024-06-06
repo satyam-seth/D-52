@@ -114,14 +114,26 @@ class Water(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        # Ensure that the purchase date is within the last six days
+        n_days = 6
+        today = timezone.now().date()
+        min_past_date = today - timedelta(days=n_days)
+
+        if self.purchase_date > today or self.purchase_date < min_past_date:
+            raise ValidationError(
+                message=f"Purchase date should be within the past {n_days} days.",
+                code="invalid_purchase_date",
+            )
+
         # Ensure that maximum `max_allowed_quality` quantity allowed per day
         total_water_quantity = self.quantity
 
-        if total_water_quantity <= 5:
+        if total_water_quantity <= self.max_allowed_quality:
             water_entires = Water.objects.filter(
                 room=self.room,
                 purchase_date=self.purchase_date,
             )
+
             if water_entires.count() > 0:
                 stored_water_quantity = water_entires.aggregate(
                     stored_quantity=models.Sum("quantity")

@@ -304,6 +304,46 @@ class TestWaterModel(TestCase):
         # Assert the expected error code
         self.assertEqual(cm2.exception.code, "exceeds_max_quantity")
 
+    def test_water_creation_for_feature_purchaser_date(self) -> None:
+        """Test water model instance creation for feature purchaser date"""
+
+        future_date = timezone.now().date() + timedelta(days=1)
+
+        # Create water instance with price grater than 100000
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase date should be within the past 6 days.",
+        ) as cm:
+            Water.objects.create(
+                quantity=1,
+                adder=self.adder,
+                room=self.room,
+                purchase_date=future_date,
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_date")
+
+    def test_water_creation_for_too_far_in_past_purchaser_date(self) -> None:
+        """Test water model instance creation for too far in past purchaser date"""
+
+        too_far_in_past_date = timezone.now().date() - timedelta(days=7)
+
+        # Create water instance with price grater than 100000
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase date should be within the past 6 days.",
+        ) as cm:
+            Water.objects.create(
+                quantity=1,
+                adder=self.adder,
+                room=self.room,
+                purchase_date=too_far_in_past_date,
+            )
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_date")
+
 
 class TestElectricityModel(TestCase):
     """Test Electricity Model"""
