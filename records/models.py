@@ -49,7 +49,18 @@ class Record(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Ensure that purchaser and adder are members of the room
+        # Ensure that the purchase date is within the last six days
+        n_days = 6
+        today = timezone.now().date()
+        min_past_date = today - timedelta(days=n_days)
+
+        if self.purchase_date > today or self.purchase_date < min_past_date:
+            raise ValidationError(
+                message=f"Purchase date should be within the past {n_days} days.",
+                code="invalid_purchase_date",
+            )
+
+        # Ensure that purchaser is members of the room
         purchaser_room_membership = RoomMembership.objects.filter(
             room=self.room,
             member=self.purchaser,
@@ -61,6 +72,7 @@ class Record(models.Model):
                 code="invalid_purchaser",
             )
 
+        # Ensure that adder is members of the room
         adder_room_membership = RoomMembership.objects.filter(
             room=self.room,
             member=self.adder,
