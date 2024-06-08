@@ -160,7 +160,6 @@ class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
-# TODO: only show current user group water records
 class WaterListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render list of water records"""
 
@@ -168,6 +167,16 @@ class WaterListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     paginate_by = 20
     paginate_orphans = 10
     ordering = ["-purchase_date"]
+
+    def get_queryset(self):
+        room_id = self.get_room_id(self.request)
+        queryset = super().get_queryset().filter(room__id=room_id)
+        return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["waters_active"] = "active"
+        return context
 
 
 # TODO: fix this view
