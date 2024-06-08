@@ -2,7 +2,7 @@
     <nav class="navbar navbar-expand-lg py-2 navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
             <i class="fas fa-house-user fa-2x text-white me-2"></i>
-            <a class="navbar-brand" href="#">The Split</a>
+            <a class="navbar-brand" href="{% url 'core:home' %}">The Split</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -122,14 +122,6 @@
                         </ul>
                     </li>
                 </ul>
-                <!-- TODO: move this to records list page -->
-                {% if room %}
-                    <form class="d-flex" role="search" action="{% url 'records:search' %}">
-                        <input class="form-control me-2" type="search" placeholder="Search record" aria-label="Search"
-                            name='query'>
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
-                {% endif %}
                 {% if request.user.is_authenticated %}
                 <div class="mx-md-2 my-sm-2 d-flex align-items-center gap-2">
                     <!-- TODO: user bootstrap tooltip for title  -->

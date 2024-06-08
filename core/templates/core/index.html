@@ -38,7 +38,7 @@
                 <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger">
                         {{record.total_spent|default_if_none:0|stringformat:".2f"}}/-</span>
                 </h5>
-                <a class="btn btn-outline-dark" href="{% url 'records:detailed' record.user.id %}" role="button">
+                <a class="btn btn-outline-dark" href="{% url 'records:user_records' record.user.id %}" role="button">
                     Detailed View<i class="far fa-eye"></i>
                 </a>
                 </div>
@@ -89,7 +89,7 @@
                     <span>({{w_pp}} per person)</span>
                 </h1>
                 <h2>Total <span class="text-danger">{{w_sum}}</span> water gallons.</h2>
-                <a class="mt-2 btn btn-outline-dark" href="{% url 'records:detailed_water' %}" role="button">Detailed View <i
+                <a class="mt-2 btn btn-outline-dark" href="{% url 'records:water' %}" role="button">Detailed View <i
                         class="far fa-eye"></i></a>
             </div>
         </div>

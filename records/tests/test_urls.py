@@ -19,23 +19,17 @@ class TestUrls(TestCase):
         url = reverse("records:records")
         self.assertEqual(resolve(url).func.view_class, views.RecordListView)
 
-    def test_detailed_url(self):
-        """Test detailed url resolve"""
+    def test_user_records_url(self):
+        """Test user records url resolve"""
 
-        url = reverse("records:detailed", args=[1])  # Assuming user_id is 1
-        self.assertEqual(resolve(url).func.view_class, views.UserRecordListView)
+        url = reverse("records:user_records", args=[1])  # Assuming user_id is 1
+        self.assertEqual(resolve(url).func.view_class, views.RecordListView)
 
-    def test_detailed_water_url(self):
-        """Test detailed water url resolve"""
+    def test_water_url(self):
+        """Test water url resolve"""
 
-        url = reverse("records:detailed_water")
+        url = reverse("records:water")
         self.assertEqual(resolve(url).func.view_class, views.WaterListView)
-
-    def test_search_url(self):
-        """Test search url resolve"""
-
-        url = reverse("records:search")
-        self.assertEqual(resolve(url).func.view_class, views.SearchListView)
 
     def test_download_url(self):
         """Test download url resolve"""

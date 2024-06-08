@@ -557,7 +557,7 @@ class TestRoomInvitationListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "accounts/room_invitation_list.html")
 
-        # Check that the records are present in the context
+        # Check that the room invitations are present in the context
         room_invitations = response.context["room_invitation_list"]
         self.assertQuerysetEqual(
             room_invitations,
@@ -600,7 +600,7 @@ class TestRoomInvitationListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "accounts/room_invitation_list.html")
 
-        # Check that the records are present in the context
+        # Check that the room invitations are present in the context
         room_invitations = response.context["room_invitation_list"]
         self.assertQuerysetEqual(
             room_invitations,

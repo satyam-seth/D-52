@@ -22,8 +22,6 @@ from records.views import (
     AddDataView,
     DownloadTemplateView,
     RecordListView,
-    SearchListView,
-    UserRecordListView,
     WaterListView,
 )
 
@@ -373,7 +371,7 @@ class TestAddDataView(TestCase):
         self.assertEqual(response_messages[0].level, messages.WARNING)
         self.assertEqual(
             response_messages[0].message,
-            f"Maximum 5 water quantity allowed per day.",
+            "Maximum 5 water quantity allowed per day.",
         )
 
         # Assert context is correct
@@ -420,68 +418,6 @@ class TestRecordListView(TransactionTestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("records:records")
-        self.user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
-        )
-
-        self.room = Room.objects.create(name="test-room", admin=self.user)
-
-        # Set room id in session
-        session = self.client.session
-        session["room_id"] = self.room.id
-        session.save()
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
-
-    def test_record_list_view_attributes(self) -> None:
-        "Test record list view attributes"
-
-        view = RecordListView()
-        self.assertIsInstance(view, ListView)
-        self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertIsInstance(view, RoomRequiredMixin)
-        self.assertEqual(view.model, Record)
-        self.assertEqual(view.paginate_by, 20)
-        self.assertEqual(view.paginate_orphans, 10)
-        self.assertEqual(view.ordering, ["-purchase_date"])
-        self.assertEqual(view.extra_context, {"records_active": "active"})
-
-    def test_record_list_view_working(self) -> None:
-        """Test record list view working"""
-
-        # Create a record
-        Record.objects.create(
-            purchase_date=timezone.now().date(),
-            item="Test Item",
-            price=123.45,
-            purchaser=self.user,
-            adder=self.user,
-            room=self.room,
-        )
-
-        # Make a GET request to the view
-        response = self.client.get(self.url)
-
-        # Check that the response has a status code of 200
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-        # Check that the template used is correct
-        self.assertTemplateUsed(response, "records/record_list.html")
-
-        # Check that the records are present in the context
-        records = response.context["record_list"]
-        self.assertQuerysetEqual(records, Record.objects.all())
-
-
-class TestUserRecordListView(TestCase):
-    """Test user record list view"""
-
-    def setUp(self) -> None:
-        self.client = Client()
         self.user1 = User.objects.create_user(
             email="test@user1.com",
             password="test-password",
@@ -494,22 +430,25 @@ class TestUserRecordListView(TestCase):
             first_name="test",
             last_name="user2",
         )
-        self.url = reverse("records:detailed", kwargs={"user_id": self.user1.pk})
-        self.room = Room.objects.create(name="test-room", admin=self.user1)
-        RoomMembership.objects.create(room=self.room, member=self.user2)
+
+        self.room1 = Room.objects.create(name="test-room", admin=self.user1)
+        self.room2 = Room.objects.create(name="test-room", admin=self.user2)
+
+        # Create room 1 membership for user 2
+        RoomMembership.objects.create(room=self.room1, member=self.user2)
 
         # Set room id in session
         session = self.client.session
-        session["room_id"] = self.room.id
+        session["room_id"] = self.room1.id
         session.save()
 
         # login user
         self.client.login(email="test@user1.com", password="test-password")
 
     def test_record_list_view_attributes(self) -> None:
-        "Test user record list view attributes"
+        "Test record list view attributes"
 
-        view = UserRecordListView()
+        view = RecordListView()
         self.assertIsInstance(view, ListView)
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
@@ -518,25 +457,36 @@ class TestUserRecordListView(TestCase):
         self.assertEqual(view.paginate_orphans, 10)
         self.assertEqual(view.ordering, ["-purchase_date"])
 
-    def test_user_record_list_view_working(self) -> None:
-        """Test user record list view working"""
+    def test_record_list_view_working_for_room_records(self) -> None:
+        """Test record list view working for room records"""
 
-        # Create some records
+        # Create a record for user 1 room 1
         Record.objects.create(
             purchase_date=timezone.now().date(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
             adder=self.user1,
-            room=self.room,
+            room=self.room1,
         )
+        # Create a record for user 2 room 1
         Record.objects.create(
             purchase_date=timezone.now().date(),
             item="Test Item 2",
             price=123.45,
+            purchaser=self.user1,
+            adder=self.user2,
+            room=self.room1,
+        )
+
+        # Create a record for room 2
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 3",
+            price=123.45,
             purchaser=self.user2,
             adder=self.user2,
-            room=self.room,
+            room=self.room2,
         )
 
         # Make a GET request to the view
@@ -548,10 +498,191 @@ class TestUserRecordListView(TestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/record_list.html")
 
-        # Check that the records purchased by user1 are present in the context
+        # Assert context
+        self.assertTrue(response.context["room_records"], True)
+        self.assertEqual(response.context["records_active"], "active")
+
+        # Check that only room 1 records are present in the context
+        self.assertQuerysetEqual(
+            response.context["record_list"], Record.objects.filter(room=self.room1)
+        )
+
+    def test_record_list_view_working_for_search_room_records(self) -> None:
+        """Test record list view working for search room records"""
+
+        # Create records for room 1
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 1",
+            price=123.45,
+            purchaser=self.user1,
+            adder=self.user1,
+            room=self.room1,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item Good",
+            price=123.45,
+            purchaser=self.user1,
+            adder=self.user1,
+            room=self.room1,
+        )
+
+        # Create a record for room 2
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item",
+            price=123.45,
+            purchaser=self.user2,
+            adder=self.user2,
+            room=self.room2,
+        )
+
+        search_item = "good"
+
+        # Make a GET request to the view with search query
+        response = self.client.get(self.url, {"query": search_item})
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/record_list.html")
+
+        # Assert context
+        self.assertTrue(response.context["search_records"], search_item)
+        self.assertEqual(response.context["records_active"], "active")
+
+        # Check that only room 1 records contain item "good" are present in the context
         records = response.context["record_list"]
-        self.assertQuerysetEqual(records, Record.objects.filter(item="Test Item 1"))
-        self.assertTrue(all(record.purchaser == self.user1 for record in records))
+        self.assertQuerysetEqual(
+            records,
+            Record.objects.filter(room=self.room1, item="Test Item Good"),
+        )
+
+    def test_record_list_view_working_for_user_room_records(self) -> None:
+        """Test record list view working for user room records"""
+
+        # Create a record for user 1 room 1
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 1",
+            price=123.45,
+            purchaser=self.user1,
+            adder=self.user1,
+            room=self.room1,
+        )
+
+        # Create a record for user 2 room  1
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 2",
+            price=123.45,
+            purchaser=self.user2,
+            adder=self.user2,
+            room=self.room1,
+        )
+
+        # Create a record for user 2 room  2
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 3",
+            price=123.45,
+            purchaser=self.user2,
+            adder=self.user2,
+            room=self.room1,
+        )
+
+        # Make a GET request to the view with user 1 pk
+        user_records_url = reverse(
+            "records:user_records",
+            kwargs={"user_id": self.user1.pk},
+        )
+        response = self.client.get(user_records_url)
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/record_list.html")
+
+        # Assert context
+        self.assertTrue(response.context["user_records"], self.user1.pk)
+
+        # Check that only room 1 records with purchaser user 1 are present in the context
+        self.assertQuerysetEqual(
+            response.context["record_list"],
+            Record.objects.filter(room=self.room1, purchaser=self.user1),
+        )
+
+    def test_record_list_view_working_for_search_user_room_records(self) -> None:
+        """Test record list view working for search user room records"""
+
+        # Create records for room 1
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 1",
+            price=123.45,
+            purchaser=self.user1,
+            adder=self.user1,
+            room=self.room1,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item Good 2",
+            price=123.45,
+            purchaser=self.user1,
+            adder=self.user1,
+            room=self.room1,
+        )
+
+        # Create records for room 2
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item 3",
+            price=123.45,
+            purchaser=self.user2,
+            adder=self.user2,
+            room=self.room2,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            item="Test Item Good 4",
+            price=123.45,
+            purchaser=self.user2,
+            adder=self.user2,
+            room=self.room2,
+        )
+
+        search_item = "good"
+
+        # Make a GET request to the view with user 1 pk and search query
+        user_records_url = reverse(
+            "records:user_records",
+            kwargs={"user_id": self.user1.pk},
+        )
+        response = self.client.get(user_records_url, {"query": search_item})
+
+        # Check that the response has a status code of 200
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Check that the template used is correct
+        self.assertTemplateUsed(response, "records/record_list.html")
+
+        # Assert context
+        self.assertTrue(response.context["user_records"], self.user1.pk)
+
+        # Check that only room1 records with purchaser user 1
+        # contain item "good" are present in the context
+        records = response.context["record_list"]
+        self.assertQuerysetEqual(
+            records,
+            Record.objects.filter(
+                room=self.room1,
+                purchaser=self.user1,
+                item="Test Item Good 2",
+            ),
+        )
 
 
 class TestWaterListView(TransactionTestCase):
@@ -559,7 +690,7 @@ class TestWaterListView(TransactionTestCase):
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("records:detailed_water")
+        self.url = reverse("records:water")
         self.user = User.objects.create_user(
             email="test@user.com",
             password="test-password",
@@ -683,78 +814,6 @@ class TestReportView(TestCase):
         self.assertEqual(response.context["each_user_records"][1]["price_diff"], -15)
         self.assertEqual(response.context["each_user_records"][1]["total_spent"], 70)
         self.assertEqual(response.context["each_user_records"][1]["user"], self.user2)
-
-
-class TestSearchListView(TransactionTestCase):
-    """Test search list view"""
-
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("records:search")
-        self.user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
-        )
-        self.room = Room.objects.create(name="test-room", admin=self.user)
-
-        # Set room id in session
-        session = self.client.session
-        session["room_id"] = self.room.id
-        session.save()
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
-
-    def test_search_list_view_attributes(self) -> None:
-        """Test search list view attributes"""
-
-        view = SearchListView()
-        self.assertIsInstance(view, ListView)
-        self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertIsInstance(view, RoomRequiredMixin)
-        self.assertEqual(view.model, Record)
-        self.assertEqual(view.paginate_by, 20)
-        self.assertEqual(view.paginate_orphans, 10)
-        self.assertEqual(view.template_name, "records/search.html")
-
-    def test_search_list_view_working(self) -> None:
-        """Test search list view working"""
-
-        # Create some records
-        Record.objects.create(
-            purchase_date=timezone.now().date(),
-            item="Test Item 1",
-            price=123.45,
-            purchaser=self.user,
-            adder=self.user,
-            room=self.room,
-        )
-        second_record = Record.objects.create(
-            purchase_date=timezone.now().date(),
-            item="Test Item Good 2",
-            price=123.45,
-            purchaser=self.user,
-            adder=self.user,
-            room=self.room,
-        )
-
-        # Make a GET request to the view
-        response = self.client.get(self.url, {"query": "good"})
-
-        # Check that the response has a status code of 200
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-        # Check that the template used is correct
-        self.assertTemplateUsed(response, "records/search.html")
-
-        # Check that the records contain item "item" are present in the context
-        records = response.context["record_list"]
-        self.assertQuerysetEqual(
-            records, Record.objects.filter(item="Test Item Good 2")
-        )
-        self.assertEqual(records[0], second_record)
 
 
 class TestDownloadTemplateView(TestCase):
