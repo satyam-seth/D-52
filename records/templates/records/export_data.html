@@ -1,0 +1,99 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'records/css/style.css' %}">
+{% endblock %}
+{% block title %}{{room.name}} - Export Data{% endblock title %}
+{% block content %}
+<div class="container-fluid py-5 download my-5">
+  <div class="container py-5 text-dark">
+    <div>
+      <h1 class="display-3">{{room.name}} Export Data</h1>
+    </div>
+    <div class="lead">
+      <p class="ps-1">Thank you for visiting.</p>
+    </div>
+  </div>
+</div>
+<div class="container shadow-lg p-4 mb-5 rounded border">
+  <h2 class="text-center alert alert-secondary">Export Room Data</h2>
+  <div class="table-responsive text-center">
+    <table class="table table-hover table-striped border">
+      <thead>
+        <tr>
+          <th scope="col">S. No.</th>
+          <th scope="col">Type</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">1</th>
+          <td>All Records</td>
+          <td>
+            <!-- TODO: uncomment once handle it -->
+            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
+            <a class="btn btn-sm btn-primary" href="{% url 'records:overall_xls' %}" role="button">Download</a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">2</th>
+          <td>Water</td>
+          <td>
+            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
+            <a class="btn btn-sm btn-primary" href="{% url 'records:water_xls' %}" role="button">Download</a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">3</th>
+          <td>Electricity Bill</td>
+          <td>
+            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
+            <a class="btn btn-sm btn-primary" href="{% url 'records:electricity_xls' %}" role="button">Download</a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">4</th>
+          <td>Maid Salary</td>
+          <td>
+            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
+            <a class="btn btn-sm btn-primary" href="{% url 'records:maid_xls' %}" role="button">Download</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="container shadow-lg p-4 mb-5 rounded border">
+  <h2 class="text-center alert alert-secondary">Export Room Members Data</h2>
+  <div class="table-responsive text-center">
+    <table class="table table-hover table-striped border">
+      <thead>
+        <tr>
+          <th scope="col">S. No.</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for room_member in room_member_list %}
+        <tr>
+          <th scope="row">{{forloop.counter0|add:page_obj.start_index }}</th>
+          <td>{{room_member}}</td>
+          <td>{{room_member.email}}</td>
+          <td>
+            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
+            <a class="btn btn-sm btn-primary" href="{% url 'records:user_xls' user.pk %}" 
+              role="button">Download</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div>
+      {% include 'core/pagination.html' %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
