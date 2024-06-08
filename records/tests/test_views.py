@@ -687,21 +687,32 @@ class TestWaterListView(TransactionTestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("records:water")
-        self.user = User.objects.create_user(
-            email="test@user.com",
+        self.user1 = User.objects.create_user(
+            email="test@user1.com",
             password="test-password",
             first_name="test",
-            last_name="user",
+            last_name="user1",
         )
-        self.room = Room.objects.create(name="test-room", admin=self.user)
+        self.user2 = User.objects.create_user(
+            email="test@user2.com",
+            password="test-password",
+            first_name="test",
+            last_name="user2",
+        )
+
+        self.room1 = Room.objects.create(name="test-room", admin=self.user1)
+        self.room2 = Room.objects.create(name="test-room", admin=self.user2)
+
+        # Create room 1 membership for user 2
+        RoomMembership.objects.create(room=self.room1, member=self.user2)
 
         # Set room id in session
         session = self.client.session
-        session["room_id"] = self.room.id
+        session["room_id"] = self.room1.id
         session.save()
 
         # login user
-        self.client.login(email="test@user.com", password="test-password")
+        self.client.login(email="test@user1.com", password="test-password")
 
     def test_water_list_view_attributes(self) -> None:
         "Test water list view attributes"
@@ -718,12 +729,26 @@ class TestWaterListView(TransactionTestCase):
     def test_water_list_view_working(self) -> None:
         """Test water list view working"""
 
-        # Create a water record
+        # Create water records for user 1 room 1
         Water.objects.create(
             purchase_date=timezone.now().date(),
             quantity=1,
-            room=self.room,
-            adder=self.user,
+            room=self.room1,
+            adder=self.user1,
+        )
+        Water.objects.create(
+            purchase_date=timezone.now().date(),
+            quantity=1,
+            room=self.room1,
+            adder=self.user2,
+        )
+
+        # Create a water record for user 2 room 2
+        Water.objects.create(
+            purchase_date=timezone.now().date(),
+            quantity=1,
+            room=self.room2,
+            adder=self.user2,
         )
 
         # Make a GET request to the view
@@ -735,9 +760,14 @@ class TestWaterListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/water_list.html")
 
+        # Assert context
+        self.assertEqual(response.context["waters_active"], "active")
+
         # Check that the water records are present in the context
-        waters = response.context["water_list"]
-        self.assertQuerysetEqual(waters, Water.objects.all())
+        self.assertQuerysetEqual(
+            response.context["water_list"],
+            Water.objects.filter(room=self.room1),
+        )
 
 
 class TestReportView(TestCase):
