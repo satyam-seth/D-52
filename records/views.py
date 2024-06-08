@@ -130,24 +130,44 @@ class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     paginate_by = 20
     paginate_orphans = 10
     ordering = ["-purchase_date"]
-    extra_context = {"records_active": "active"}
 
+    def get_room(self) -> Room:
+        """Returns room"""
 
-# TODO: only show current user group data
-class UserRecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
-    """View to render template to show records purchased by specific user"""
+        room_id = self.get_room_id(self.request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+        return room
 
-    model = Record
-    paginate_by = 20
-    paginate_orphans = 10
-    ordering = ["-purchase_date"]
-
-    # TODO: Add return type once this issue is fixed
-    # - https://github.com/typeddjango/django-stubs/issues/477
-    # def get_queryset(self) -> QuerySet[Any]:
     def get_queryset(self):
-        queryset = super().get_queryset().filter(purchaser__id=self.kwargs["user_id"])
+        room = self.get_room()
+        user_id = self.kwargs.get("user_id")
+        item_name_query = self.request.GET.get("query")
+        queryset = super().get_queryset().filter(room=room)
+
+        if user_id:
+            queryset = queryset.filter(purchaser__id=user_id)
+
+        if item_name_query:
+            queryset = queryset.filter(item__icontains=item_name_query)
+
         return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        user_id = self.kwargs.get("user_id")
+        item_name_query = self.request.GET.get("query")
+        context = super().get_context_data(**kwargs)
+
+        if user_id:
+            context["user_records"] = user_id
+        elif item_name_query:
+            context["search_records"] = item_name_query
+            context["records_active"] = "active"
+        else:
+            context["records_active"] = "active"
+            context["room_records"] = True
+
+        return context
 
 
 # TODO: only show current user group water records
@@ -192,26 +212,6 @@ def report(request: HttpRequest) -> HttpResponse:
         "each_user_records": each_user_records,
     }
     return render(request, "records/report.html", context)
-
-
-# TODO: only show current user group records
-class SearchListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
-    """View to render search result record list"""
-
-    model = Record
-    paginate_by = 20
-    paginate_orphans = 10
-    ordering = ["-purchase_date"]
-    template_name = "records/search.html"
-
-    # TODO: Add return type once this issue is fixed
-    # - https://github.com/typeddjango/django-stubs/issues/477
-    # def get_queryset(self) -> QuerySet[Any]:
-    def get_queryset(self):
-        item_name_query = self.request.GET["query"]
-        queryset = super().get_queryset().filter(item__icontains=item_name_query)
-
-        return queryset
 
 
 class DownloadTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
