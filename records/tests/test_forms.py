@@ -101,7 +101,7 @@ class TestRecordForm(TestCase):
     def test_purchaser_field_queryset(self):
         """Test purchaser field queryset"""
 
-        form = RecordForm(room=self.room)
+        form = RecordForm(room_id=self.room.id)
         queryset = form.fields["purchaser"].queryset
         self.assertQuerysetEqual(
             queryset,
@@ -156,7 +156,7 @@ class TestRecordForm(TestCase):
             "price": 1234.56,
         }
 
-        form = RecordForm(room=self.room, data=form_data)
+        form = RecordForm(room_id=self.room.id, data=form_data)
 
         # assert form is valid for valid form data
         self.assertTrue(form.is_valid())
@@ -172,7 +172,7 @@ class TestRecordForm(TestCase):
             "price": 1234.56,
         }
 
-        form = RecordForm(room=self.room, data=form_data)
+        form = RecordForm(room_id=self.room.id, data=form_data)
 
         # assert form is valid for valid form data
         self.assertFalse(form.is_valid())
@@ -188,7 +188,7 @@ class TestRecordForm(TestCase):
             "price": -10,
         }
 
-        form = RecordForm(room=self.room, data=form_data)
+        form = RecordForm(room_id=self.room.id, data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn(
             "Ensure this value is greater than or equal to 0.",
@@ -206,7 +206,7 @@ class TestRecordForm(TestCase):
             "price": 200000,
         }
 
-        form = RecordForm(room=self.room, data=form_data)
+        form = RecordForm(room_id=self.room.id, data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn(
             "Ensure this value is less than or equal to 100000.",
@@ -226,7 +226,7 @@ class TestRecordForm(TestCase):
             "price": 20,
         }
 
-        form = RecordForm(room=self.room, data=form_data)
+        form = RecordForm(room_id=self.room.id, data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn("Future dates are not allowed.", form.errors["purchase_date"])
 
@@ -243,7 +243,7 @@ class TestRecordForm(TestCase):
             "price": 20,
         }
 
-        form = RecordForm(room=self.room, data=form_data)
+        form = RecordForm(room_id=self.room.id, data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn(
             "Date should be at least 6 days in the past.",
