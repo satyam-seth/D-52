@@ -13,10 +13,10 @@ class RecordForm(forms.ModelForm):
     """Form for item purchase"""
 
     def __init__(self, *args, **kwargs):
-        self.room = kwargs.pop("room", None)
+        self.room_id = kwargs.pop("room_id", None)
         super().__init__(*args, **kwargs)
-        if self.room:
-            room_members = User.objects.filter(room_membership__room=self.room)
+        if self.room_id:
+            room_members = User.objects.filter(room_membership__room__id=self.room_id)
             self.fields["purchaser"].queryset = room_members
 
     class Meta:
