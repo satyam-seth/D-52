@@ -686,7 +686,7 @@ class TestWaterListView(TransactionTestCase):
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("records:water")
+        self.url = reverse("records:waters")
         self.user1 = User.objects.create_user(
             email="test@user1.com",
             password="test-password",
