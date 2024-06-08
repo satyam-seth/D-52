@@ -7,13 +7,8 @@ app_name = "records"
 urlpatterns = [
     path("add_data/", views.AddDataView.as_view(), name="add_data"),
     path("records/", views.RecordListView.as_view(), name="records"),
-    path(
-        "detailed/<int:user_id>/",
-        views.UserRecordListView.as_view(),
-        name="detailed",
-    ),
-    path("detailed_water/", views.WaterListView.as_view(), name="detailed_water"),
-    path("search/", views.SearchListView.as_view(), name="search"),
+    path("records/<int:user_id>/", views.RecordListView.as_view(), name="user_records"),
+    path("water/", views.WaterListView.as_view(), name="water"),
     path("download/", views.DownloadTemplateView.as_view(), name="download"),
     path("report/", views.report, name="report"),
     path("download/overall/", views.overall_xls, name="overall_xls"),
