@@ -89,12 +89,12 @@ class TestAddDataView(TestCase):
 
         request = self.get_mock_request()
         view = AddDataView(request=request)
-        record_form = view.get_record_form(self.room)
+        record_form = view.get_record_form()
 
         # Assertions
         self.assertIsInstance(record_form, RecordForm)
         self.assertEqual(record_form.label_suffix, "")
-        self.assertEqual(record_form.room, self.room)
+        self.assertEqual(record_form.room_id, self.room.id)
         self.assertEqual(record_form.initial, {"purchaser": request.user})
 
     def test_get_water_form_working(self) -> None:
@@ -125,11 +125,7 @@ class TestAddDataView(TestCase):
         # Call get_context method
         request = self.get_mock_request()
         view = AddDataView(request=request)
-        context = view.get_context(
-            room=self.room,
-            record_form=record_form,
-            water_form=water_form,
-        )
+        context = view.get_context(record_form=record_form, water_form=water_form)
 
         # Assertions
         mock_get_record_form.assert_not_called()
@@ -151,10 +147,10 @@ class TestAddDataView(TestCase):
         # Call get_context method
         request = self.get_mock_request()
         view = AddDataView(request=request)
-        context = view.get_context(room=self.room)
+        context = view.get_context()
 
         # Assertions
-        mock_get_record_form.assert_called_once_with(room=self.room)
+        mock_get_record_form.assert_called_once()
         mock_get_water_form.assert_called_once()
 
         self.assertEqual(context["add_active"], "active")
