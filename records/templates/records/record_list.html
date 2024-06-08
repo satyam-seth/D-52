@@ -3,14 +3,31 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'records/css/style.css' %}">
 {% endblock %}
-{% block title %}D-52 See Records{% endblock title %}
+{% block title %}{{ room.name }} - 
+  {% if room_records %}
+    See
+  {% elif user_records %}
+    {{user|title}}
+  {% else %}
+    Search
+  {% endif %}
+Records
+{% endblock title %}
 {% block content %}
 <!-- TODO: Create base record list template with user defended block for jumbotron class name, style and title and page title -->
-<div class="container-fluid py-5 my-5 {% if records_active %} records {% endif %}" {% if not records_active %} style="background-image: url('{{user.profile.cover_photo.url}}');" {% endif %}>
+<div class="container-fluid py-5 my-5 {% if room_records %}records{% elif search_records %}search{% endif %}" {% if user_records %} style="background-image: url('{{user.profile.cover_photo.url}}');" {% endif %}>
   <div class="container py-5 text-light">
     <div>
-      <!-- TODO: Fix this once base template ready for record_list template -->
-      <h1 class="display-2">'{{user|title}}' Records</h1>
+      <h1 class="display-2">
+      {% if room_records %}
+        See
+      {% elif user_records %}
+        {{user|title}}
+      {% else %}
+        Search
+      {% endif %}
+      Records
+      </h1>
     </div>
     <div class="lead">
       <p class="ps-2">See all records carefully.</p>
@@ -19,6 +36,12 @@
 </div>
 <div class="container shadow-lg p-4 mb-5 rounded border">
   <h1 class="text-center alert alert-secondary">Item Records</h1>
+  {% if room %}
+    <form class="d-flex pb-3" role="search" action="{% if user_records %}{% url 'records:user_records' user_records %}{% else %}{% url 'records:records' %}{% endif %}">
+        <input class="form-control me-2" type="search" placeholder="Search record by name" aria-label="Search" name='query' value="{{search_records}}">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+  {% endif %}
   {% if record_list %}
   <div class="table-responsive">
     <table class="table table-hover table-striped border">
