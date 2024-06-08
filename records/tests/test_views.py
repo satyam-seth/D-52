@@ -18,12 +18,7 @@ from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
 from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
-from records.views import (
-    AddDataView,
-    DownloadTemplateView,
-    RecordListView,
-    WaterListView,
-)
+from records.views import AddDataView, ExportDataView, RecordListView, WaterListView
 
 User = get_user_model()
 
@@ -494,7 +489,7 @@ class TestRecordListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/record_list.html")
 
-        # Assert context
+        # Assert context is correct
         self.assertTrue(response.context["room_records"], True)
         self.assertEqual(response.context["records_active"], "active")
 
@@ -545,7 +540,7 @@ class TestRecordListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/record_list.html")
 
-        # Assert context
+        # Assert context is correct
         self.assertTrue(response.context["search_records"], search_item)
         self.assertEqual(response.context["records_active"], "active")
 
@@ -602,7 +597,7 @@ class TestRecordListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/record_list.html")
 
-        # Assert context
+        # Assert context is correct
         self.assertTrue(response.context["user_records"], self.user1.pk)
 
         # Check that only room 1 records with purchaser user 1 are present in the context
@@ -665,7 +660,7 @@ class TestRecordListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/record_list.html")
 
-        # Assert context
+        # Assert context is correct
         self.assertTrue(response.context["user_records"], self.user1.pk)
 
         # Check that only room1 records with purchaser user 1
@@ -760,13 +755,69 @@ class TestWaterListView(TransactionTestCase):
         # Check that the template used is correct
         self.assertTemplateUsed(response, "records/water_list.html")
 
-        # Assert context
+        # Assert context is correct
         self.assertEqual(response.context["waters_active"], "active")
 
         # Check that the water records are present in the context
         self.assertQuerysetEqual(
             response.context["water_list"],
             Water.objects.filter(room=self.room1),
+        )
+
+
+class TestExportDataView(TestCase):
+    """Test export data view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+        self.url = reverse("records:export_data")
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user.com", password="test-password")
+
+    def test_export_data_view_attributes(self) -> None:
+        """Test export data view attributes"""
+
+        view = ExportDataView()
+        self.assertIsInstance(view, ListView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
+        self.assertEqual(view.model, User)
+        self.assertEqual(view.ordering, ["-id"])
+        self.assertEqual(view.paginate_by, 20)
+        self.assertEqual(view.paginate_orphans, 10)
+        self.assertEqual(view.context_object_name, "room_member_list")
+        self.assertEqual(view.template_name, "records/export_data.html")
+
+    def test_export_data_view_working(self) -> None:
+        """Test export data view working"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/export_data.html")
+
+        # Assert context is correct
+        self.assertEqual(response.context["export_data_active"], "active")
+        self.assertQuerysetEqual(
+            response.context["room_member_list"],
+            User.objects.filter(room_membership__room=self.room),
         )
 
 
@@ -840,59 +891,6 @@ class TestReportView(TestCase):
         self.assertEqual(response.context["each_user_records"][1]["price_diff"], -15)
         self.assertEqual(response.context["each_user_records"][1]["total_spent"], 70)
         self.assertEqual(response.context["each_user_records"][1]["user"], self.user2)
-
-
-class TestDownloadTemplateView(TestCase):
-    """Test download template view"""
-
-    def setUp(self) -> None:
-        self.client = Client()
-        self.group = Group.objects.create(name="d52")
-        self.user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
-        )
-        self.user.groups.add(self.group)
-        self.url = reverse("records:download")
-        self.room = Room.objects.create(name="test-room", admin=self.user)
-
-        # Set room id in session
-        session = self.client.session
-        session["room_id"] = self.room.id
-        session.save()
-
-        # login user
-        self.client.login(email="test@user.com", password="test-password")
-
-    def test_download_template_view_attributes(self) -> None:
-        """Test download template view attributes"""
-
-        view = DownloadTemplateView()
-        self.assertIsInstance(view, TemplateView)
-        self.assertIsInstance(view, LoginRequiredMixin)
-        self.assertIsInstance(view, RoomRequiredMixin)
-        self.assertTrue(view.template_name, "records/download.html")
-
-    def test_download_template_view_working(self) -> None:
-        """Test download template view working"""
-
-        # get group users
-        users = User.objects.filter(groups__in=[self.group])
-
-        # Send a GET request to the view
-        response = self.client.get(self.url)
-
-        # Assert that the response status code is 200 (OK)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-        # Assert that the correct template is used
-        self.assertTemplateUsed(response, "records/download.html")
-
-        # Assert context is correct
-        self.assertEqual(response.context["download_active"], "active")
-        self.assertQuerysetEqual(response.context["users"], users)
 
 
 class TestOverallXlsView(TestCase):

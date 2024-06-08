@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.views.generic import ListView, TemplateView, View
+from django.views.generic import ListView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
@@ -179,6 +179,27 @@ class WaterListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
+class ExportDataView(LoginRequiredMixin, RoomRequiredMixin, ListView):
+    """View to render export data template"""
+
+    model = User
+    ordering = ["-id"]
+    paginate_by = 20
+    paginate_orphans = 10
+    context_object_name = "room_member_list"
+    template_name = "records/export_data.html"
+
+    def get_queryset(self):
+        room_id = self.get_room_id(self.request)
+        queryset = super().get_queryset().filter(room_membership__room__id=room_id)
+        return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["export_data_active"] = "active"
+        return context
+
+
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def report(request: HttpRequest) -> HttpResponse:
@@ -211,21 +232,6 @@ def report(request: HttpRequest) -> HttpResponse:
         "each_user_records": each_user_records,
     }
     return render(request, "records/report.html", context)
-
-
-class DownloadTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
-    """View to render download template"""
-
-    template_name = "records/download.html"
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        # TODO: remove hardcoded group name
-        users = User.objects.filter(groups__name__in=["d52"])
-
-        context = super().get_context_data(**kwargs)
-        context["users"] = users
-        context["download_active"] = "active"
-        return context
 
 
 # TODO: fix this view
