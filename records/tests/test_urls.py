@@ -31,11 +31,11 @@ class TestUrls(TestCase):
         url = reverse("records:waters")
         self.assertEqual(resolve(url).func.view_class, views.WaterListView)
 
-    def test_download_url(self):
-        """Test download url resolve"""
+    def test_export_data_url(self):
+        """Test export data url resolve"""
 
-        url = reverse("records:download")
-        self.assertEqual(resolve(url).func.view_class, views.DownloadTemplateView)
+        url = reverse("records:export_data")
+        self.assertEqual(resolve(url).func.view_class, views.ExportDataView)
 
     def test_report_url(self):
         """Test report url resolve"""
