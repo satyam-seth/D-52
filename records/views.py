@@ -32,12 +32,12 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
         room = Room.objects.get(id=room_id)
         return room
 
-    def get_record_form(self, room: Room) -> RecordForm:
+    def get_record_form(self) -> RecordForm:
         """Returns an empty record form"""
 
         return RecordForm(
             label_suffix="",
-            room=room,
+            room_id=self.get_room_id(self.request),
             initial={"purchaser": self.request.user},
         )
 
@@ -48,13 +48,12 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
 
     def get_context(
         self,
-        room: Room,
         record_form: Optional[RecordForm] = None,
         water_form: Optional[WaterForm] = None,
     ) -> dict[str, Any]:
         """Returns context"""
 
-        _record_form = record_form if record_form else self.get_record_form(room=room)
+        _record_form = record_form if record_form else self.get_record_form()
         _water_form = water_form if water_form else self.get_water_form()
 
         context = {
@@ -67,31 +66,30 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
     def get(self, request: HttpRequest) -> HttpResponse:
         """Render record and water form"""
 
-        room = self.get_room()
-        context = self.get_context(room=room)
+        context = self.get_context()
         return render(request, "records/add_data.html", context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handle record and water form submission"""
 
         context: Dict[str, Any]
-        room = self.get_room()
+        room_id = self.get_room_id(self.request)
 
         if "record_submit" in request.POST:
-            record_form = RecordForm(data=request.POST, room=room)
+            record_form = RecordForm(data=request.POST, room_id=room_id)
 
             if record_form.is_valid():
                 reg = record_form.save(commit=False)
                 reg.adder = request.user
-                reg.room = room
+                reg.room = self.get_room()
                 reg.save()
                 messages.success(request, "Your item record successfully added.")
-                context = self.get_context(room=room)
+                context = self.get_context()
                 # TODO: move this logic in record post save signal
                 # notify_record(reg.id)
             else:
                 messages.error(request, "Your item record not added.")
-                context = self.get_context(room=room, record_form=record_form)
+                context = self.get_context(record_form=record_form)
 
         elif "water_submit" in request.POST:
             water_form = WaterForm(request.POST)
@@ -99,26 +97,26 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
             if water_form.is_valid():
                 reg = water_form.save(commit=False)
                 reg.adder = request.user
-                reg.room = room
+                reg.room = self.get_room()
 
                 try:
                     reg.save()
                     messages.success(request, "Water record successfully added.")
-                    context = self.get_context(room=room)
+                    context = self.get_context()
                     # TODO: move this logic in water post save signal
                     # notify_record(reg.id)
                 except ValidationError as e:
                     messages.warning(request, e.message)
-                    context = self.get_context(room=room, water_form=water_form)
+                    context = self.get_context(water_form=water_form)
             else:
                 messages.error(request, "Water record not added.")
-                context = self.get_context(room=room, water_form=water_form)
+                context = self.get_context(water_form=water_form)
         else:
             messages.error(
                 request,
                 "Please check and fill in all information correctly.",
             )
-            context = self.get_context(room=room)
+            context = self.get_context()
 
         return render(request, "records/add_data.html", context)
 
@@ -131,19 +129,11 @@ class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     paginate_orphans = 10
     ordering = ["-purchase_date"]
 
-    def get_room(self) -> Room:
-        """Returns room"""
-
-        room_id = self.get_room_id(self.request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-        return room
-
     def get_queryset(self):
-        room = self.get_room()
+        room_id = self.get_room_id(self.request)
         user_id = self.kwargs.get("user_id")
         item_name_query = self.request.GET.get("query")
-        queryset = super().get_queryset().filter(room=room)
+        queryset = super().get_queryset().filter(room__id=room_id)
 
         if user_id:
             queryset = queryset.filter(purchaser__id=user_id)
