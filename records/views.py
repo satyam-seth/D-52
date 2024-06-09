@@ -200,38 +200,50 @@ class ExportDataView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
-# TODO: fix this view
-# TODO: Add login required once user group login achieved
-def report(request: HttpRequest) -> HttpResponse:
-    """View to calculate and render report"""
+class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """View to for room report"""
 
-    # TODO: remove hardcoded group name
-    users = User.objects.filter(groups__name="d52")
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """Calculate and render report template"""
 
-    # TODO: get only current group records
-    total_records = Record.objects.all()
-    total_price = total_records.aggregate(Sum("price"))["price__sum"]
-    per_user_price = total_price / users.count()
+        room_id = self.get_room_id(self.request)
+        assert room_id
 
-    # TODO: optimize this logic
-    each_user_records = []
-    for user in users:
-        total_spent = total_records.filter(purchaser=user).aggregate(Sum("price"))[
-            "price__sum"
-        ]
-        price_diif = per_user_price - (total_spent if total_spent else 0)
-        each_user_records.append(
-            {"user": user, "total_spent": total_spent, "price_diff": price_diif}
-        )
+        room_members = User.objects.filter(room_membership__room__id=room_id)
+        room_records = Record.objects.filter(room__id=room_id)
+        room_records_count = room_records.count()
+        total_price = room_records.aggregate(Sum("price"))["price__sum"]
+        room_total_price = total_price if total_price else 0
+        per_member_price = room_total_price / room_members.count()
 
-    context = {
-        "report_active": "active",
-        "total_records": total_records,
-        "total_price": total_price,
-        "per_user_price": per_user_price,
-        "each_user_records": each_user_records,
-    }
-    return render(request, "records/report.html", context)
+        room_members_report = []
+        for room_member in room_members:
+            room_member_records = room_records.filter(purchaser=room_member)
+            records_count = room_member_records.count()
+            room_member_total_spent = room_member_records.aggregate(Sum("price"))[
+                "price__sum"
+            ]
+            total_spent = room_member_total_spent if room_member_total_spent else 0
+            price_diff = per_member_price - (total_spent if total_spent else 0)
+
+            room_members_report.append(
+                {
+                    "room_member": room_member,
+                    "total_spent": total_spent,
+                    "price_diff": price_diff,
+                    "records_count": records_count,
+                }
+            )
+
+        context = {
+            "room_reports_active": "active",
+            "room_records_count": room_records_count,
+            "room_total_price": room_total_price,
+            "per_member_price": per_member_price,
+            "room_members_report": room_members_report,
+        }
+
+        return render(request, "records/room_reports.html", context)
 
 
 # TODO: fix this view

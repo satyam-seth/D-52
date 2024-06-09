@@ -24,16 +24,16 @@
   text-shadow: 1px 1px gray;
 }
 
-.report {
-  background-image: url("../images/report.jpg");
+.room-report {
+  background-image: url("../images/room-report.jpg");
   background-color: dimgrey;
   background-size: cover;
   height: 100%;
   text-shadow: 2px 2px black;
 }
 
-.download {
-  background-image: url("../images/download.jpg");
+.export-data {
+  background-image: url("../images/export-data.jpg");
   background-color: dimgrey;
   background-size: cover;
   height: 100%;
