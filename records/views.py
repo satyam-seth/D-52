@@ -213,13 +213,17 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
         room_records = Record.objects.filter(room__id=room_id)
         room_records_count = room_records.count()
         total_price = room_records.aggregate(Sum("price"))["price__sum"]
-        per_member_price = total_price / room_members.count()
+        room_total_price = total_price if total_price else 0
+        per_member_price = room_total_price / room_members.count()
 
         room_members_report = []
         for room_member in room_members:
             room_member_records = room_records.filter(purchaser=room_member)
-            room_member_records_count = room_member_records.count()
-            total_spent = room_member_records.aggregate(Sum("price"))["price__sum"]
+            records_count = room_member_records.count()
+            room_member_total_spent = room_member_records.aggregate(Sum("price"))[
+                "price__sum"
+            ]
+            total_spent = room_member_total_spent if room_member_total_spent else 0
             price_diff = per_member_price - (total_spent if total_spent else 0)
 
             room_members_report.append(
@@ -227,14 +231,14 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
                     "room_member": room_member,
                     "total_spent": total_spent,
                     "price_diff": price_diff,
-                    "room_member_records_count": room_member_records_count,
+                    "records_count": records_count,
                 }
             )
 
         context = {
             "room_reports_active": "active",
             "room_records_count": room_records_count,
-            "total_price": total_price,
+            "room_total_price": room_total_price,
             "per_member_price": per_member_price,
             "room_members_report": room_members_report,
         }
