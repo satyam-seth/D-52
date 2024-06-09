@@ -18,7 +18,13 @@ from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
 from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
-from records.views import AddDataView, ExportDataView, RecordListView, WaterListView
+from records.views import (
+    AddDataView,
+    ExportDataView,
+    RecordListView,
+    RoomReportView,
+    WaterListView,
+)
 
 User = get_user_model()
 
@@ -821,16 +827,12 @@ class TestExportDataView(TestCase):
         )
 
 
-class TestReportView(TestCase):
-    """Test report view"""
+class TestRoomReportView(TestCase):
+    """Test room report view"""
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("records:report")
-
-        # TODO: remove group logic
-        # create group named "d52"
-        group = Group.objects.create(name="d52")
+        self.url = reverse("records:room_reports")
 
         # Create test users and add them to the "d52" group
         self.user1 = User.objects.create_user(
@@ -845,52 +847,126 @@ class TestReportView(TestCase):
             first_name="test",
             last_name="user2",
         )
-        self.user1.groups.add(group)
-        self.user2.groups.add(group)
+        self.user3 = User.objects.create_user(
+            email="test@user3.com",
+            password="test-password",
+            first_name="test",
+            last_name="user2",
+        )
 
         # Create room
         self.room = Room.objects.create(name="test-room", admin=self.user1)
         RoomMembership.objects.create(room=self.room, member=self.user2)
+        RoomMembership.objects.create(room=self.room, member=self.user3)
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user
+        self.client.login(email="test@user1.com", password="test-password")
+
+    def test_room_report_view_attributes(self) -> None:
+        """Test room report view attributes"""
+
+        view = RoomReportView()
+        self.assertIsInstance(view, View)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
+
+    def test_room_report_view_working(self) -> None:
+        """Test room report view working"""
 
         # Create some test records
         Record.objects.create(
             purchase_date=timezone.now().date(),
             purchaser=self.user1,
             adder=self.user1,
-            price=10,
+            price=120,
             room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.now().date(),
             purchaser=self.user1,
             adder=self.user1,
-            price=30,
+            price=80,
             room=self.room,
         )
         Record.objects.create(
             purchase_date=timezone.now().date(),
             purchaser=self.user2,
             adder=self.user2,
-            price=70,
+            price=100,
             room=self.room,
         )
 
-    def test_report_view_working(self) -> None:
-        """Test report view working"""
-
+        # Send a GET request to the view
         response = self.client.get(self.url)
 
         # Assert that the response status code is 200 (OK)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         # Assert that the expected context variables are present in the response
-        self.assertEqual(response.context["report_active"], "active")
-        self.assertEqual(response.context["total_records"].count(), 3)
-        self.assertEqual(response.context["total_price"], 110)
-        self.assertEqual(response.context["per_user_price"], 55)
-        self.assertEqual(response.context["each_user_records"][1]["price_diff"], -15)
-        self.assertEqual(response.context["each_user_records"][1]["total_spent"], 70)
-        self.assertEqual(response.context["each_user_records"][1]["user"], self.user2)
+        self.assertEqual(response.context["room_reports_active"], "active")
+        self.assertEqual(response.context["room_records_count"], 3)
+        self.assertEqual(response.context["room_total_price"], 300)
+        self.assertEqual(response.context["per_member_price"], 100)
+
+        room_members_report = response.context["room_members_report"]
+
+        # Assertion for user 1
+        self.assertEqual(room_members_report[0]["room_member"], self.user1)
+        self.assertEqual(room_members_report[0]["total_spent"], 200)
+        self.assertEqual(room_members_report[0]["price_diff"], -100)
+        self.assertEqual(room_members_report[0]["records_count"], 2)
+
+        # Assertion for user 2
+        self.assertEqual(room_members_report[1]["room_member"], self.user2)
+        self.assertEqual(room_members_report[1]["total_spent"], 100)
+        self.assertEqual(room_members_report[1]["price_diff"], 0)
+        self.assertEqual(room_members_report[1]["records_count"], 1)
+
+        # Assertion for user 3
+        self.assertEqual(room_members_report[2]["room_member"], self.user3)
+        self.assertEqual(room_members_report[2]["total_spent"], 0)
+        self.assertEqual(room_members_report[2]["price_diff"], 100)
+        self.assertEqual(room_members_report[2]["records_count"], 0)
+
+    def test_room_report_view_working_for_zero_state(self) -> None:
+        """Test room report view working for zero state"""
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the expected context variables are present in the response
+        self.assertEqual(response.context["room_reports_active"], "active")
+        self.assertEqual(response.context["room_records_count"], 0)
+        self.assertEqual(response.context["room_total_price"], 0)
+        self.assertEqual(response.context["per_member_price"], 0)
+
+        room_members_report = response.context["room_members_report"]
+
+        # Assertion for user 1
+        self.assertEqual(room_members_report[0]["room_member"], self.user1)
+        self.assertEqual(room_members_report[0]["total_spent"], 0)
+        self.assertEqual(room_members_report[0]["price_diff"], 0)
+        self.assertEqual(room_members_report[0]["records_count"], 0)
+
+        # Assertion for user 2
+        self.assertEqual(room_members_report[1]["room_member"], self.user2)
+        self.assertEqual(room_members_report[1]["total_spent"], 0)
+        self.assertEqual(room_members_report[1]["price_diff"], 0)
+        self.assertEqual(room_members_report[1]["records_count"], 0)
+
+        # Assertion for user 3
+        self.assertEqual(room_members_report[2]["room_member"], self.user3)
+        self.assertEqual(room_members_report[2]["total_spent"], 0)
+        self.assertEqual(room_members_report[2]["price_diff"], 0)
+        self.assertEqual(room_members_report[2]["records_count"], 0)
 
 
 class TestOverallXlsView(TestCase):
