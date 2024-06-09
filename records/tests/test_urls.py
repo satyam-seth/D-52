@@ -37,11 +37,11 @@ class TestUrls(TestCase):
         url = reverse("records:export_data")
         self.assertEqual(resolve(url).func.view_class, views.ExportDataView)
 
-    def test_report_url(self):
-        """Test report url resolve"""
+    def test_room_reports_url(self):
+        """Test room reports url resolve"""
 
-        url = reverse("records:report")
-        self.assertEqual(resolve(url).func, views.report)
+        url = reverse("records:room_reports")
+        self.assertEqual(resolve(url).func.view_class, views.RoomReportView)
 
     def test_overall_xls_url(self):
         """Test overall xls url resolve"""
