@@ -10,10 +10,15 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link {{home_active}}" href="{% url 'core:home' %}">Home <span
-                                class="sr-only">(current)</span></a>
-                    </li>
+                    {% if room %}
+                        <li class="nav-item">
+                            <a class="nav-link {{dashboard_active}}" href="{% url 'records:dashboard' %}">Dashboard <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {{home_active}}" href="{% url 'core:home' %}">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% endif %}
                     {% if request.user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
