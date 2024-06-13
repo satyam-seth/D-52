@@ -1,4 +1,12 @@
 /* TODO: add common class for top jumbotron */
+.dashboard {
+  background-image: url("../images/dashboard.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
 .add {
   background-image: url("../images/add.jpg");
   background-color: dimgrey;

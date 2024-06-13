@@ -866,10 +866,10 @@ class TestRoomSelectionView(TestCase):
         # Check room id set in session
         self.assertEqual(response.client.session["room_id"], room.id)
 
-        # Check if the view redirects to the home page
+        # Check if the view redirects to the dashboard page
         self.assertRedirects(
             response,
-            reverse_lazy("core:home"),
+            reverse_lazy("records:dashboard"),
             fetch_redirect_response=False,
         )
 
@@ -981,10 +981,10 @@ class TestRoomSelectionView(TestCase):
         # Check room id set in session
         self.assertEqual(response.client.session["room_id"], room.id)
 
-        # Check if the view redirects to the room selection page
+        # Check if the view redirects to the room dashboard page
         self.assertRedirects(
             response,
-            reverse_lazy("core:home"),
+            reverse_lazy("records:dashboard"),
             fetch_redirect_response=False,
         )
 
