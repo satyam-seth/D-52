@@ -139,11 +139,11 @@ class RoomSelectionView(LoginRequiredMixin, View):
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
 
-            # TODO: redirect user to room dashboard instead of home, if not owner of the room
+            # redirect user to room dashboard if not owner of the room
             if room.admin == request.user:
                 return redirect(reverse_lazy("accounts:room_invitation"))
 
-            return redirect(reverse_lazy("core:home"))
+            return redirect(reverse_lazy("records:dashboard"))
 
         # If the user is a member of multiple rooms, let the user choose a room as the current room
 
@@ -184,8 +184,8 @@ class RoomSelectionView(LoginRequiredMixin, View):
         if room_membership.exists():
             messages.info(request, f"Welcome to the room '{room.name}'")
             request.session["room_id"] = room.pk
-            # TODO: redirect to room dashboard page
-            return redirect(reverse_lazy("core:home"))
+            # redirect to room dashboard page
+            return redirect(reverse_lazy("records:dashboard"))
 
         messages.warning(request, "You are not a member of requested Room")
         return redirect(reverse_lazy("accounts:room_selection"))
