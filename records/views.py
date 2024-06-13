@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.views.generic import ListView, View
+from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
@@ -19,6 +19,87 @@ from records.models import Electricity, Maid, Record, Water
 
 
 User = get_user_model()
+
+
+class DashboardTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
+    """Dashboard template view"""
+
+    template_name = "records/dashboard.html"
+
+    # TODO: finalize it
+    # def get_electricity_context(self, room_id: int):
+    #     """Returns electricity context"""
+
+    #     # TODO: handle empty database state
+    #     electricity = None
+    #     try:
+    #         electricity = Electricity.objects.latest("due_date")
+    #         e_pp = electricity.price / 4
+    #         # TODO: add this filed as model property
+    #         e_days_left = (electricity.due_date - timezone.now().date()).days
+    #     except ObjectDoesNotExist:
+    #         e_pp, e_days_left = 0, 0
+
+    # TODO: finalize it
+    # def get_maid_context(self, room_id: int):
+    #     """Returns maid context"""
+
+    #     # TODO: handle empty database state
+    #     maid = None
+    #     try:
+    #         maid = Maid.objects.latest("due_date")
+    #         m_pp = maid.price / 4
+    #         # TODO: add this filed as model property
+    #         m_days_left = (maid.due_date - timezone.now().date()).days
+    #     except ObjectDoesNotExist:
+    #         m_pp, m_days_left = 0, 0
+
+    def get_water_context(self, room_id: int):
+        """Returns water context"""
+
+        total_quantity = 0
+        waters = Water.objects.filter(room__id=room_id)
+
+        if waters:
+            total_quantity = waters.aggregate(Sum("quantity"))["quantity__sum"]
+
+        return {"water_quantity": total_quantity}
+
+    def get_room_members_context(self, room_id: int):
+        """Returns room members context"""
+
+        room_members = User.objects.filter(room_membership__room__id=room_id)
+        room_members_context = []
+
+        for room_member in room_members:
+            room_member_records = Record.objects.filter(
+                room__id=room_id,
+                purchaser=room_member,
+            )
+            records_count = room_member_records.count()
+            room_member_total_spent = room_member_records.aggregate(Sum("price"))[
+                "price__sum"
+            ]
+            total_spent = room_member_total_spent if room_member_total_spent else 0
+            room_members_context.append(
+                {
+                    "member": room_member,
+                    "records_count": records_count,
+                    "total_spent": total_spent,
+                }
+            )
+
+        return {"room_members_data": room_members_context}
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        room_id = self.get_room_id(self.request)
+        assert room_id
+
+        context = super().get_context_data(**kwargs)
+        context["dashboard_active"] = "active"
+        context.update(self.get_water_context(room_id))
+        context.update(self.get_room_members_context(room_id))
+        return context
 
 
 class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
