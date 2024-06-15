@@ -7,6 +7,12 @@ from records import views
 class TestUrls(TestCase):
     """Test url patterns"""
 
+    def test_dashboard_url(self):
+        """Test dashboard url resolve"""
+
+        url = reverse("records:dashboard")
+        self.assertEqual(resolve(url).func.view_class, views.DashboardTemplateView)
+
     def test_add_data_url(self):
         """Test add data url resolve"""
 
