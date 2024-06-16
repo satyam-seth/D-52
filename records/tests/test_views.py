@@ -117,7 +117,7 @@ class TestDashboardTemplateView(TestCase):
         self.assertEqual(water_context["water_quantity"], 8)
 
     def test_get_water_context_for_zero_state(self) -> None:
-        """Test get water context working for zero state"""
+        """Test get water context for zero state"""
 
         # Call get water context
         request = self.get_mock_request()
@@ -126,6 +126,56 @@ class TestDashboardTemplateView(TestCase):
 
         # Assert water context
         self.assertEqual(water_context["water_quantity"], 0)
+
+    def test_get_room_members_context(self):
+        """Test get room members context"""
+
+        # Create records
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            purchaser=self.user1,
+            adder=self.user1,
+            price=120,
+            room=self.room,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            purchaser=self.user1,
+            adder=self.user1,
+            price=80,
+            room=self.room,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            purchaser=self.user2,
+            adder=self.user2,
+            price=100,
+            room=self.room,
+        )
+
+        # Call get room members context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        room_members_context = view.get_room_members_context(room_id=self.room.id)
+
+        # Assert room members context
+        room_members_data = room_members_context["room_members_data"]
+        self.assertEqual(len(room_members_data), 3)
+
+        # Assertion for user 1
+        self.assertEqual(room_members_data[0]["member"], self.user1)
+        self.assertEqual(room_members_data[0]["records_count"], 2)
+        self.assertEqual(room_members_data[0]["total_spent"], 200)
+
+        # Assertion for user 2
+        self.assertEqual(room_members_data[1]["member"], self.user2)
+        self.assertEqual(room_members_data[1]["records_count"], 1)
+        self.assertEqual(room_members_data[1]["total_spent"], 100)
+
+        # Assertion for user 3
+        self.assertEqual(room_members_data[2]["member"], self.user3)
+        self.assertEqual(room_members_data[2]["records_count"], 0)
+        self.assertEqual(room_members_data[2]["total_spent"], 0)
 
 
 class TestAddDataView(TestCase):
