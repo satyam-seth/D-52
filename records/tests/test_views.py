@@ -116,6 +116,17 @@ class TestDashboardTemplateView(TestCase):
         # Assert water context
         self.assertEqual(water_context["water_quantity"], 8)
 
+    def test_get_water_context_for_zero_state(self) -> None:
+        """Test get water context working for zero state"""
+
+        # Call get water context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        water_context = view.get_water_context(room_id=self.room.id)
+
+        # Assert water context
+        self.assertEqual(water_context["water_quantity"], 0)
+
 
 class TestAddDataView(TestCase):
     """Test add data view"""
