@@ -11,7 +11,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import ListView, View
+from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
@@ -19,6 +19,7 @@ from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
 from records.views import (
     AddDataView,
+    DashboardTemplateView,
     ExportDataView,
     RecordListView,
     RoomReportView,
@@ -26,6 +27,19 @@ from records.views import (
 )
 
 User = get_user_model()
+
+
+class TestDashboardTemplateView(TestCase):
+    """Test dashboard template view"""
+
+    def test_dashboard_view_attributes(self) -> None:
+        """Test dashboard template view attributes"""
+
+        view = DashboardTemplateView()
+        self.assertIsInstance(view, TemplateView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
+        self.assertEqual(view.template_name, "records/dashboard.html")
 
 
 class TestAddDataView(TestCase):
