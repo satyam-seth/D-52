@@ -204,6 +204,45 @@ class TestDashboardTemplateView(TestCase):
         self.assertEqual(room_members_data[2]["records_count"], 0)
         self.assertEqual(room_members_data[2]["total_spent"], 0)
 
+    @mock.patch("records.views.DashboardTemplateView.get_water_context")
+    @mock.patch("records.views.DashboardTemplateView.get_room_members_context")
+    def test_dashboard_template_view_working(
+        self,
+        mock_get_room_members_context,
+        mock_get_water_context,
+    ):
+        """Test dashboard template view working"""
+
+        # Prepare mock data
+        mock_get_water_context.return_value = {"quantity": 0}
+        mock_get_room_members_context.return_value = {"room_members_data": []}
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user 1
+        self.client.login(email="test@user1.com", password="test-password")
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/dashboard.html")
+
+        # Assert context methods are called once with correct room id
+        mock_get_water_context.called_once_with(room_id=self.room.id)
+        mock_get_room_members_context.called_once_with(room_id=self.room.id)
+
+        # Assert context is correct
+        self.assertEqual(response.context["dashboard_active"], "active")
+        self.assertEqual(response.context["quantity"], 0)
+        self.assertEqual(response.context["room_members_data"], [])
+
 
 class TestAddDataView(TestCase):
     """Test add data view"""
