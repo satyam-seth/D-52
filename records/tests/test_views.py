@@ -177,6 +177,33 @@ class TestDashboardTemplateView(TestCase):
         self.assertEqual(room_members_data[2]["records_count"], 0)
         self.assertEqual(room_members_data[2]["total_spent"], 0)
 
+    def test_get_room_members_context_for_zero_state(self):
+        """Test get room members context for zero state"""
+
+        # Call get room members context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        room_members_context = view.get_room_members_context(room_id=self.room.id)
+
+        # Assert room members context
+        room_members_data = room_members_context["room_members_data"]
+        self.assertEqual(len(room_members_data), 3)
+
+        # Assertion for user 1
+        self.assertEqual(room_members_data[0]["member"], self.user1)
+        self.assertEqual(room_members_data[0]["records_count"], 0)
+        self.assertEqual(room_members_data[0]["total_spent"], 0)
+
+        # Assertion for user 2
+        self.assertEqual(room_members_data[1]["member"], self.user2)
+        self.assertEqual(room_members_data[1]["records_count"], 0)
+        self.assertEqual(room_members_data[1]["total_spent"], 0)
+
+        # Assertion for user 3
+        self.assertEqual(room_members_data[2]["member"], self.user3)
+        self.assertEqual(room_members_data[2]["records_count"], 0)
+        self.assertEqual(room_members_data[2]["total_spent"], 0)
+
 
 class TestAddDataView(TestCase):
     """Test add data view"""
