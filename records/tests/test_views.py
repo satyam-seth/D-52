@@ -5,14 +5,13 @@ from unittest import mock
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import ListView, TemplateView, View
+from django.views.generic import ListView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
@@ -336,7 +335,7 @@ class TestAddDataView(TestCase):
 
         today = timezone.now().date()
 
-        # Create record instance with quantity 5
+        # Create water records with quantity 5
         Water.objects.create(
             quantity=5,
             adder=self.user,
@@ -914,6 +913,7 @@ class TestRoomReportView(TestCase):
         self.assertEqual(response.context["per_member_price"], 100)
 
         room_members_report = response.context["room_members_report"]
+        self.assertEqual(len(room_members_report), 3)
 
         # Assertion for user 1
         self.assertEqual(room_members_report[0]["room_member"], self.user1)
@@ -949,6 +949,7 @@ class TestRoomReportView(TestCase):
         self.assertEqual(response.context["per_member_price"], 0)
 
         room_members_report = response.context["room_members_report"]
+        self.assertEqual(len(room_members_report), 3)
 
         # Assertion for user 1
         self.assertEqual(room_members_report[0]["room_member"], self.user1)
