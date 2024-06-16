@@ -1,3 +1,4 @@
+from datetime import timedelta
 from http import HTTPStatus
 from typing import Type
 from unittest import mock
@@ -32,6 +33,46 @@ User = get_user_model()
 class TestDashboardTemplateView(TestCase):
     """Test dashboard template view"""
 
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:dashboard")
+        self.user1 = User.objects.create_user(
+            email="test@user1.com",
+            password="test-password",
+            first_name="test",
+            last_name="user1",
+        )
+        self.user2 = User.objects.create_user(
+            email="test@user2.com",
+            password="test-password",
+            first_name="test",
+            last_name="user2",
+        )
+        self.user3 = User.objects.create_user(
+            email="test@user3.com",
+            password="test-password",
+            first_name="test",
+            last_name="user3",
+        )
+
+        # Create room
+        self.room = Room.objects.create(name="test-room", admin=self.user1)
+
+        # Create room 1 membership for user 2
+        RoomMembership.objects.create(room=self.room, member=self.user2)
+        # Create room 1 membership for user 3
+        RoomMembership.objects.create(room=self.room, member=self.user3)
+
+    def get_mock_request(self) -> WSGIRequest:
+        """To get mock request factory"""
+
+        factory = RequestFactory()
+        request = factory.get(self.url)
+        request.user = self.user1
+        request.session = SessionBase()
+        request.session["room_id"] = self.room.id
+        return request
+
     def test_dashboard_view_attributes(self) -> None:
         """Test dashboard template view attributes"""
 
@@ -40,6 +81,40 @@ class TestDashboardTemplateView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.template_name, "records/dashboard.html")
+
+    def test_get_water_context(self) -> None:
+        """Test get water context"""
+
+        today = timezone.now().date()
+        past_date = today - timedelta(days=2)
+
+        # Create water records
+        Water.objects.create(
+            quantity=5,
+            adder=self.user1,
+            room=self.room,
+            purchase_date=today,
+        )
+        Water.objects.create(
+            quantity=2,
+            adder=self.user1,
+            room=self.room,
+            purchase_date=past_date,
+        )
+        Water.objects.create(
+            quantity=1,
+            adder=self.user2,
+            room=self.room,
+            purchase_date=past_date,
+        )
+
+        # Call get water context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        water_context = view.get_water_context(room_id=self.room.id)
+
+        # Assert water context
+        self.assertEqual(water_context["water_quantity"], 8)
 
 
 class TestAddDataView(TestCase):
