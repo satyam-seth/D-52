@@ -1,3 +1,4 @@
+from datetime import timedelta
 from http import HTTPStatus
 from typing import Type
 from unittest import mock
@@ -5,7 +6,6 @@ from unittest import mock
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
@@ -20,6 +20,7 @@ from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
 from records.views import (
     AddDataView,
+    DashboardTemplateView,
     ExportDataView,
     RecordListView,
     RoomReportView,
@@ -27,6 +28,220 @@ from records.views import (
 )
 
 User = get_user_model()
+
+
+class TestDashboardTemplateView(TestCase):
+    """Test dashboard template view"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.url = reverse("records:dashboard")
+        self.user1 = User.objects.create_user(
+            email="test@user1.com",
+            password="test-password",
+            first_name="test",
+            last_name="user1",
+        )
+        self.user2 = User.objects.create_user(
+            email="test@user2.com",
+            password="test-password",
+            first_name="test",
+            last_name="user2",
+        )
+        self.user3 = User.objects.create_user(
+            email="test@user3.com",
+            password="test-password",
+            first_name="test",
+            last_name="user3",
+        )
+
+        # Create room
+        self.room = Room.objects.create(name="test-room", admin=self.user1)
+
+        # Create room 1 membership for user 2
+        RoomMembership.objects.create(room=self.room, member=self.user2)
+        # Create room 1 membership for user 3
+        RoomMembership.objects.create(room=self.room, member=self.user3)
+
+    def get_mock_request(self) -> WSGIRequest:
+        """To get mock request factory"""
+
+        factory = RequestFactory()
+        request = factory.get(self.url)
+        request.user = self.user1
+        request.session = SessionBase()
+        request.session["room_id"] = self.room.id
+        return request
+
+    def test_dashboard_view_attributes(self) -> None:
+        """Test dashboard template view attributes"""
+
+        view = DashboardTemplateView()
+        self.assertIsInstance(view, TemplateView)
+        self.assertIsInstance(view, LoginRequiredMixin)
+        self.assertIsInstance(view, RoomRequiredMixin)
+        self.assertEqual(view.template_name, "records/dashboard.html")
+
+    def test_get_water_context(self) -> None:
+        """Test get water context"""
+
+        today = timezone.now().date()
+        past_date = today - timedelta(days=2)
+
+        # Create water records
+        Water.objects.create(
+            quantity=5,
+            adder=self.user1,
+            room=self.room,
+            purchase_date=today,
+        )
+        Water.objects.create(
+            quantity=2,
+            adder=self.user1,
+            room=self.room,
+            purchase_date=past_date,
+        )
+        Water.objects.create(
+            quantity=1,
+            adder=self.user2,
+            room=self.room,
+            purchase_date=past_date,
+        )
+
+        # Call get water context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        water_context = view.get_water_context(room_id=self.room.id)
+
+        # Assert water context
+        self.assertEqual(water_context["water_quantity"], 8)
+
+    def test_get_water_context_for_zero_state(self) -> None:
+        """Test get water context for zero state"""
+
+        # Call get water context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        water_context = view.get_water_context(room_id=self.room.id)
+
+        # Assert water context
+        self.assertEqual(water_context["water_quantity"], 0)
+
+    def test_get_room_members_context(self):
+        """Test get room members context"""
+
+        # Create records
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            purchaser=self.user1,
+            adder=self.user1,
+            price=120,
+            room=self.room,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            purchaser=self.user1,
+            adder=self.user1,
+            price=80,
+            room=self.room,
+        )
+        Record.objects.create(
+            purchase_date=timezone.now().date(),
+            purchaser=self.user2,
+            adder=self.user2,
+            price=100,
+            room=self.room,
+        )
+
+        # Call get room members context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        room_members_context = view.get_room_members_context(room_id=self.room.id)
+
+        # Assert room members context
+        room_members_data = room_members_context["room_members_data"]
+        self.assertEqual(len(room_members_data), 3)
+
+        # Assertion for user 1
+        self.assertEqual(room_members_data[0]["member"], self.user1)
+        self.assertEqual(room_members_data[0]["records_count"], 2)
+        self.assertEqual(room_members_data[0]["total_spent"], 200)
+
+        # Assertion for user 2
+        self.assertEqual(room_members_data[1]["member"], self.user2)
+        self.assertEqual(room_members_data[1]["records_count"], 1)
+        self.assertEqual(room_members_data[1]["total_spent"], 100)
+
+        # Assertion for user 3
+        self.assertEqual(room_members_data[2]["member"], self.user3)
+        self.assertEqual(room_members_data[2]["records_count"], 0)
+        self.assertEqual(room_members_data[2]["total_spent"], 0)
+
+    def test_get_room_members_context_for_zero_state(self):
+        """Test get room members context for zero state"""
+
+        # Call get room members context
+        request = self.get_mock_request()
+        view = DashboardTemplateView(request=request)
+        room_members_context = view.get_room_members_context(room_id=self.room.id)
+
+        # Assert room members context
+        room_members_data = room_members_context["room_members_data"]
+        self.assertEqual(len(room_members_data), 3)
+
+        # Assertion for user 1
+        self.assertEqual(room_members_data[0]["member"], self.user1)
+        self.assertEqual(room_members_data[0]["records_count"], 0)
+        self.assertEqual(room_members_data[0]["total_spent"], 0)
+
+        # Assertion for user 2
+        self.assertEqual(room_members_data[1]["member"], self.user2)
+        self.assertEqual(room_members_data[1]["records_count"], 0)
+        self.assertEqual(room_members_data[1]["total_spent"], 0)
+
+        # Assertion for user 3
+        self.assertEqual(room_members_data[2]["member"], self.user3)
+        self.assertEqual(room_members_data[2]["records_count"], 0)
+        self.assertEqual(room_members_data[2]["total_spent"], 0)
+
+    @mock.patch("records.views.DashboardTemplateView.get_water_context")
+    @mock.patch("records.views.DashboardTemplateView.get_room_members_context")
+    def test_dashboard_template_view_working(
+        self,
+        mock_get_room_members_context,
+        mock_get_water_context,
+    ):
+        """Test dashboard template view working"""
+
+        # Prepare mock data
+        mock_get_water_context.return_value = {"quantity": 0}
+        mock_get_room_members_context.return_value = {"room_members_data": []}
+
+        # Set room id in session
+        session = self.client.session
+        session["room_id"] = self.room.id
+        session.save()
+
+        # login user 1
+        self.client.login(email="test@user1.com", password="test-password")
+
+        # Send a GET request to the view
+        response = self.client.get(self.url)
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        # Assert that the correct template is used
+        self.assertTemplateUsed(response, "records/dashboard.html")
+
+        # Assert context methods are called once with correct room id
+        mock_get_water_context.called_once_with(room_id=self.room.id)
+        mock_get_room_members_context.called_once_with(room_id=self.room.id)
+
+        # Assert context is correct
+        self.assertEqual(response.context["dashboard_active"], "active")
+        self.assertEqual(response.context["quantity"], 0)
+        self.assertEqual(response.context["room_members_data"], [])
 
 
 class TestAddDataView(TestCase):
@@ -336,7 +551,7 @@ class TestAddDataView(TestCase):
 
         today = timezone.now().date()
 
-        # Create record instance with quantity 5
+        # Create water records with quantity 5
         Water.objects.create(
             quantity=5,
             adder=self.user,
@@ -914,6 +1129,7 @@ class TestRoomReportView(TestCase):
         self.assertEqual(response.context["per_member_price"], 100)
 
         room_members_report = response.context["room_members_report"]
+        self.assertEqual(len(room_members_report), 3)
 
         # Assertion for user 1
         self.assertEqual(room_members_report[0]["room_member"], self.user1)
@@ -949,6 +1165,7 @@ class TestRoomReportView(TestCase):
         self.assertEqual(response.context["per_member_price"], 0)
 
         room_members_report = response.context["room_members_report"]
+        self.assertEqual(len(room_members_report), 3)
 
         # Assertion for user 1
         self.assertEqual(room_members_report[0]["room_member"], self.user1)
