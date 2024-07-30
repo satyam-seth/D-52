@@ -11,7 +11,7 @@ class TestUrls(TestCase):
         """Test home url resolve"""
 
         url = reverse("core:home")
-        self.assertEqual(resolve(url).func, views.home)
+        self.assertEqual(resolve(url).func.view_class, views.HomeTemplateView)
 
     def test_about_url(self):
         """Test about url resolve"""

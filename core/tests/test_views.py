@@ -8,19 +8,27 @@ from django.urls import reverse
 from django.views.generic import CreateView, TemplateView
 
 from core.forms import FeedbackFrom
-from core.views import AboutTemplateView, FeedbackCreateView
+from core.views import AboutTemplateView, FeedbackCreateView, HomeTemplateView
 
 
-class TestHomeView(TestCase):
-    """Test home view"""
+class TestHomeTemplateView(TestCase):
+    """Test home template view"""
 
     def setUp(self) -> None:
         self.client = Client()
         self.url = reverse("core:home")
-        self.context = {"about_active": "active"}
+        self.context = {"home_active": "active"}
 
-    def test_home_view_working(self) -> None:
-        """Test home view working"""
+    def test_home_template_view_attributes(self):
+        """Test home template view attributes"""
+
+        view = HomeTemplateView()
+        self.assertIsInstance(view, TemplateView)
+        self.assertEqual(view.template_name, "core/home.html")
+        self.assertEqual(view.extra_context, self.context)
+
+    def test_home_template_view_working(self) -> None:
+        """Test home template view working"""
 
         # Send a GET request to the home page
         response = self.client.get(self.url)
@@ -28,22 +36,11 @@ class TestHomeView(TestCase):
         # Assert that the response status code is 200 (OK)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
-        # Assert that the template used for rendering is "core/index.html"
-        self.assertTemplateUsed(response, "core/index.html")
+        # Assert that the template used for rendering is "core/home.html"
+        self.assertTemplateUsed(response, "core/home.html")
 
         # Assert context
-        # TODO: assert all context once home view is fixed
         self.assertEqual(response.context["home_active"], "active")
-        self.assertIn("records", response.context)
-        self.assertIn("w_sum", response.context)
-        self.assertIn("w_price", response.context)
-        self.assertIn("w_pp", response.context)
-        self.assertIn("electricity", response.context)
-        self.assertIn("e_pp", response.context)
-        self.assertIn("e_days_left", response.context)
-        self.assertIn("maid", response.context)
-        self.assertIn("m_pp", response.context)
-        self.assertIn("m_days_left", response.context)
 
 
 class TestAboutTemplateView(TestCase):

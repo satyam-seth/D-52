@@ -1,0 +1,98 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}The Split - Effortless Expense Tracking{% endblock title %}
+{% block content %}
+<div class="container-fluid py-5 mb-4 home">
+    <div class="container text-light my-5">
+        <div class="mb-4">
+            <h1 class="display-4">The Split,</h1>
+        </div>
+        <div class="lead">
+            <p>Simplify Your Shared Expenses.</p>
+            <p>Track, manage, and split bills effortlessly with your roommates.</p>
+        </div>
+        <a class="btn btn-success btn-lg mt-5" role="button" href="{% url 'accounts:signup' %}">Get Started for Free</a>
+    </div>
+</div>
+<div class="container-fluid">
+    {% if messages %}
+    {% for message in messages %}
+    <div {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+        role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<div class="mb-2 container-fluid">
+    <h1 class="text-center mb-5 mt-2">How It Works</h1>
+
+    <div class="row row-cols-1 row-cols-xl-4 row-cols-md-3 row-cols-sm-2 g-4 align-center justify-content-center">
+        <div class="col">
+          <div class="card border-primary shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+            <div class="card-header">Step 1</div>
+                <div class="card-body text-primary">
+                    <h5 class="card-title">Create a Room</h5>
+                    <p class="card-text">Room admins can easily create a new room and invite roommates to join. Set up your shared space in just a few clicks.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-secondary shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+                <div class="card-header">Step 2</div>
+                <div class="card-body text-secondary">
+                    <h5 class="card-title">Invite Roommates</h5>
+                    <p class="card-text">Send invitations to your roommates via email. Once they join, you can all start managing your expenses together.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-success shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+                <div class="card-header">Step 3</div>
+                <div class="card-body text-success">
+                    <h5 class="card-title">Add Expenses</h5>
+                    <p class="card-text">Room members can add daily expenses and specify who paid. It will automatically split the costs and keep track of who owes what.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-danger shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+                <div class="card-header">Step 4</div>
+                <div class="card-body text-danger">
+                    <h5 class="card-title">Settle Balances</h5>
+                    <p class="card-text">View outstanding balances and settle up with ease. Keep everyone in the loop and ensure a fair share of expenses.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-warning shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+                <div class="card-header">Step 5</div>
+                <div class="card-body">
+                    <h5 class="card-title">Download Excel Report</h5>
+                    <p class="card-text">Generate detailed expense reports in Excel format. Download them with a single click for easy sharing and analysis.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-dark shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+                <div class="card-header">Step 6</div>
+                <div class="card-body text-dark">
+                    <h5 class="card-title">Get Insights</h5>
+                    <p class="card-text">Gain insights into your spending habits. Use our analytics tools to see where your money goes and make informed decisions.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-dark shadow-lg mb-3 mx-auto" style="max-width: 18rem;">
+                <div class="card-header">Step 7</div>
+                <div class="card-body text-dark">
+                    <h5 class="card-title">Notification Updates</h5>
+                    <p class="card-text">Stay informed with real-time notifications. Get alerts for new expenses, balance updates, and reminders for pending payments.</p>
+                </div>
+            </div>
+        </div>
+      </div>
+</div>
+{% endblock content %}
