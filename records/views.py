@@ -1,3 +1,4 @@
+import io
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -340,13 +341,6 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         assert room_id
         room = Room.objects.get(id=room_id)
 
-        # Create response object
-        file_name = f"{room.name}_all_data.xlsx"
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
-
         # TODO: Filter the current room data once electricity has room information.
         electricity_records = Electricity.objects.all().order_by("due_date")
 
@@ -408,8 +402,11 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         # Convert to Pandas DataFrame
         all_data_df = pd.DataFrame(all_records_data)
 
+        # Create an in-memory buffer
+        buffer = io.BytesIO()
+
         # Use xlsxwriter to create an Excel file
-        with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
             # Write all records to the first sheet
             all_data_df.to_excel(writer, sheet_name="All Records", index=False)
 
@@ -453,6 +450,17 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
                 sheet_name="Maid Records",
                 index=False,
             )
+
+        # Set buffer position to the beginning
+        buffer.seek(0)
+
+        # Create response object
+        file_name = f"{room.name}_all_data.xlsx"
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
 
         return response
 
