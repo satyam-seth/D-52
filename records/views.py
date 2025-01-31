@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -105,6 +106,7 @@ class DashboardTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView)
 class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View to render and handle record and water form"""
 
+    # TODO: Move it into RoomRequiredMixin
     def get_room(self) -> Room:
         """Returns room"""
 
@@ -325,6 +327,53 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
         }
 
         return render(request, "records/room_reports.html", context)
+
+
+class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """View for exporting all room data"""
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export all room data"""
+
+        # TODO: Use room info from RoomRequiredMixin
+        room_id = self.get_room_id(self.request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+
+        records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
+
+        # Prepare data
+        data = [
+            {
+                "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
+                "Item Name": record.item,
+                "Price": record.price,
+                "Purchase By": record.purchaser.get_full_name(),
+                "Entry ID": record.id,
+                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+                "Added By": record.adder.get_full_name(),
+            }
+            for record in records
+        ]
+
+        # Convert to Pandas DataFrame
+        df = pd.DataFrame(data)
+
+        # Create response object
+        file_name = f"{room.name}_all_data.xlsx"
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+        # Write DataFrame to Excel
+        with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
+            df.to_excel(writer, sheet_name="all_records", index=True)
+
+        return response
 
 
 # TODO: fix this view
