@@ -1,10 +1,29 @@
+# Code formatting tool
 black==23.12.1
+
+# Test coverage tool
 coverage==7.5.1
+
+# Django framework
 Django==4.2.0
+
+# MyPy type stubs for Django
 django-stubs==4.2.7
+
+# Tool for optimizing import statements
 isort==5.13.2
+
+# Typing checks
 mypy==1.8.0
+
+# Library for image manipulation
 Pillow==9.4.0
+
+# Linting tool
 pylint==3.0.3
+
+# Pylint plugin for Django projects
 pylint-django==2.5.5
+
+# TODO: Remove after migration to pandas for exporting data
 xlwt==1.3.0
