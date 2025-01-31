@@ -347,6 +347,26 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         )
         response["Content-Disposition"] = f"attachment; filename={file_name}"
 
+        # TODO: Filter the current room data once electricity has room information.
+        electricity_records = Electricity.objects.all().order_by("due_date")
+
+        # Prepare electricity records data
+        electricity_data = [
+            {
+                "Date": record.due_date.strftime("%d-%m-%Y"),
+                "Price": record.price,
+                "Entry ID": record.id,
+                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+            }
+            for record in electricity_records
+        ]
+
+        # Convert to DataFrame
+        electricity_df = pd.DataFrame(electricity_data)
+
         all_records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
         # Prepare all records data
         all_records_data = [
@@ -399,6 +419,13 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
                 member_data_df = pd.DataFrame(room_member_data)
                 sheet_name = f"{room_member.get_full_name()}"
                 member_data_df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+            # Convert to electricity DataFrame and write to a new sheet
+            electricity_df.to_excel(
+                writer,
+                sheet_name="Electricity Records",
+                index=False,
+            )
 
         return response
 
