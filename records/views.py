@@ -367,6 +367,26 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         # Convert to DataFrame
         electricity_df = pd.DataFrame(electricity_data)
 
+        # TODO: Filter the current room data once maid has room information.
+        maid_records = Maid.objects.all().order_by("due_date")
+
+        # Prepare maid records data
+        maid_data = [
+            {
+                "Date": record.due_date.strftime("%d-%m-%Y"),
+                "Price": record.price,
+                "Entry ID": record.id,
+                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+            }
+            for record in maid_records
+        ]
+
+        # Convert to DataFrame
+        maid_df = pd.DataFrame(maid_data)
+
         all_records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
         # Prepare all records data
         all_records_data = [
@@ -424,6 +444,13 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
             electricity_df.to_excel(
                 writer,
                 sheet_name="Electricity Records",
+                index=False,
+            )
+
+            # Convert to maid DataFrame and write to a new sheet
+            maid_df.to_excel(
+                writer,
+                sheet_name="Maid Records",
                 index=False,
             )
 
