@@ -340,10 +340,16 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         assert room_id
         room = Room.objects.get(id=room_id)
 
-        records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
+        # Create response object
+        file_name = f"{room.name}_all_data.xlsx"
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
 
-        # Prepare data
-        data = [
+        all_records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
+        # Prepare all records data
+        all_records_data = [
             {
                 "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
                 "Item Name": record.item,
@@ -356,22 +362,43 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
                 "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
                 "Added By": record.adder.get_full_name(),
             }
-            for record in records
+            for record in all_records
         ]
 
         # Convert to Pandas DataFrame
-        df = pd.DataFrame(data)
+        all_data_df = pd.DataFrame(all_records_data)
 
-        # Create response object
-        file_name = f"{room.name}_all_data.xlsx"
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-        # Write DataFrame to Excel
+        # Use xlsxwriter to create an Excel file
         with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
-            df.to_excel(writer, sheet_name="all_records", index=True)
+            # Write all records to the first sheet
+            all_data_df.to_excel(writer, sheet_name="All Records", index=False)
+
+            room_members = User.objects.filter(room_membership__room__id=room_id)
+
+            # Create a sheet for each room member
+            for room_member in room_members:
+                room_member_records = all_records.filter(purchaser=room_member)
+
+                # Prepare data for each member
+                room_member_data = [
+                    {
+                        "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
+                        "Item Name": record.item,
+                        "Price": record.price,
+                        "Entry ID": record.id,
+                        "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                        "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                        "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                        "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+                        "Added By": record.adder.get_full_name(),
+                    }
+                    for record in room_member_records
+                ]
+
+                # Convert to member DataFrame and write to a new sheet
+                member_data_df = pd.DataFrame(room_member_data)
+                sheet_name = f"{room_member.get_full_name()}"
+                member_data_df.to_excel(writer, sheet_name=sheet_name, index=False)
 
         return response
 
