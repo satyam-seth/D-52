@@ -60,6 +60,19 @@
             <a class="btn btn-sm btn-primary" href="{% url 'records:maid_xls' %}" role="button">Download</a>
           </td>
         </tr>
+        <tr>
+          <th scope="row">5</th>
+          <td>All Data</td>
+          <td>
+            <!-- TODO: uncomment once handle it -->
+            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
+            <form action="{% url 'records:export_all' %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-primary" href="{% url 'records:overall_xls' %}" role="button">Download</button>
+            </form>
+          </td>
+        </tr>
+        
       </tbody>
     </table>
   </div>
