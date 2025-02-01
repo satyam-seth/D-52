@@ -107,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# set custom user model as auth user mnodel
+# set custom user model as auth user model
 AUTH_USER_MODEL = "accounts.User"
 
 

@@ -25,5 +25,15 @@ pylint==3.0.3
 # Pylint plugin for Django projects
 pylint-django==2.5.5
 
+# Data manipulation library (used for exporting to Excel)
+pandas==2.2.3
+
+# MyPy type stubs for pandas
+pandas-stubs==2.2.3.241126
+
+# Engine for handling Excel files (used by pandas)
+# We can use openpyxl
+XlsxWriter==3.2.2
+
 # TODO: Remove after migration to pandas for exporting data
 xlwt==1.3.0

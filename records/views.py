@@ -1,5 +1,7 @@
+import io
 from typing import Any, Dict, Optional
 
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -105,6 +107,7 @@ class DashboardTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView)
 class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View to render and handle record and water form"""
 
+    # TODO: Move it into RoomRequiredMixin
     def get_room(self) -> Room:
         """Returns room"""
 
@@ -325,6 +328,141 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
         }
 
         return render(request, "records/room_reports.html", context)
+
+
+class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """View for exporting all room data"""
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export all room data"""
+
+        # TODO: Use room info from RoomRequiredMixin
+        room_id = self.get_room_id(self.request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+
+        # TODO: Filter the current room data once electricity has room information.
+        electricity_records = Electricity.objects.all().order_by("due_date")
+
+        # Prepare electricity records data
+        electricity_data = [
+            {
+                "Date": record.due_date.strftime("%d-%m-%Y"),
+                "Price": record.price,
+                "Entry ID": record.id,
+                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+            }
+            for record in electricity_records
+        ]
+
+        # Convert to DataFrame
+        electricity_df = pd.DataFrame(electricity_data)
+
+        # TODO: Filter the current room data once maid has room information.
+        maid_records = Maid.objects.all().order_by("due_date")
+
+        # Prepare maid records data
+        maid_data = [
+            {
+                "Date": record.due_date.strftime("%d-%m-%Y"),
+                "Price": record.price,
+                "Entry ID": record.id,
+                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+            }
+            for record in maid_records
+        ]
+
+        # Convert to DataFrame
+        maid_df = pd.DataFrame(maid_data)
+
+        all_records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
+        # Prepare all records data
+        all_records_data = [
+            {
+                "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
+                "Item Name": record.item,
+                "Price": record.price,
+                "Purchase By": record.purchaser.get_full_name(),
+                "Entry ID": record.id,
+                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+                "Added By": record.adder.get_full_name(),
+            }
+            for record in all_records
+        ]
+
+        # Convert to Pandas DataFrame
+        all_data_df = pd.DataFrame(all_records_data)
+
+        # Create an in-memory buffer
+        buffer = io.BytesIO()
+
+        # Use xlsxwriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write all records to the first sheet
+            all_data_df.to_excel(writer, sheet_name="All Records", index=False)
+
+            room_members = User.objects.filter(room_membership__room__id=room_id)
+
+            # Create a sheet for each room member
+            for room_member in room_members:
+                room_member_records = all_records.filter(purchaser=room_member)
+
+                # Prepare data for each member
+                room_member_data = [
+                    {
+                        "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
+                        "Item Name": record.item,
+                        "Price": record.price,
+                        "Entry ID": record.id,
+                        "Entry Date": record.created_on.strftime("%d-%m-%Y"),
+                        "Entry Time": record.created_on.strftime("%H:%M:%S"),
+                        "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
+                        "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
+                        "Added By": record.adder.get_full_name(),
+                    }
+                    for record in room_member_records
+                ]
+
+                # Convert to member DataFrame and write to a new sheet
+                member_data_df = pd.DataFrame(room_member_data)
+                sheet_name = f"{room_member.get_full_name()}"
+                member_data_df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+            # Convert to electricity DataFrame and write to a new sheet
+            electricity_df.to_excel(
+                writer,
+                sheet_name="Electricity Records",
+                index=False,
+            )
+
+            # Convert to maid DataFrame and write to a new sheet
+            maid_df.to_excel(
+                writer,
+                sheet_name="Maid Records",
+                index=False,
+            )
+
+        # Set buffer position to the beginning
+        buffer.seek(0)
+
+        # Create response object
+        file_name = f"{room.name}_all_data.xlsx"
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+        return response
 
 
 # TODO: fix this view

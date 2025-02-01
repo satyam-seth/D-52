@@ -164,6 +164,7 @@ class Water(models.Model):
         return f"{self.purchase_date} {self.room.name}"
 
 
+# TODO: Add room info
 # TODO: Create a common model to store electricity and maid data
 # TODO: fix this model
 class Electricity(models.Model):
@@ -183,6 +184,7 @@ class Electricity(models.Model):
         return str(self.due_date)
 
 
+# TODO: Add room info
 # TODO: fix this model
 class Maid(models.Model):
     """Model to store maid salary details"""
