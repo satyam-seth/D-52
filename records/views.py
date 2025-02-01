@@ -14,7 +14,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
-from records.export import get_electricity_df, get_maid_df, get_record_df
+from records.export import RoomExportData
 from records.forms import RecordForm, WaterForm
 from records.models import Electricity, Maid, Record, Water
 
@@ -334,6 +334,13 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
 class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View for exporting all room data"""
 
+    # TODO: Add sheet styling
+    def write_to_sheet(self, writer, sheet_name: str, data: pd.DataFrame) -> None:
+        """
+        Helper function to write a DataFrame to an Excel sheet.
+        """
+        data.to_excel(writer, sheet_name=sheet_name, index=False)
+
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export all room data"""
 
@@ -342,43 +349,30 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         assert room_id
         room = Room.objects.get(id=room_id)
 
-        electricity_df = get_electricity_df(room_id)
-        maid_df = get_maid_df(room_id)
-        all_data_df = get_record_df(room_id)
+        # Create room export data instance
+        room_export = RoomExportData(room_id)
 
-        # Create an in-memory buffer
+        # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
 
-        # Use xlsxwriter to create an Excel file
+        # Use pd.ExcelWriter to create an Excel file
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
             # Write all records to the first sheet
-            all_data_df.to_excel(writer, sheet_name="All Records", index=False)
+            self.write_to_sheet(writer, "All Records", room_export.get_record_df())
 
+            # Write records for each room member to a separate sheet
             room_members = User.objects.filter(room_membership__room__id=room_id)
-
-            # Create a sheet for each room member
             for room_member in room_members:
-                member_data_df = get_record_df(room_id=room_id, purchaser=room_member)
-                sheet_name = f"{room_member.get_full_name()}"
-                # Convert to member DataFrame and write to a new sheet
-                member_data_df.to_excel(writer, sheet_name=sheet_name, index=False)
+                member_data_df = room_export.get_record_df(purchaser=room_member)
+                self.write_to_sheet(writer, room_member.get_full_name(), member_data_df)
 
-            # Convert to electricity DataFrame and write to a new sheet
-            electricity_df.to_excel(
+            # Write Maid and Electricity records to separate sheets
+            self.write_to_sheet(writer, "Maid Records", room_export.get_maid_df())
+            self.write_to_sheet(
                 writer,
-                sheet_name="Electricity Records",
-                index=False,
+                "Electricity Records",
+                room_export.get_electricity_df(),
             )
-
-            # Convert to maid DataFrame and write to a new sheet
-            maid_df.to_excel(
-                writer,
-                sheet_name="Maid Records",
-                index=False,
-            )
-
-        # Set buffer position to the beginning
-        buffer.seek(0)
 
         # Create response object
         file_name = f"{room.name}_all_data.xlsx"
