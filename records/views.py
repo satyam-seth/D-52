@@ -14,6 +14,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
+from records.export import get_electricity_df, get_maid_df, get_record_df
 from records.forms import RecordForm, WaterForm
 from records.models import Electricity, Maid, Record, Water
 
@@ -341,66 +342,9 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         assert room_id
         room = Room.objects.get(id=room_id)
 
-        # TODO: Filter the current room data once electricity has room information.
-        electricity_records = Electricity.objects.all().order_by("due_date")
-
-        # Prepare electricity records data
-        electricity_data = [
-            {
-                "Date": record.due_date.strftime("%d-%m-%Y"),
-                "Price": record.price,
-                "Entry ID": record.id,
-                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
-                "Entry Time": record.created_on.strftime("%H:%M:%S"),
-                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
-                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
-            }
-            for record in electricity_records
-        ]
-
-        # Convert to DataFrame
-        electricity_df = pd.DataFrame(electricity_data)
-
-        # TODO: Filter the current room data once maid has room information.
-        maid_records = Maid.objects.all().order_by("due_date")
-
-        # Prepare maid records data
-        maid_data = [
-            {
-                "Date": record.due_date.strftime("%d-%m-%Y"),
-                "Price": record.price,
-                "Entry ID": record.id,
-                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
-                "Entry Time": record.created_on.strftime("%H:%M:%S"),
-                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
-                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
-            }
-            for record in maid_records
-        ]
-
-        # Convert to DataFrame
-        maid_df = pd.DataFrame(maid_data)
-
-        all_records = Record.objects.filter(room__id=room_id).order_by("purchase_date")
-        # Prepare all records data
-        all_records_data = [
-            {
-                "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
-                "Item Name": record.item,
-                "Price": record.price,
-                "Purchase By": record.purchaser.get_full_name(),
-                "Entry ID": record.id,
-                "Entry Date": record.created_on.strftime("%d-%m-%Y"),
-                "Entry Time": record.created_on.strftime("%H:%M:%S"),
-                "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
-                "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
-                "Added By": record.adder.get_full_name(),
-            }
-            for record in all_records
-        ]
-
-        # Convert to Pandas DataFrame
-        all_data_df = pd.DataFrame(all_records_data)
+        electricity_df = get_electricity_df(room_id)
+        maid_df = get_maid_df(room_id)
+        all_data_df = get_record_df(room_id)
 
         # Create an in-memory buffer
         buffer = io.BytesIO()
@@ -414,27 +358,9 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
 
             # Create a sheet for each room member
             for room_member in room_members:
-                room_member_records = all_records.filter(purchaser=room_member)
-
-                # Prepare data for each member
-                room_member_data = [
-                    {
-                        "Purchase Date": record.purchase_date.strftime("%d-%m-%Y"),
-                        "Item Name": record.item,
-                        "Price": record.price,
-                        "Entry ID": record.id,
-                        "Entry Date": record.created_on.strftime("%d-%m-%Y"),
-                        "Entry Time": record.created_on.strftime("%H:%M:%S"),
-                        "Last Modified Date": record.modified_on.strftime("%d-%m-%Y"),
-                        "Last Modified Time": record.modified_on.strftime("%H:%M:%S"),
-                        "Added By": record.adder.get_full_name(),
-                    }
-                    for record in room_member_records
-                ]
-
-                # Convert to member DataFrame and write to a new sheet
-                member_data_df = pd.DataFrame(room_member_data)
+                member_data_df = get_record_df(room_id=room_id, purchaser=room_member)
                 sheet_name = f"{room_member.get_full_name()}"
+                # Convert to member DataFrame and write to a new sheet
                 member_data_df.to_excel(writer, sheet_name=sheet_name, index=False)
 
             # Convert to electricity DataFrame and write to a new sheet
