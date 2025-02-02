@@ -402,19 +402,13 @@ class ExportAllView(BaseExportView):
         return self.generate_excel_response(file_name, buffer)
 
 
-class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
+class ExportAllRecordView(BaseExportView):
     """View for exporting room all record data"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room all record data"""
 
-        # TODO: Use room info from RoomRequiredMixin
-        room_id = self.get_room_id(self.request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-
-        # Create room export data instance
-        room_export = RoomExporter(room_id)
+        room, exporter = self.get_room_and_export_instance(request)
 
         # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
@@ -422,18 +416,12 @@ class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
         # Use pd.ExcelWriter to create an Excel file
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
             # Write all records to the first sheet
-            record_df = room_export.get_record_df()
+            record_df = exporter.get_record_df()
             record_df.to_excel(writer, sheet_name="All Records", index=False)
 
         # Create response object
         file_name = f"{room.name}_all_record_data.xlsx"
-        response = HttpResponse(
-            buffer.getvalue(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-        return response
+        return self.generate_excel_response(file_name, buffer)
 
 
 # TODO: Fix this view
