@@ -64,8 +64,8 @@ class TestUrls(TestCase):
         )
         self.assertEqual(resolve(url).func.view_class, views.ExportMemberRecordView)
 
-    def test_water_url(self):
-        """Test water url resolve"""
+    def test_export_water_url(self):
+        """Test export water url resolve"""
 
         url = reverse("records:export_water")
         self.assertEqual(resolve(url).func.view_class, views.ExportWaterView)
