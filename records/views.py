@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
@@ -367,10 +367,10 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
 
 
 class ExportAllView(BaseExportView):
-    """View for exporting all room data"""
+    """View for exporting room all data"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Handles POST requests to export all room data"""
+        """Handles POST requests to export room all data"""
 
         room, exporter = self.get_room_and_export_instance(request)
 
@@ -421,6 +421,30 @@ class ExportAllRecordView(BaseExportView):
 
         # Create response object
         file_name = f"{room.name}_all_record_data.xlsx"
+        return self.generate_excel_response(file_name, buffer)
+
+
+class ExportMemberRecordView(BaseExportView):
+    """View for exporting room member records data"""
+
+    def post(self, request: HttpRequest, member_id: int) -> HttpResponse:
+        """Handles POST requests to export all room member records data"""
+
+        _, exporter = self.get_room_and_export_instance(request)
+        room_member = get_object_or_404(User, pk=member_id)
+        member_name = room_member.get_full_name()
+
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
+
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write records for room member to a separate sheet
+            member_data_df = exporter.get_record_df(purchaser=room_member)
+            self.write_to_sheet(writer, room_member.get_full_name(), member_data_df)
+
+        # Create response object
+        file_name = f"{member_name}_all_record_data.xlsx"
         return self.generate_excel_response(file_name, buffer)
 
 
