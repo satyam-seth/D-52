@@ -492,49 +492,23 @@ class ExportMaidView(BaseExportView):
         return self.generate_excel_response(file_name, buffer)
 
 
-# TODO: fix this view
-# TODO: Add login required once user group login achieved
-def electricity_xls(request: HttpRequest) -> HttpResponse:
-    """View to download electricity report excel file"""
+class ExportElectricityView(BaseExportView):
+    """View for exporting room electricity data"""
 
-    # query data from db
-    records = Electricity.objects.all().order_by("due_date")
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export room electricity data"""
 
-    # prepare data
-    data = []
-    for record in records:
-        temp = [
-            record.due_date.strftime("%d-%m-%Y"),
-            record.price,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-        ]
-        data.append(temp)
+        room, exporter = self.get_room_and_export_instance(request)
 
-    # columns
-    columns = [
-        "Date",
-        "Price",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-    ]
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
 
-    # crate response object
-    file_name = "Electricity Bill Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write electricity records to the first sheet
+            water_df = exporter.get_electricity_df()
+            self.write_to_sheet(writer, "Electricity Records", water_df)
 
-    # save workbook and return response
-    workbook = get_excel(
-        sheet_name="Electricity Bill Records",
-        columns=columns,
-        data=data,
-    )
-    workbook.save(response)
-    return response
+        # Create response object
+        file_name = f"{room.name}_electricity_data.xlsx"
+        return self.generate_excel_response(file_name, buffer)
