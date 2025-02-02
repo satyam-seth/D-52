@@ -472,53 +472,6 @@ class ExportWaterView(BaseExportView):
 
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
-def water_xls(request: HttpRequest) -> HttpResponse:
-    """View to download water report excel file"""
-
-    # query data from db
-    records = Water.objects.all().order_by("purchase_date")
-
-    # prepare data
-    data = []
-    for record in records:
-        adder_name = record.adder.get_full_name()
-        temp = [
-            record.purchase_date.strftime("%d-%m-%Y"),
-            record.quantity,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-            adder_name,
-        ]
-        data.append(temp)
-
-    # columns
-    columns = [
-        "Date",
-        "Quantity",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-        "Added By",
-    ]
-
-    # crate response object
-    file_name = "Water Entry Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # save workbook and return response
-    workbook = get_excel(sheet_name="Water Entry Records", columns=columns, data=data)
-    workbook.save(response)
-    return response
-
-
-# TODO: fix this view
-# TODO: Add login required once user group login achieved
 def electricity_xls(request: HttpRequest) -> HttpResponse:
     """View to download electricity report excel file"""
 
