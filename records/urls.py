@@ -8,8 +8,11 @@ urlpatterns = [
     path("dashboard/", views.DashboardTemplateView.as_view(), name="dashboard"),
     path("add_data/", views.AddDataView.as_view(), name="add_data"),
     path("records/", views.RecordListView.as_view(), name="records"),
-    # TODO: rename to member_id
-    path("records/<int:user_id>/", views.RecordListView.as_view(), name="user_records"),
+    path(
+        "records/<int:member_id>/",
+        views.RecordListView.as_view(),
+        name="member_records",
+    ),
     path("waters/", views.WaterListView.as_view(), name="waters"),
     path("export_data/", views.ExportDataView.as_view(), name="export_data"),
     path("room_reports/", views.RoomReportView.as_view(), name="room_reports"),
