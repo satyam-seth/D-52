@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime
 from typing import Optional, Type
 
 import pandas as pd
@@ -7,7 +7,7 @@ from accounts.models import User
 from records.models import Electricity, Maid, Record
 
 
-class RoomExportData:
+class RoomExporter:
     """
     Helper class to get data related to a specific room (by room_id) for exporting.
     """
@@ -20,7 +20,7 @@ class RoomExportData:
 
         return obj.strftime("%d-%m-%Y")
 
-    def get_formatted_time(self, obj: time):
+    def get_formatted_time(self, obj: datetime):
         """Returns formatted time for time object"""
 
         return obj.strftime("%H:%M:%S")

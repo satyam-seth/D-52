@@ -14,7 +14,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
-from records.export import RoomExportData
+from records.export import RoomExporter
 from records.forms import RecordForm, WaterForm
 from records.models import Electricity, Maid, Record, Water
 
@@ -331,26 +331,48 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
         return render(request, "records/room_reports.html", context)
 
 
-class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
-    """View for exporting all room data"""
+class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """Base view for exporting data."""
 
-    # TODO: Add sheet styling
     def write_to_sheet(self, writer, sheet_name: str, data: pd.DataFrame) -> None:
         """
-        Helper function to write a DataFrame to an Excel sheet.
+        Helper function to write a DataFrame to an Excel sheet
         """
+        # TODO: Add sheet styling
         data.to_excel(writer, sheet_name=sheet_name, index=False)
+
+    def get_room_and_export_instance(self, request) -> tuple:
+        """Fetch room details and initialize RoomExportData."""
+
+        # TODO: Use room info from RoomRequiredMixin
+        room_id = self.get_room_id(request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+
+        return room, RoomExporter(room_id)
+
+    def generate_excel_response(
+        self,
+        file_name: str,
+        buffer: io.BytesIO,
+    ) -> HttpResponse:
+        """Generate and return an Excel response."""
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+        return response
+
+
+class ExportAllView(BaseExportView):
+    """View for exporting all room data"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export all room data"""
 
-        # TODO: Use room info from RoomRequiredMixin
-        room_id = self.get_room_id(self.request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-
-        # Create room export data instance
-        room_export = RoomExportData(room_id)
+        room, exporter = self.get_room_and_export_instance(request)
 
         # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
@@ -358,46 +380,35 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         # Use pd.ExcelWriter to create an Excel file
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
             # Write all records to the first sheet
-            self.write_to_sheet(writer, "All Records", room_export.get_record_df())
+            all_records_df = exporter.get_record_df()
+            self.write_to_sheet(writer, "All Records", all_records_df)
 
             # Write records for each room member to a separate sheet
-            room_members = User.objects.filter(room_membership__room__id=room_id)
+            room_members = User.objects.filter(room_membership__room=room)
             for room_member in room_members:
-                member_data_df = room_export.get_record_df(purchaser=room_member)
+                member_data_df = exporter.get_record_df(purchaser=room_member)
                 self.write_to_sheet(writer, room_member.get_full_name(), member_data_df)
 
-            # Write Maid and Electricity records to separate sheets
-            self.write_to_sheet(writer, "Maid Records", room_export.get_maid_df())
-            self.write_to_sheet(
-                writer,
-                "Electricity Records",
-                room_export.get_electricity_df(),
-            )
+            # Write Maid records to separate sheets
+            maid_df = exporter.get_maid_df()
+            self.write_to_sheet(writer, "Maid Records", maid_df)
+
+            # Write Electricity records to separate sheets
+            electricity_df = exporter.get_electricity_df()
+            self.write_to_sheet(writer, "Electricity Records", electricity_df)
 
         # Create response object
         file_name = f"{room.name}_all_data.xlsx"
-        response = HttpResponse(
-            buffer.getvalue(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-        return response
+        return self.generate_excel_response(file_name, buffer)
 
 
-class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
+class ExportAllRecordView(BaseExportView):
     """View for exporting room all record data"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room all record data"""
 
-        # TODO: Use room info from RoomRequiredMixin
-        room_id = self.get_room_id(self.request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-
-        # Create room export data instance
-        room_export = RoomExportData(room_id)
+        room, exporter = self.get_room_and_export_instance(request)
 
         # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
@@ -405,18 +416,12 @@ class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
         # Use pd.ExcelWriter to create an Excel file
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
             # Write all records to the first sheet
-            record_df = room_export.get_record_df()
+            record_df = exporter.get_record_df()
             record_df.to_excel(writer, sheet_name="All Records", index=False)
 
         # Create response object
         file_name = f"{room.name}_all_record_data.xlsx"
-        response = HttpResponse(
-            buffer.getvalue(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-        return response
+        return self.generate_excel_response(file_name, buffer)
 
 
 # TODO: Fix this view
