@@ -116,10 +116,10 @@ class RoomInvitationManager(models.Manager):
 
         invitation_url = f"{absolute_invitation_url}?token={token}"
 
-        print(invitation_url)
+        # TODO: send email and remove print statement
+        print(f"room id: {room.id}, email: {email}, invitation link:{invitation_url}")
 
-        # TODO: send email
-        return invitation
+        return invitation, invitation_url
 
     def accept_invitation(self, current_user, token: str) -> None:
         """Accept the invitation for the current user using the token"""
