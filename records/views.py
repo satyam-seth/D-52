@@ -448,6 +448,28 @@ class ExportMemberRecordView(BaseExportView):
         return self.generate_excel_response(file_name, buffer)
 
 
+class ExportWaterView(BaseExportView):
+    """View for exporting room water data"""
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export room water data"""
+
+        room, exporter = self.get_room_and_export_instance(request)
+
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
+
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write Water records to the first sheet
+            water_df = exporter.get_water_df()
+            self.write_to_sheet(writer, "Water Records", water_df)
+
+        # Create response object
+        file_name = f"{room.name}_water_data.xlsx"
+        return self.generate_excel_response(file_name, buffer)
+
+
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def water_xls(request: HttpRequest) -> HttpResponse:
