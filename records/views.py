@@ -14,7 +14,7 @@ from django.views.generic import ListView, TemplateView, View
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
 from core.excel import get_excel
-from records.export import RoomExportData
+from records.export import RoomExportData, RoomExporter
 from records.forms import RecordForm, WaterForm
 from records.models import Electricity, Maid, Record, Water
 
@@ -331,6 +331,41 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
         return render(request, "records/room_reports.html", context)
 
 
+class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """Base view for exporting data."""
+
+    def write_to_sheet(self, writer, sheet_name: str, data: pd.DataFrame) -> None:
+        """
+        Helper function to write a DataFrame to an Excel sheet
+        """
+        # TODO: Add sheet styling
+        data.to_excel(writer, sheet_name=sheet_name, index=False)
+
+    def get_room_and_export_instance(self, request) -> tuple:
+        """Fetch room details and initialize RoomExportData."""
+
+        # TODO: Use room info from RoomRequiredMixin
+        room_id = self.get_room_id(request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
+
+        return room, RoomExporter(room_id)
+
+    def generate_excel_response(
+        self,
+        file_name: str,
+        buffer: io.BytesIO,
+    ) -> HttpResponse:
+        """Generate and return an Excel response."""
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+        return response
+
+
 class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View for exporting all room data"""
 
@@ -350,7 +385,7 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         room = Room.objects.get(id=room_id)
 
         # Create room export data instance
-        room_export = RoomExportData(room_id)
+        room_export = RoomExporter(room_id)
 
         # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
@@ -397,7 +432,7 @@ class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
         room = Room.objects.get(id=room_id)
 
         # Create room export data instance
-        room_export = RoomExportData(room_id)
+        room_export = RoomExporter(room_id)
 
         # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
