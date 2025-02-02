@@ -352,17 +352,16 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
 
     def generate_excel_buffer(
         self,
-        dfs_with_sheets: list[tuple[str, pd.DataFrame]],
+        data: list[tuple[str, pd.DataFrame]],
     ) -> io.BytesIO:
-        """Generates a single in-memory Excel file with multiple sheets from a list of DataFrames"""
+        """Generates a single in-memory Excel file from a list of DataFrames with sheet names"""
 
         # Create an in-memory buffer for the Excel file
         buffer = io.BytesIO()
 
         # Use pd.ExcelWriter to create an Excel file
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            for sheet_name, df in dfs_with_sheets:
-                print(sheet_name, df)
+            for sheet_name, df in data:
                 self.write_to_sheet(writer, sheet_name, df)
 
         # Reset buffer position for reading
@@ -382,6 +381,13 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = f"attachment; filename={file_name}.xlsx"
+        return response
+
+    def get_file_response(self, file_name: str, data: list[tuple[str, pd.DataFrame]]):
+        """Generates an Excel file response from a list of DataFrames with sheet names"""
+
+        buffer = self.generate_excel_buffer(data)
+        response = self.generate_excel_response(file_name, buffer)
         return response
 
 
@@ -410,9 +416,8 @@ class ExportAllView(BaseExportView):
             ("Electricity Records", exporter.get_electricity_df()),
         ]
 
-        buffer = self.generate_excel_buffer(data)
         file_name = f"{room.name}_all_data"
-        return self.generate_excel_response(file_name, buffer)
+        return self.get_file_response(file_name, data)
 
 
 class ExportAllRecordView(BaseExportView):
@@ -422,12 +427,10 @@ class ExportAllRecordView(BaseExportView):
         """Handles POST requests to export room all record data"""
 
         room, exporter = self.get_room_and_export_instance(request)
-
         data = [("All Records", exporter.get_record_df())]
-        buffer = self.generate_excel_buffer(data)
 
         file_name = f"{room.name}_all_records_data"
-        return self.generate_excel_response(file_name, buffer)
+        return self.get_file_response(file_name, data)
 
 
 class ExportMemberRecordView(BaseExportView):
@@ -437,16 +440,14 @@ class ExportMemberRecordView(BaseExportView):
         """Handles POST requests to export room member records data"""
 
         room, exporter = self.get_room_and_export_instance(request)
-
         room_member = get_object_or_404(User, pk=member_id)
+
         member_name = room_member.get_full_name()
         member_df = exporter.get_record_df(purchaser=room_member)
-
         data = [(member_name, member_df)]
-        buffer = self.generate_excel_buffer(data)
 
         file_name = f"{room.name}_{member_name}_records_data"
-        return self.generate_excel_response(file_name, buffer)
+        return self.get_file_response(file_name, data)
 
 
 class ExportWaterView(BaseExportView):
@@ -456,12 +457,10 @@ class ExportWaterView(BaseExportView):
         """Handles POST requests to export room water data"""
 
         room, exporter = self.get_room_and_export_instance(request)
-
         data = [("Water Records", exporter.get_water_df())]
-        buffer = self.generate_excel_buffer(data)
 
         file_name = f"{room.name}_water_data"
-        return self.generate_excel_response(file_name, buffer)
+        return self.get_file_response(file_name, data)
 
 
 class ExportMaidView(BaseExportView):
@@ -471,12 +470,10 @@ class ExportMaidView(BaseExportView):
         """Handles POST requests to export room maid data"""
 
         room, exporter = self.get_room_and_export_instance(request)
-
         data = [("Maid Records", exporter.get_maid_df())]
-        buffer = self.generate_excel_buffer(data)
 
         file_name = f"{room.name}_maid_data"
-        return self.generate_excel_response(file_name, buffer)
+        return self.get_file_response(file_name, data)
 
 
 class ExportElectricityView(BaseExportView):
@@ -486,10 +483,7 @@ class ExportElectricityView(BaseExportView):
         """Handles POST requests to export room electricity data"""
 
         room, exporter = self.get_room_and_export_instance(request)
-
         data = [("Electricity Records", exporter.get_electricity_df())]
-        buffer = self.generate_excel_buffer(data)
 
-        # Create response object
         file_name = f"{room.name}_electricity_data"
-        return self.generate_excel_response(file_name, buffer)
+        return self.get_file_response(file_name, data)
