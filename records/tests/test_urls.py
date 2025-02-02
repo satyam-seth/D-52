@@ -25,10 +25,10 @@ class TestUrls(TestCase):
         url = reverse("records:records")
         self.assertEqual(resolve(url).func.view_class, views.RecordListView)
 
-    def test_user_records_url(self):
-        """Test user records url resolve"""
+    def test_member_records_url(self):
+        """Test member records url resolve"""
 
-        url = reverse("records:user_records", args=[1])  # Assuming user_id is 1
+        url = reverse("records:member_records", args=[1])  # Assuming user_id is 1
         self.assertEqual(resolve(url).func.view_class, views.RecordListView)
 
     def test_waters_url(self):

@@ -806,11 +806,11 @@ class TestRecordListView(TransactionTestCase):
         )
 
         # Make a GET request to the view with user 1 pk
-        user_records_url = reverse(
-            "records:user_records",
-            kwargs={"user_id": self.user1.pk},
+        member_records_url = reverse(
+            "records:member_records",
+            kwargs={"member_id": self.user1.pk},
         )
-        response = self.client.get(user_records_url)
+        response = self.client.get(member_records_url)
 
         # Check that the response has a status code of 200
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -819,7 +819,7 @@ class TestRecordListView(TransactionTestCase):
         self.assertTemplateUsed(response, "records/record_list.html")
 
         # Assert context is correct
-        self.assertTrue(response.context["user_records"], self.user1.pk)
+        self.assertTrue(response.context["member_id"], self.user1.pk)
 
         # Check that only room 1 records with purchaser user 1 are present in the context
         self.assertQuerysetEqual(
@@ -869,11 +869,11 @@ class TestRecordListView(TransactionTestCase):
         search_item = "good"
 
         # Make a GET request to the view with user 1 pk and search query
-        user_records_url = reverse(
-            "records:user_records",
-            kwargs={"user_id": self.user1.pk},
+        member_records_url = reverse(
+            "records:member_records",
+            kwargs={"member_id": self.user1.pk},
         )
-        response = self.client.get(user_records_url, {"query": search_item})
+        response = self.client.get(member_records_url, {"query": search_item})
 
         # Check that the response has a status code of 200
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -882,7 +882,7 @@ class TestRecordListView(TransactionTestCase):
         self.assertTemplateUsed(response, "records/record_list.html")
 
         # Assert context is correct
-        self.assertTrue(response.context["user_records"], self.user1.pk)
+        self.assertTrue(response.context["member_id"], self.user1.pk)
 
         # Check that only room1 records with purchaser user 1
         # contain item "good" are present in the context
