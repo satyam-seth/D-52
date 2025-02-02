@@ -215,12 +215,12 @@ class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
 
     def get_queryset(self):
         room_id = self.get_room_id(self.request)
-        user_id = self.kwargs.get("user_id")
+        member_id = self.kwargs.get("member_id")
         item_name_query = self.request.GET.get("query")
         queryset = super().get_queryset().filter(room__id=room_id)
 
-        if user_id:
-            queryset = queryset.filter(purchaser__id=user_id)
+        if member_id:
+            queryset = queryset.filter(purchaser__id=member_id)
 
         if item_name_query:
             queryset = queryset.filter(item__icontains=item_name_query)
@@ -228,12 +228,12 @@ class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return queryset
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        user_id = self.kwargs.get("user_id")
+        member_id = self.kwargs.get("member_id")
         item_name_query = self.request.GET.get("query")
         context = super().get_context_data(**kwargs)
 
-        if user_id:
-            context["user_records"] = user_id
+        if member_id:
+            context["member_id"] = member_id
         elif item_name_query:
             context["search_records"] = item_name_query
             context["records_active"] = "active"
