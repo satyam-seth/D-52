@@ -646,17 +646,26 @@ class TestRoomInviteView(TransactionTestCase):
     def test_invite_new_member(self, mock_send_invitation):
         """Test invite new member"""
 
+        # set up mock objects and return values
+        mock_invitation_link = "http://testserver/invitation-join-url?token=mock_token"
+        mock_send_invitation.return_value = (None, mock_invitation_link)
+
         # Post form
         data = {"email": self.member_email}
         response = self.client.post(self.url, data, follow=True)
 
         # Assert that the success message is displayed
         response_messages = tuple(get_messages(response.wsgi_request))
-        self.assertEqual(len(response_messages), 1)
+        self.assertEqual(len(response_messages), 2)
         self.assertEqual(response_messages[0].level, messages.SUCCESS)
         self.assertEqual(
             response_messages[0].message,
             f"Email: '{data['email']}' is successfully invited to room '{self.room.name}'",
+        )
+        self.assertEqual(response_messages[1].level, messages.INFO)
+        self.assertEqual(
+            response_messages[1].message,
+            f"Invitation Link: {mock_invitation_link}",
         )
 
         # Check if the view redirects to the room invitations page
