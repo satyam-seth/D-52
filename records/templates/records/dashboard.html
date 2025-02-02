@@ -38,7 +38,7 @@
                 <h3 class="card-title">{{data.member}}</h3>
                 <h5 class="card-text">Total <span class="text-danger">{{data.records_count}}</span> Items <i class="fas fa-cart-arrow-down"></i></h5>
                 <h5 class="card-text">Total <i class="fas fa-rupee-sign"></i><span class="text-danger"> {{data.total_spent|stringformat:".2f"}}/-</span></h5>
-                <a class="btn btn-outline-dark" href="{% url 'records:user_records' data.member.id %}" role="button">Detailed View <i class="far fa-eye"></i></a>
+                <a class="btn btn-outline-dark" href="{% url 'records:member_records' data.member.id %}" role="button">Detailed View <i class="far fa-eye"></i></a>
                 </div>
             </div>
         </div>
