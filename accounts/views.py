@@ -262,7 +262,7 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
             absolute_invitation_url = request.build_absolute_uri(invitation_url)
 
             try:
-                RoomInvitation.objects.send_invitation(
+                _, link = RoomInvitation.objects.send_invitation(
                     room=room,
                     email=email,
                     absolute_invitation_url=absolute_invitation_url,
@@ -271,6 +271,7 @@ class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
                     request,
                     f"Email: '{email}' is successfully invited to room '{room.name}'",
                 )
+                messages.info(request, f"Invitation Link: {link}")
             except IntegrityError:
                 messages.warning(
                     request,
