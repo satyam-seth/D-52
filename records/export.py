@@ -4,7 +4,7 @@ from typing import Optional, Type
 import pandas as pd
 
 from accounts.models import User
-from records.models import Electricity, Maid, Record
+from records.models import Electricity, Maid, Record, Water
 
 
 class RoomExporter:
@@ -42,6 +42,29 @@ class RoomExporter:
                 "Entry Time": self.get_formatted_time(entry.created_on),
                 "Last Modified Date": self.get_formatted_date(entry.modified_on),
                 "Last Modified Time": self.get_formatted_time(entry.modified_on),
+            }
+            for entry in entries
+        ]
+
+        # Convert to Pandas DataFrame
+        return pd.DataFrame(data)
+
+    def get_water_df(self) -> pd.DataFrame:
+        """
+        Fetches entry for the water filtered by room_id and returns a Pandas DataFrame.
+        """
+        entries = Water.objects.filter(room__id=self.room_id).order_by("purchase_date")
+
+        data = [
+            {
+                "Date": self.get_formatted_date(entry.purchase_date),
+                "Quantity": entry.quantity,
+                "Entry ID": entry.id,
+                "Entry Date": self.get_formatted_date(entry.created_on),
+                "Entry Time": self.get_formatted_time(entry.created_on),
+                "Last Modified Date": self.get_formatted_date(entry.modified_on),
+                "Last Modified Time": self.get_formatted_time(entry.modified_on),
+                "Added By": entry.adder.get_full_name(),
             }
             for entry in entries
         ]

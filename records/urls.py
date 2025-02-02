@@ -24,7 +24,7 @@ urlpatterns = [
         views.ExportMemberRecordView.as_view(),
         name="export_member_records",
     ),
-    path("water_xls/", views.water_xls, name="water_xls"),
+    path("export/water/", views.ExportWaterView.as_view(), name="export_water"),
     path("electricity_xls/", views.electricity_xls, name="electricity_xls"),
     path("maid_xls/", views.maid_xls, name="maid_xls"),
 ]
