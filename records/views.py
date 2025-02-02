@@ -13,10 +13,9 @@ from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room
-from core.excel import get_excel
 from records.export import RoomExporter
 from records.forms import RecordForm, WaterForm
-from records.models import Electricity, Maid, Record, Water
+from records.models import Record, Water
 
 # from core.notification import notify_record, notify_water
 
@@ -351,6 +350,25 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
 
         return room, RoomExporter(room_id)
 
+    def generate_excel_buffer(
+        self,
+        data: list[tuple[str, pd.DataFrame]],
+    ) -> io.BytesIO:
+        """Generates a single in-memory Excel file from a list of DataFrames with sheet names"""
+
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
+
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            for sheet_name, df in data:
+                self.write_to_sheet(writer, sheet_name, df)
+
+        # Reset buffer position for reading
+        buffer.seek(0)
+
+        return buffer
+
     def generate_excel_response(
         self,
         file_name: str,
@@ -362,7 +380,14 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
             buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
+        response["Content-Disposition"] = f"attachment; filename={file_name}.xlsx"
+        return response
+
+    def get_file_response(self, file_name: str, data: list[tuple[str, pd.DataFrame]]):
+        """Generates an Excel file response from a list of DataFrames with sheet names"""
+
+        buffer = self.generate_excel_buffer(data)
+        response = self.generate_excel_response(file_name, buffer)
         return response
 
 
@@ -374,32 +399,25 @@ class ExportAllView(BaseExportView):
 
         room, exporter = self.get_room_and_export_instance(request)
 
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
+        # Prepare room members data
+        room_members_data = []
+        room_members = User.objects.filter(room_membership__room=room)
+        for room_member in room_members:
+            member_name = room_member.get_full_name()
+            member_data_df = exporter.get_record_df(purchaser=room_member)
+            room_members_data.append((member_name, member_data_df))
 
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write all records to the first sheet
-            all_records_df = exporter.get_record_df()
-            self.write_to_sheet(writer, "All Records", all_records_df)
+        # Combine all data into a single list
+        data = [
+            ("All Records", exporter.get_record_df()),
+            *room_members_data,
+            ("Water Records", exporter.get_water_df()),
+            ("Maid Records", exporter.get_maid_df()),
+            ("Electricity Records", exporter.get_electricity_df()),
+        ]
 
-            # Write records for each room member to a separate sheet
-            room_members = User.objects.filter(room_membership__room=room)
-            for room_member in room_members:
-                member_data_df = exporter.get_record_df(purchaser=room_member)
-                self.write_to_sheet(writer, room_member.get_full_name(), member_data_df)
-
-            # Write Maid records to separate sheets
-            maid_df = exporter.get_maid_df()
-            self.write_to_sheet(writer, "Maid Records", maid_df)
-
-            # Write Electricity records to separate sheets
-            electricity_df = exporter.get_electricity_df()
-            self.write_to_sheet(writer, "Electricity Records", electricity_df)
-
-        # Create response object
-        file_name = f"{room.name}_all_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
+        file_name = f"{room.name}_all_data"
+        return self.get_file_response(file_name, data)
 
 
 class ExportAllRecordView(BaseExportView):
@@ -409,43 +427,27 @@ class ExportAllRecordView(BaseExportView):
         """Handles POST requests to export room all record data"""
 
         room, exporter = self.get_room_and_export_instance(request)
+        data = [("All Records", exporter.get_record_df())]
 
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
-
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write all records to the first sheet
-            record_df = exporter.get_record_df()
-            record_df.to_excel(writer, sheet_name="All Records", index=False)
-
-        # Create response object
-        file_name = f"{room.name}_all_record_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
+        file_name = f"{room.name}_all_records_data"
+        return self.get_file_response(file_name, data)
 
 
 class ExportMemberRecordView(BaseExportView):
     """View for exporting room member records data"""
 
     def post(self, request: HttpRequest, member_id: int) -> HttpResponse:
-        """Handles POST requests to export all room member records data"""
+        """Handles POST requests to export room member records data"""
 
-        _, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance(request)
         room_member = get_object_or_404(User, pk=member_id)
+
         member_name = room_member.get_full_name()
+        member_df = exporter.get_record_df(purchaser=room_member)
+        data = [(member_name, member_df)]
 
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
-
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write records for room member to a separate sheet
-            member_data_df = exporter.get_record_df(purchaser=room_member)
-            self.write_to_sheet(writer, room_member.get_full_name(), member_data_df)
-
-        # Create response object
-        file_name = f"{member_name}_all_record_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
+        file_name = f"{room.name}_{member_name}_records_data"
+        return self.get_file_response(file_name, data)
 
 
 class ExportWaterView(BaseExportView):
@@ -455,19 +457,10 @@ class ExportWaterView(BaseExportView):
         """Handles POST requests to export room water data"""
 
         room, exporter = self.get_room_and_export_instance(request)
+        data = [("Water Records", exporter.get_water_df())]
 
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
-
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write Water records to the first sheet
-            water_df = exporter.get_water_df()
-            self.write_to_sheet(writer, "Water Records", water_df)
-
-        # Create response object
-        file_name = f"{room.name}_water_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
+        file_name = f"{room.name}_water_data"
+        return self.get_file_response(file_name, data)
 
 
 class ExportMaidView(BaseExportView):
@@ -477,19 +470,10 @@ class ExportMaidView(BaseExportView):
         """Handles POST requests to export room maid data"""
 
         room, exporter = self.get_room_and_export_instance(request)
+        data = [("Maid Records", exporter.get_maid_df())]
 
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
-
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write Maid records to the first sheet
-            water_df = exporter.get_maid_df()
-            self.write_to_sheet(writer, "Maid Records", water_df)
-
-        # Create response object
-        file_name = f"{room.name}_maid_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
+        file_name = f"{room.name}_maid_data"
+        return self.get_file_response(file_name, data)
 
 
 class ExportElectricityView(BaseExportView):
@@ -499,16 +483,7 @@ class ExportElectricityView(BaseExportView):
         """Handles POST requests to export room electricity data"""
 
         room, exporter = self.get_room_and_export_instance(request)
+        data = [("Electricity Records", exporter.get_electricity_df())]
 
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
-
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write electricity records to the first sheet
-            water_df = exporter.get_electricity_df()
-            self.write_to_sheet(writer, "Electricity Records", water_df)
-
-        # Create response object
-        file_name = f"{room.name}_electricity_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
+        file_name = f"{room.name}_electricity_data"
+        return self.get_file_response(file_name, data)

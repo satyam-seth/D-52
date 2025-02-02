@@ -29,6 +29,14 @@
       <tbody>
         <tr>
           <th scope="row">1</th>
+          <td>All Data</td>
+          <td>
+            {% url 'records:export_all' as export_all_action_url %}
+            {% include 'records/export_form.html' with action_url=export_all_action_url %}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">2</th>
           <td>All Records</td>
           <td>
             {% url 'records:export_all_records' as export_all_records_action_url %}
@@ -36,19 +44,11 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">2</th>
-          <td>Water</td>
+          <th scope="row">3</th>
+          <td>Water Records</td>
           <td>
             {% url 'records:export_water' as export_water_action_url %}
             {% include 'records/export_form.html' with action_url=export_water_action_url %}
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">3</th>
-          <td>Electricity Bill</td>
-          <td>
-            {% url 'records:export_electricity' as export_electricity_action_url %}
-            {% include 'records/export_form.html' with action_url=export_electricity_action_url %}
           </td>
         </tr>
         <tr>
@@ -61,13 +61,12 @@
         </tr>
         <tr>
           <th scope="row">5</th>
-          <td>All Data</td>
+          <td>Electricity Bill</td>
           <td>
-            {% url 'records:export_all' as export_all_action_url %}
-            {% include 'records/export_form.html' with action_url=export_all_action_url %}
+            {% url 'records:export_electricity' as export_electricity_action_url %}
+            {% include 'records/export_form.html' with action_url=export_electricity_action_url %}
           </td>
         </tr>
-        
       </tbody>
     </table>
   </div>
