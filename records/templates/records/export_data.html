@@ -39,8 +39,8 @@
           <th scope="row">2</th>
           <td>Water</td>
           <td>
-            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
-            <a class="btn btn-sm btn-primary" href="{% url 'records:water_xls' %}" role="button">Download</a>
+            {% url 'records:export_water' as export_water_action_url %}
+            {% include 'records/export_form.html' with action_url=export_water_action_url %}
           </td>
         </tr>
         <tr>
