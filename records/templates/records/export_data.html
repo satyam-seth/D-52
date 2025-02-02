@@ -31,12 +31,8 @@
           <th scope="row">1</th>
           <td>All Records</td>
           <td>
-            <!-- TODO: uncomment once handle it -->
-            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
-            <form action="{% url 'records:export_all_records' %}" method="post">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-primary">Download</button>
-            </form>
+            {% url 'records:export_all_records' as export_all_records_action_url %}
+            {% include 'records/export_form.html' with action_url=export_all_records_action_url %}
           </td>
         </tr>
         <tr>
@@ -67,12 +63,8 @@
           <th scope="row">5</th>
           <td>All Data</td>
           <td>
-            <!-- TODO: uncomment once handle it -->
-            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
-            <form action="{% url 'records:export_all' %}" method="post">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-primary">Download</button>
-            </form>
+            {% url 'records:export_all' as export_all_action_url %}
+            {% include 'records/export_form.html' with action_url=export_all_action_url %}
           </td>
         </tr>
         
@@ -99,9 +91,8 @@
           <td>{{room_member}}</td>
           <td>{{room_member.email}}</td>
           <td>
-            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
-            <a class="btn btn-sm btn-primary" href="{% url 'records:user_xls' user.pk %}" 
-              role="button">Download</a>
+            {% url 'records:export_member_records' room_member.pk as export_member_action_url %}
+            {% include 'records/export_form.html' with action_url=export_member_action_url %}
           </td>
         </tr>
         {% endfor %}
