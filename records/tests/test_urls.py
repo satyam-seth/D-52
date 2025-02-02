@@ -55,11 +55,14 @@ class TestUrls(TestCase):
         url = reverse("records:export_all_records")
         self.assertEqual(resolve(url).func.view_class, views.ExportAllRecordView)
 
-    def test_user_xls_url(self):
-        """Test user xls url resolve"""
+    def test_export_member_records_url(self):
+        """Test export member records url resolve"""
 
-        url = reverse("records:user_xls", args=[1])  # Assuming username is provided
-        self.assertEqual(resolve(url).func, views.user_xls)
+        url = reverse(
+            "records:export_member_records",
+            args=[1],  # Assuming username is provided
+        )
+        self.assertEqual(resolve(url).func.view_class, views.ExportMemberRecordView)
 
     def test_water_xls_url(self):
         """Test water xls url resolve"""

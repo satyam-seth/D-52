@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
@@ -367,10 +367,10 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
 
 
 class ExportAllView(BaseExportView):
-    """View for exporting all room data"""
+    """View for exporting room all data"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Handles POST requests to export all room data"""
+        """Handles POST requests to export room all data"""
 
         room, exporter = self.get_room_and_export_instance(request)
 
@@ -424,55 +424,28 @@ class ExportAllRecordView(BaseExportView):
         return self.generate_excel_response(file_name, buffer)
 
 
-# TODO: Fix this view
-# TODO: Add login required once user group login achieved
-def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
-    """View to download user report excel file"""
+class ExportMemberRecordView(BaseExportView):
+    """View for exporting room member records data"""
 
-    # query data from db
-    purchaser = User.objects.get(pk=user_id)
-    purchaser_name = purchaser.get_full_name()
-    records = Record.objects.filter(purchaser=purchaser).order_by("purchase_date")
+    def post(self, request: HttpRequest, member_id: int) -> HttpResponse:
+        """Handles POST requests to export all room member records data"""
 
-    # prepare data
-    data = []
-    for record in records:
-        adder_name = record.adder.get_full_name()
-        temp = [
-            record.purchase_date.strftime("%d-%m-%Y"),
-            record.item,
-            record.price,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-            adder_name,
-        ]
-        data.append(temp)
+        _, exporter = self.get_room_and_export_instance(request)
+        room_member = get_object_or_404(User, pk=member_id)
+        member_name = room_member.get_full_name()
 
-    # columns
-    columns = [
-        "Date",
-        "Item Name",
-        "Price",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-        "Added By",
-    ]
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
 
-    # crate response object
-    file_name = f"{purchaser_name} Items Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write records for room member to a separate sheet
+            member_data_df = exporter.get_record_df(purchaser=room_member)
+            self.write_to_sheet(writer, room_member.get_full_name(), member_data_df)
 
-    # save workbook and return response
-    workbook = get_excel(f"{purchaser_name} Records", columns=columns, data=data)
-    workbook.save(response)
-    return response
+        # Create response object
+        file_name = f"{member_name}_all_record_data.xlsx"
+        return self.generate_excel_response(file_name, buffer)
 
 
 # TODO: fix this view
