@@ -470,6 +470,28 @@ class ExportWaterView(BaseExportView):
         return self.generate_excel_response(file_name, buffer)
 
 
+class ExportMaidView(BaseExportView):
+    """View for exporting room maid data"""
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export room maid data"""
+
+        room, exporter = self.get_room_and_export_instance(request)
+
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
+
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write Maid records to the first sheet
+            water_df = exporter.get_maid_df()
+            self.write_to_sheet(writer, "Maid Records", water_df)
+
+        # Create response object
+        file_name = f"{room.name}_maid_data.xlsx"
+        return self.generate_excel_response(file_name, buffer)
+
+
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def electricity_xls(request: HttpRequest) -> HttpResponse:
@@ -514,71 +536,5 @@ def electricity_xls(request: HttpRequest) -> HttpResponse:
         columns=columns,
         data=data,
     )
-    workbook.save(response)
-    return response
-
-
-class ExportMaidView(BaseExportView):
-    """View for exporting room maid data"""
-
-    def post(self, request: HttpRequest) -> HttpResponse:
-        """Handles POST requests to export room maid data"""
-
-        room, exporter = self.get_room_and_export_instance(request)
-
-        # Create an in-memory buffer for the Excel file
-        buffer = io.BytesIO()
-
-        # Use pd.ExcelWriter to create an Excel file
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            # Write Maid records to the first sheet
-            water_df = exporter.get_maid_df()
-            self.write_to_sheet(writer, "Maid Records", water_df)
-
-        # Create response object
-        file_name = f"{room.name}_maid_data.xlsx"
-        return self.generate_excel_response(file_name, buffer)
-
-
-# TODO: fix this view
-# TODO: Add login required once user group login achieved
-def maid_xls(request: HttpRequest) -> HttpResponse:
-    """View to download maid report excel file"""
-
-    # query data from db
-    records = Maid.objects.all().order_by("due_date")
-
-    # prepare data
-    data = []
-    for record in records:
-        temp = [
-            record.due_date.strftime("%d-%m-%Y"),
-            record.price,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-        ]
-        data.append(temp)
-
-    # columns
-    columns = [
-        "Date",
-        "Price",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-    ]
-
-    # crate response object
-    file_name = "Maid Salary Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # save workbook and return response
-    workbook = get_excel(sheet_name="Maid Salary Records", columns=columns, data=data)
     workbook.save(response)
     return response
