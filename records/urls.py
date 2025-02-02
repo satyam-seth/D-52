@@ -13,7 +13,11 @@ urlpatterns = [
     path("export_data/", views.ExportDataView.as_view(), name="export_data"),
     path("room_reports/", views.RoomReportView.as_view(), name="room_reports"),
     path("export/all/", views.ExportAllView.as_view(), name="export_all"),
-    path("download/overall/", views.overall_xls, name="overall_xls"),
+    path(
+        "export/all/records/",
+        views.ExportAllRecordView.as_view(),
+        name="export_all_records",
+    ),
     path("download/<int:user_id>/", views.user_xls, name="user_xls"),
     path("water_xls/", views.water_xls, name="water_xls"),
     path("electricity_xls/", views.electricity_xls, name="electricity_xls"),

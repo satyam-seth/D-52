@@ -385,56 +385,38 @@ class ExportAllView(LoginRequiredMixin, RoomRequiredMixin, View):
         return response
 
 
-# TODO: fix this view
-# TODO: Add login required once user group login achieved
-def overall_xls(request: HttpRequest) -> HttpResponse:
-    """View to download overall report excel file"""
+class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
+    """View for exporting room all record data"""
 
-    # query data from db
-    records = Record.objects.all().order_by("purchase_date")
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export room all record data"""
 
-    # prepare data
-    data = []
-    for record in records:
-        adder_name = record.adder.get_full_name()
-        purchaser_name = record.purchaser.get_full_name()
-        temp = [
-            record.purchase_date.strftime("%d-%m-%Y"),
-            record.item,
-            record.price,
-            purchaser_name,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-            adder_name,
-        ]
-        data.append(temp)
+        # TODO: Use room info from RoomRequiredMixin
+        room_id = self.get_room_id(self.request)
+        assert room_id
+        room = Room.objects.get(id=room_id)
 
-    # columns
-    columns = [
-        "Purchase Date",
-        "Item Name",
-        "Price",
-        "Purchase By",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-        "Added By",
-    ]
+        # Create room export data instance
+        room_export = RoomExportData(room_id)
 
-    # crate response object
-    file_name = "Overall Items Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
 
-    # save workbook and return response
-    workbook = get_excel(sheet_name="Overall Items Records", columns=columns, data=data)
-    workbook.save(response)
-    return response
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write all records to the first sheet
+            record_df = room_export.get_record_df()
+            record_df.to_excel(writer, sheet_name="All Records", index=False)
+
+        # Create response object
+        file_name = f"{room.name}_all_record_data.xlsx"
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+
+        return response
 
 
 # TODO: Fix this view
