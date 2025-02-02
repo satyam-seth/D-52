@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime
 from typing import Optional, Type
 
 import pandas as pd
@@ -20,7 +20,7 @@ class RoomExportData:
 
         return obj.strftime("%d-%m-%Y")
 
-    def get_formatted_time(self, obj: time):
+    def get_formatted_time(self, obj: datetime):
         """Returns formatted time for time object"""
 
         return obj.strftime("%H:%M:%S")
