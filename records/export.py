@@ -7,7 +7,7 @@ from accounts.models import User
 from records.models import Electricity, Maid, Record
 
 
-class RoomExportData:
+class RoomExporter:
     """
     Helper class to get data related to a specific room (by room_id) for exporting.
     """
