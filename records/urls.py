@@ -26,5 +26,9 @@ urlpatterns = [
     ),
     path("export/water/", views.ExportWaterView.as_view(), name="export_water"),
     path("export/maid/", views.ExportMaidView.as_view(), name="export_maid"),
-    path("electricity_xls/", views.electricity_xls, name="electricity_xls"),
+    path(
+        "export/electricity/",
+        views.ExportElectricityView.as_view(),
+        name="export_electricity",
+    ),
 ]
