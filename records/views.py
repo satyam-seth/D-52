@@ -419,58 +419,6 @@ class ExportAllRecordView(LoginRequiredMixin, RoomRequiredMixin, View):
         return response
 
 
-# TODO: fix this view
-# TODO: Add login required once user group login achieved
-def overall_xls(request: HttpRequest) -> HttpResponse:
-    """View to download overall report excel file"""
-
-    # query data from db
-    records = Record.objects.all().order_by("purchase_date")
-
-    # prepare data
-    data = []
-    for record in records:
-        adder_name = record.adder.get_full_name()
-        purchaser_name = record.purchaser.get_full_name()
-        temp = [
-            record.purchase_date.strftime("%d-%m-%Y"),
-            record.item,
-            record.price,
-            purchaser_name,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-            adder_name,
-        ]
-        data.append(temp)
-
-    # columns
-    columns = [
-        "Purchase Date",
-        "Item Name",
-        "Price",
-        "Purchase By",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-        "Added By",
-    ]
-
-    # crate response object
-    file_name = "Overall Items Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # save workbook and return response
-    workbook = get_excel(sheet_name="Overall Items Records", columns=columns, data=data)
-    workbook.save(response)
-    return response
-
-
 # TODO: Fix this view
 # TODO: Add login required once user group login achieved
 def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
