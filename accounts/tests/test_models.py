@@ -316,9 +316,10 @@ class TestRoomInvitationModel(TestCase):
         mock_create.return_value = mock_invitation
         token = "mock_token"
         mock_generate_signed_token.return_value = token
+        mock_invitation_link = "http://testserver/invitation-join-url?token=mock_token"
 
         # call send_invitation
-        invitation = RoomInvitation.objects.send_invitation(
+        invitation, link = RoomInvitation.objects.send_invitation(
             room=self.room,
             email=self.member.email,
             absolute_invitation_url="http://testserver/invitation-join-url",
@@ -326,6 +327,7 @@ class TestRoomInvitationModel(TestCase):
 
         # assertions
         self.assertEqual(invitation, mock_invitation)
+        self.assertEqual(link, mock_invitation_link)
         mock_create.assert_called_once_with(room=self.room, email=self.member.email)
         mock_generate_signed_token.assert_called_once_with(invitation=mock_invitation)
 
