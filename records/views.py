@@ -518,6 +518,28 @@ def electricity_xls(request: HttpRequest) -> HttpResponse:
     return response
 
 
+class ExportMaidView(BaseExportView):
+    """View for exporting room maid data"""
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Handles POST requests to export room maid data"""
+
+        room, exporter = self.get_room_and_export_instance(request)
+
+        # Create an in-memory buffer for the Excel file
+        buffer = io.BytesIO()
+
+        # Use pd.ExcelWriter to create an Excel file
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            # Write Maid records to the first sheet
+            water_df = exporter.get_maid_df()
+            self.write_to_sheet(writer, "Maid Records", water_df)
+
+        # Create response object
+        file_name = f"{room.name}_maid_data.xlsx"
+        return self.generate_excel_response(file_name, buffer)
+
+
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def maid_xls(request: HttpRequest) -> HttpResponse:
