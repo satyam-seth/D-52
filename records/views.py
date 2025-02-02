@@ -448,57 +448,6 @@ class ExportMemberRecordView(BaseExportView):
         return self.generate_excel_response(file_name, buffer)
 
 
-# TODO: Fix this view
-# TODO: Add login required once user group login achieved
-def user_xls(request: HttpRequest, user_id: int) -> HttpResponse:
-    """View to download user report excel file"""
-
-    # query data from db
-    purchaser = User.objects.get(pk=user_id)
-    purchaser_name = purchaser.get_full_name()
-    records = Record.objects.filter(purchaser=purchaser).order_by("purchase_date")
-
-    # prepare data
-    data = []
-    for record in records:
-        adder_name = record.adder.get_full_name()
-        temp = [
-            record.purchase_date.strftime("%d-%m-%Y"),
-            record.item,
-            record.price,
-            record.id,
-            record.created_on.strftime("%d-%m-%Y"),
-            record.created_on.strftime("%H:%M:%S"),
-            record.modified_on.strftime("%d-%m-%Y"),
-            record.modified_on.strftime("%H:%M:%S"),
-            adder_name,
-        ]
-        data.append(temp)
-
-    # columns
-    columns = [
-        "Date",
-        "Item Name",
-        "Price",
-        "Entry ID",
-        "Entry Date",
-        "Entry Time",
-        "Last Modified Date",
-        "Last Modified Time",
-        "Added By",
-    ]
-
-    # crate response object
-    file_name = f"{purchaser_name} Items Records.xls"
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = f"attachment; filename={file_name}"
-
-    # save workbook and return response
-    workbook = get_excel(f"{purchaser_name} Records", columns=columns, data=data)
-    workbook.save(response)
-    return response
-
-
 # TODO: fix this view
 # TODO: Add login required once user group login achieved
 def water_xls(request: HttpRequest) -> HttpResponse:
