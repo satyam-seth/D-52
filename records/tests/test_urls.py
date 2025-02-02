@@ -76,8 +76,8 @@ class TestUrls(TestCase):
         url = reverse("records:export_maid")
         self.assertEqual(resolve(url).func.view_class, views.ExportMaidView)
 
-    def test_electricity_xls_url(self):
-        """Test electricity xls url resolve"""
+    def test_export_electricity_url(self):
+        """Test export electricity url resolve"""
 
-        url = reverse("records:electricity_xls")
-        self.assertEqual(resolve(url).func, views.electricity_xls)
+        url = reverse("records:export_electricity")
+        self.assertEqual(resolve(url).func.view_class, views.ExportElectricityView)
