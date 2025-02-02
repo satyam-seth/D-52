@@ -47,8 +47,8 @@
           <th scope="row">3</th>
           <td>Electricity Bill</td>
           <td>
-            <!-- <a class="btn btn-sm btn-success" href="#" role="button">Mail</a> -->
-            <a class="btn btn-sm btn-primary" href="{% url 'records:electricity_xls' %}" role="button">Download</a>
+            {% url 'records:export_electricity' as export_electricity_action_url %}
+            {% include 'records/export_form.html' with action_url=export_electricity_action_url %}
           </td>
         </tr>
         <tr>
