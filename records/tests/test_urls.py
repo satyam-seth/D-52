@@ -49,6 +49,12 @@ class TestUrls(TestCase):
         url = reverse("records:room_reports")
         self.assertEqual(resolve(url).func.view_class, views.RoomReportView)
 
+    def test_export_all_url(self):
+        """Test export all url resolve"""
+
+        url = reverse("records:export_all")
+        self.assertEqual(resolve(url).func.view_class, views.ExportAllView)
+
     def test_export_all_records_url(self):
         """Test export all records url resolve"""
 
