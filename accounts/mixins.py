@@ -50,6 +50,12 @@ class RoomBaseMixin:
 class RoomRequiredMixin(RoomBaseMixin):
     """Mixin to check if the room id is present in the session."""
 
+    def get_room(self, request: HttpRequest) -> Room:
+        """Retrieves the room instance"""
+
+        room_id = self.get_room_id(request)
+        return get_object_or_404(Room, id=room_id)
+
 
 class RoomAdminRequiredMixin(RoomBaseMixin):
     """

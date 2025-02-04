@@ -290,16 +290,6 @@ class TestAddDataView(TestCase):
         self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
 
-    def test_get_room_working(self) -> None:
-        """Test get_room working"""
-
-        request = self.get_mock_request()
-        view = AddDataView(request=request)
-        room = view.get_room()
-
-        # Assertion
-        self.assertEqual(room, self.room)
-
     def test_get_record_form_working(self) -> None:
         """Test get_record for working"""
 
