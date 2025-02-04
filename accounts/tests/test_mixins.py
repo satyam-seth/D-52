@@ -93,6 +93,14 @@ class TestRoomRequiredMixin(TestCase):
 
         self.assertEqual(self.view.get_room(self.request), self.room)
 
+    def test_get_room_working_if_room_not_found(self) -> None:
+        """Test get_room working if room not found"""
+
+        # Assert calling get_room should raises Http404 exception
+        with self.assertRaisesMessage(Http404, "No Room matches the given query."):
+            # Call the get_room method with the request
+            self.view.get_room(self.request)
+
     def test_redirect_to_room_selection(self) -> None:
         """Test redirect to room selection"""
 
