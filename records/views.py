@@ -107,15 +107,6 @@ class DashboardTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView)
 class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
     """View to render and handle record and water form"""
 
-    # TODO: Move it into RoomRequiredMixin
-    def get_room(self) -> Room:
-        """Returns room"""
-
-        room_id = self.get_room_id(self.request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-        return room
-
     def get_record_form(self) -> RecordForm:
         """Returns an empty record form"""
 
@@ -165,7 +156,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
             if record_form.is_valid():
                 reg = record_form.save(commit=False)
                 reg.adder = request.user
-                reg.room = self.get_room()
+                reg.room = self.get_room(self.request)
                 reg.save()
                 messages.success(request, "Your item record successfully added.")
                 context = self.get_context()
@@ -181,7 +172,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
             if water_form.is_valid():
                 reg = water_form.save(commit=False)
                 reg.adder = request.user
-                reg.room = self.get_room()
+                reg.room = self.get_room(self.request)
 
                 try:
                     reg.save()
@@ -343,12 +334,9 @@ class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
     def get_room_and_export_instance(self, request) -> tuple:
         """Fetch room details and initialize RoomExportData."""
 
-        # TODO: Use room info from RoomRequiredMixin
-        room_id = self.get_room_id(request)
-        assert room_id
-        room = Room.objects.get(id=room_id)
-
-        return room, RoomExporter(room_id)
+        room = self.get_room(self.request)
+        exporter = RoomExporter(room.id)
+        return room, exporter
 
     def generate_excel_buffer(
         self,
