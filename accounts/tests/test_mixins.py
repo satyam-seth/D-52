@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.signing import BadSignature
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound
 from django.test import RequestFactory, TestCase
 from django.urls import reverse_lazy
 
@@ -72,8 +72,26 @@ class TestRoomRequiredMixin(TestCase):
         self.request = self.factory.get("/")
         self.request.session = SessionBase()
 
+        # create user
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+        # create room
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
         # Create a view instance with the RoomRequiredMixin
         self.view = RoomRequiredMixin()
+
+    def test_get_room_working_if_room_found(self) -> None:
+        """Test get_room working if room found"""
+
+        # Set room id in session
+        self.request.session["room_id"] = self.room.id
+
+        self.assertEqual(self.view.get_room(self.request), self.room)
 
     def test_redirect_to_room_selection(self) -> None:
         """Test redirect to room selection"""
@@ -89,7 +107,7 @@ class TestRoomRequiredMixin(TestCase):
         """Test not redirect to room selection"""
 
         # Set room id in session
-        self.request.session["room_id"] = 1
+        self.request.session["room_id"] = self.room.id
 
         # Assert calling dispatch should call super dispatch
         with self.assertRaisesMessage(
