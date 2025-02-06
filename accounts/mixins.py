@@ -13,9 +13,10 @@ from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from accounts.models import Room, RoomInvitation
+from accounts.models import Room, RoomInvitation, RoomMembership
 
 
+# TODO: should extend login require mixin
 class RoomBaseMixin:
     """Base mixin for room-related checks."""
 
@@ -56,6 +57,21 @@ class RoomRequiredMixin(RoomBaseMixin):
         room_id = self.get_room_id(request)
         return get_object_or_404(Room, id=room_id)
 
+    def handle_room_exists(
+        self, request: HttpRequest, room_id: int, *args: Any, **kwargs: Any
+    ) -> HttpResponseBase:
+        """Handle case where no room ID is present"""
+
+        is_member = RoomMembership.objects.filter(
+            room__id=room_id,
+            member=request.user,  # type: ignore
+        ).exists()
+
+        if is_member:
+            return super().handle_room_exists(request, room_id, *args, **kwargs)
+
+        return redirect(reverse_lazy("accounts:room_selection"))
+
 
 class RoomAdminRequiredMixin(RoomBaseMixin):
     """
@@ -66,7 +82,7 @@ class RoomAdminRequiredMixin(RoomBaseMixin):
     def handle_room_exists(
         self, request: HttpRequest, room_id: int, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
-        """Handle case where no room ID is present."""
+        """Handle case where room ID is present."""
 
         room = get_object_or_404(Room, pk=room_id)
         if room.admin == request.user:
