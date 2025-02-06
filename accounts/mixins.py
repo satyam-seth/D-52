@@ -141,7 +141,7 @@ class RoomInvitationTokenMixin:
             return HttpResponseNotFound()
 
         # check token is valid or not
-        if self.check_room_invitation_token_valid(request, token) == False:
+        if self.check_room_invitation_token_valid(request, token) is False:
             return HttpResponseBadRequest()
 
         return token
