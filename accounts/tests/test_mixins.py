@@ -82,6 +82,9 @@ class TestRoomRequiredMixin(TestCase):
         # create room
         self.room = Room.objects.create(name="test-room", admin=self.user)
 
+        # set current user
+        self.request.user = self.user
+
         # Create a view instance with the RoomRequiredMixin
         self.view = RoomRequiredMixin()
 
