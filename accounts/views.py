@@ -200,6 +200,9 @@ class RoomTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/room.html"
 
 
+# TODO: Currently, if a user has not selected a room, they are unable to see pending room invitations.
+# Additionally, the current room admin of a room cannot see invitations from other rooms
+# if they have been invited as an admin by someone else.
 class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
     """View to render list room invitation"""
 
@@ -221,6 +224,7 @@ class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         """Retrieve and cache the room object."""
 
         if self._cached_room is None:
+            # TODO: use get_room from RoomRequiredMixin
             room_id = self.get_room_id(self.request)
             self._cached_room = Room.objects.get(id=room_id)
 
@@ -233,6 +237,7 @@ class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         if room.admin == self.request.user:
             return queryset
 
+        # TODO: verify is it working
         return queryset.filter(email=self.request.user.email)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
