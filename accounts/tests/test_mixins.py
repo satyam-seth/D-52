@@ -20,8 +20,8 @@ from accounts.models import Room, RoomInvitation
 User = get_user_model()
 
 
-class TestRoomRoomBaseMixin(TestCase):
-    """Test Room Required Mixin"""
+class TestRoomBaseMixin(TestCase):
+    """Test Room Base Mixin"""
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
@@ -63,6 +63,36 @@ class TestRoomRoomBaseMixin(TestCase):
             # Call the dispatch method with the request
             self.view.dispatch(self.request)
 
+    def test_get_room_working_if_room_found(self) -> None:
+        """Test get_room working if room found"""
+
+        # Create user
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        # create room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
+        # Set room id in session
+        self.request.session["room_id"] = room.id
+
+        self.assertEqual(self.view.get_room(self.request), room)
+
+    def test_get_room_working_if_room_not_found(self) -> None:
+        """Test get_room working if room not found"""
+
+        # Set invalid room id in session
+        self.request.session["room_id"] = 9999
+
+        # Assert calling get_room should raises Http404 exception
+        with self.assertRaisesMessage(Http404, "No Room matches the given query."):
+            # Call the get_room method with the request
+            self.view.get_room(self.request)
+
 
 class TestRoomRequiredMixin(TestCase):
     """Test Room Required Mixin"""
@@ -79,30 +109,12 @@ class TestRoomRequiredMixin(TestCase):
             first_name="test",
             last_name="user",
         )
-        # create room
-        self.room = Room.objects.create(name="test-room", admin=self.user)
 
         # set current user
         self.request.user = self.user
 
         # Create a view instance with the RoomRequiredMixin
         self.view = RoomRequiredMixin()
-
-    def test_get_room_working_if_room_found(self) -> None:
-        """Test get_room working if room found"""
-
-        # Set room id in session
-        self.request.session["room_id"] = self.room.id
-
-        self.assertEqual(self.view.get_room(self.request), self.room)
-
-    def test_get_room_working_if_room_not_found(self) -> None:
-        """Test get_room working if room not found"""
-
-        # Assert calling get_room should raises Http404 exception
-        with self.assertRaisesMessage(Http404, "No Room matches the given query."):
-            # Call the get_room method with the request
-            self.view.get_room(self.request)
 
     def test_redirect_to_room_selection(self) -> None:
         """Test redirect to room selection"""
@@ -117,8 +129,11 @@ class TestRoomRequiredMixin(TestCase):
     def test_not_redirect_to_room_selection(self) -> None:
         """Test not redirect to room selection"""
 
+        # create room
+        room = Room.objects.create(name="test-room", admin=self.user)
+
         # Set room id in session
-        self.request.session["room_id"] = self.room.id
+        self.request.session["room_id"] = room.id
 
         # Assert calling dispatch should call super dispatch
         with self.assertRaisesMessage(
