@@ -25,6 +25,12 @@ class RoomBaseMixin:
 
         return request.session.get("room_id")
 
+    def get_room(self, request: HttpRequest) -> Room:
+        """Retrieves the room instance"""
+
+        room_id = self.get_room_id(request)
+        return get_object_or_404(Room, id=room_id)
+
     def dispatch(
         self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
@@ -33,7 +39,7 @@ class RoomBaseMixin:
         room_id = self.get_room_id(request)
         if room_id is None:
             return self.handle_no_room(request)
-        return self.handle_room_exists(request, room_id, *args, **kwargs)
+        return self.handle_room_exists(request, *args, **kwargs)
 
     def handle_no_room(self, request: HttpRequest) -> HttpResponseRedirect:
         """Handle case where no room ID is present."""
@@ -41,7 +47,7 @@ class RoomBaseMixin:
         return redirect(reverse_lazy("accounts:room_selection"))
 
     def handle_room_exists(
-        self, request: HttpRequest, room_id: int, *args: Any, **kwargs: Any
+        self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
         """Handle case where room ID is present."""
 
@@ -51,24 +57,19 @@ class RoomBaseMixin:
 class RoomRequiredMixin(RoomBaseMixin):
     """Mixin to check if the room id is present in the session."""
 
-    def get_room(self, request: HttpRequest) -> Room:
-        """Retrieves the room instance"""
-
-        room_id = self.get_room_id(request)
-        return get_object_or_404(Room, id=room_id)
-
     def handle_room_exists(
-        self, request: HttpRequest, room_id: int, *args: Any, **kwargs: Any
+        self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
         """Handle case where no room ID is present"""
 
+        room_id = self.get_room_id(request)
         is_member = RoomMembership.objects.filter(
             room__id=room_id,
             member=request.user,  # type: ignore
         ).exists()
 
         if is_member:
-            return super().handle_room_exists(request, room_id, *args, **kwargs)
+            return super().handle_room_exists(request, *args, **kwargs)
 
         return redirect(reverse_lazy("accounts:room_selection"))
 
@@ -80,13 +81,13 @@ class RoomAdminRequiredMixin(RoomBaseMixin):
     """
 
     def handle_room_exists(
-        self, request: HttpRequest, room_id: int, *args: Any, **kwargs: Any
+        self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
         """Handle case where room ID is present."""
 
-        room = get_object_or_404(Room, pk=room_id)
+        room = self.get_room(request)
         if room.admin == request.user:
-            return super().handle_room_exists(request, room_id, *args, **kwargs)
+            return super().handle_room_exists(request, *args, **kwargs)
 
         # Note: We can also check if the current user is a room admin.
         # In this case, we can add an appropriate message and
