@@ -100,7 +100,7 @@ class RoomAdminRequiredMixin(RoomBaseMixin):
         return HttpResponseForbidden()
 
 
-class RoomInvitationTokenMixin:
+class RoomInvitationTokenMixin(LoginRequiredMixin):
     """Mixin to get and check room invitation token validation"""
 
     def check_room_invitation_token_valid(

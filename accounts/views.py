@@ -333,7 +333,7 @@ class RoomInviteView(RoomAdminRequiredMixin, View):
 #         return super().form_valid(form)
 
 
-class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+class RoomInvitationJoinView(RoomInvitationTokenMixin, View):
     """View to handle room invitation join requests"""
 
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -352,7 +352,7 @@ class RoomInvitationJoinView(LoginRequiredMixin, RoomInvitationTokenMixin, View)
         )
 
 
-class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+class RoomInvitationAcceptView(RoomInvitationTokenMixin, View):
     """View to handle room invitation accept requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -376,7 +376,7 @@ class RoomInvitationAcceptView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
         return redirect(reverse_lazy("accounts:room_selection"))
 
 
-class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, View):
+class RoomInvitationRejectView(RoomInvitationTokenMixin, View):
     """View to handle room invitation reject requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
