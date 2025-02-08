@@ -27,6 +27,14 @@ class TestRoomBaseMixin(TestCase):
         self.factory = RequestFactory()
         self.request = self.factory.get("/")
         self.request.session = SessionBase()
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+        self.request.user = self.user
+
         # Create a view instance with the RoomBaseMixin
         self.view = RoomBaseMixin()
 
@@ -65,14 +73,6 @@ class TestRoomBaseMixin(TestCase):
 
     def test_get_room_working_if_room_found(self) -> None:
         """Test get_room working if room found"""
-
-        # Create user
-        self.user = User.objects.create_user(
-            email="test@user.com",
-            password="test-password",
-            first_name="test",
-            last_name="user",
-        )
 
         # create room
         room = Room.objects.create(name="test-room", admin=self.user)
