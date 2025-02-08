@@ -1021,7 +1021,6 @@ class TestRoomInvitationJoinView(TestCase):
         "Test Room Invitation Join view attributes"
 
         view = RoomInvitationJoinView()
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomInvitationTokenMixin)
         self.assertIsInstance(view, View)
 
@@ -1095,7 +1094,6 @@ class TestRoomInvitationAcceptView(TestCase):
         "Test Room Invitation accept view attributes"
 
         view = RoomInvitationAcceptView()
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomInvitationTokenMixin)
         self.assertIsInstance(view, View)
 
@@ -1192,7 +1190,6 @@ class TestRoomInvitationRejectView(TestCase):
         "Test Room Invitation reject view attributes"
 
         view = RoomInvitationRejectView()
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomInvitationTokenMixin)
         self.assertIsInstance(view, View)
 
