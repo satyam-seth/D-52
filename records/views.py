@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse
@@ -12,7 +11,6 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
-from accounts.models import Room
 from records.export import RoomExporter
 from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
@@ -23,7 +21,7 @@ from records.models import Record, Water
 User = get_user_model()
 
 
-class DashboardTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView):
+class DashboardTemplateView(RoomRequiredMixin, TemplateView):
     """Dashboard template view"""
 
     template_name = "records/dashboard.html"
@@ -104,7 +102,7 @@ class DashboardTemplateView(LoginRequiredMixin, RoomRequiredMixin, TemplateView)
         return context
 
 
-class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
+class AddDataView(RoomRequiredMixin, View):
     """View to render and handle record and water form"""
 
     def get_record_form(self) -> RecordForm:
@@ -196,7 +194,7 @@ class AddDataView(LoginRequiredMixin, RoomRequiredMixin, View):
         return render(request, "records/add_data.html", context)
 
 
-class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
+class RecordListView(RoomRequiredMixin, ListView):
     """View to render list records"""
 
     model = Record
@@ -235,7 +233,7 @@ class RecordListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
-class WaterListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
+class WaterListView(RoomRequiredMixin, ListView):
     """View to render list of water records"""
 
     model = Water
@@ -254,7 +252,7 @@ class WaterListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
-class ExportDataView(LoginRequiredMixin, RoomRequiredMixin, ListView):
+class ExportDataView(RoomRequiredMixin, ListView):
     """View to render export data template"""
 
     model = User
@@ -275,7 +273,7 @@ class ExportDataView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
-class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
+class RoomReportView(RoomRequiredMixin, View):
     """View to for room report"""
 
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -321,7 +319,7 @@ class RoomReportView(LoginRequiredMixin, RoomRequiredMixin, View):
         return render(request, "records/room_reports.html", context)
 
 
-class BaseExportView(LoginRequiredMixin, RoomRequiredMixin, View):
+class BaseExportView(RoomRequiredMixin, View):
     """Base view for exporting data."""
 
     def write_to_sheet(self, writer, sheet_name: str, data: pd.DataFrame) -> None:

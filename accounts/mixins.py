@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.signing import BadSignature
 from django.http import (
     HttpRequest,
@@ -16,8 +17,7 @@ from django.urls import reverse_lazy
 from accounts.models import Room, RoomInvitation, RoomMembership
 
 
-# TODO: should extend login require mixin
-class RoomBaseMixin:
+class RoomBaseMixin(LoginRequiredMixin):
     """Base mixin for room-related checks."""
 
     def get_room_id(self, request: HttpRequest) -> Optional[int]:

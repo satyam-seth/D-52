@@ -469,7 +469,6 @@ class TestRoomInvitationListView(TransactionTestCase):
         "Test Room Invitation list view attributes"
 
         view = RoomInvitationListView()
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
         self.assertIsInstance(view, ListView)
         self.assertEqual(view.model, RoomInvitation)
@@ -643,7 +642,6 @@ class TestRoomInviteView(TransactionTestCase):
         "Test Room Invite view attributes"
 
         view = RoomInviteView()
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomAdminRequiredMixin)
         self.assertIsInstance(view, View)
 
@@ -1293,7 +1291,6 @@ class TestRoomInvitationCancelView(TestCase):
         "Test Room Invitation cancel view attributes"
 
         view = RoomInvitationCancelView()
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomAdminRequiredMixin)
         self.assertIsInstance(view, View)
 
