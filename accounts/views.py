@@ -203,7 +203,7 @@ class RoomTemplateView(LoginRequiredMixin, TemplateView):
 # TODO: Currently, if a user has not selected a room, they are unable to see pending room invitations.
 # Additionally, the current room admin of a room cannot see invitations from other rooms
 # if they have been invited as an admin by someone else.
-class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
+class RoomInvitationListView(RoomRequiredMixin, ListView):
     """View to render list room invitation"""
 
     model = RoomInvitation
@@ -250,7 +250,7 @@ class RoomInvitationListView(LoginRequiredMixin, RoomRequiredMixin, ListView):
         return context
 
 
-class RoomInviteView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+class RoomInviteView(RoomAdminRequiredMixin, View):
     """View to handle room invite post requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -400,7 +400,7 @@ class RoomInvitationRejectView(LoginRequiredMixin, RoomInvitationTokenMixin, Vie
         return redirect(reverse_lazy("core:home"))
 
 
-class RoomInvitationCancelView(LoginRequiredMixin, RoomAdminRequiredMixin, View):
+class RoomInvitationCancelView(RoomAdminRequiredMixin, View):
     """View to handle room invitation cancel requests"""
 
     def post(self, request: HttpRequest) -> HttpResponse:
