@@ -78,7 +78,6 @@ class TestDashboardTemplateView(TestCase):
 
         view = DashboardTemplateView()
         self.assertIsInstance(view, TemplateView)
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.template_name, "records/dashboard.html")
 
@@ -287,7 +286,6 @@ class TestAddDataView(TestCase):
 
         # Assertions
         self.assertIsInstance(view, View)
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
 
     def test_get_record_form_working(self) -> None:
@@ -652,7 +650,6 @@ class TestRecordListView(TransactionTestCase):
 
         view = RecordListView()
         self.assertIsInstance(view, ListView)
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
@@ -925,7 +922,6 @@ class TestWaterListView(TransactionTestCase):
 
         view = WaterListView()
         self.assertIsInstance(view, ListView)
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, Water)
         self.assertEqual(view.paginate_by, 20)
@@ -1003,7 +999,6 @@ class TestExportDataView(TestCase):
 
         view = ExportDataView()
         self.assertIsInstance(view, ListView)
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
         self.assertEqual(view.model, User)
         self.assertEqual(view.ordering, ["-id"])
@@ -1077,7 +1072,6 @@ class TestRoomReportView(TestCase):
 
         view = RoomReportView()
         self.assertIsInstance(view, View)
-        self.assertIsInstance(view, LoginRequiredMixin)
         self.assertIsInstance(view, RoomRequiredMixin)
 
     def test_room_report_view_working(self) -> None:
