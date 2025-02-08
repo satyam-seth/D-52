@@ -2,6 +2,7 @@ from http import HTTPStatus
 from unittest import mock
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.signing import BadSignature
@@ -37,6 +38,11 @@ class TestRoomBaseMixin(TestCase):
 
         # Create a view instance with the RoomBaseMixin
         self.view = RoomBaseMixin()
+
+    def test_room_base_mixin_attributes(self) -> None:
+        "Test Room Base Mixin view attributes"
+
+        self.assertIsInstance(self.view, LoginRequiredMixin)
 
     def test_get_room_id(self) -> None:
         """Test get room id"""
