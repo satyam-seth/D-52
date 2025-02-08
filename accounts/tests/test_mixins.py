@@ -228,6 +228,11 @@ class TestRoomInvitationTokenMixin(TestCase):
         # Create an instance with the RoomInvitationTokenMixin
         self.mixin = RoomInvitationTokenMixin()
 
+    def test_room_invitation_token_mixin_attributes(self) -> None:
+        "Test room invitation token mixin attributes"
+
+        self.assertIsInstance(self.mixin, LoginRequiredMixin)
+
     @mock.patch(
         "accounts.mixins.RoomInvitationTokenMixin.check_room_invitation_token_valid"
     )
