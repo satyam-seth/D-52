@@ -36,29 +36,29 @@ class TestRoomBaseMixin(TestCase):
         )
         self.request.user = self.user
 
-        # Create a view instance with the RoomBaseMixin
-        self.view = RoomBaseMixin()
+        # Create an instance with the RoomBaseMixin
+        self.mixin = RoomBaseMixin()
 
     def test_room_base_mixin_attributes(self) -> None:
-        "Test Room Base Mixin view attributes"
+        "Test room base mixin attributes"
 
-        self.assertIsInstance(self.view, LoginRequiredMixin)
+        self.assertIsInstance(self.mixin, LoginRequiredMixin)
 
     def test_get_room_id(self) -> None:
         """Test get room id"""
 
-        self.assertIsNone(self.view.get_room_id(self.request))
+        self.assertIsNone(self.mixin.get_room_id(self.request))
 
         # Set room id in session
         self.request.session["room_id"] = 1
 
-        self.assertEqual(self.view.get_room_id(self.request), 1)
+        self.assertEqual(self.mixin.get_room_id(self.request), 1)
 
     def test_handle_on_room(self) -> None:
         """Test handle no room"""
 
         # Call the dispatch method with the request
-        response = self.view.dispatch(self.request)
+        response = self.mixin.dispatch(self.request)
 
         # Check that the response is a redirect to the room selection page
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -75,7 +75,7 @@ class TestRoomBaseMixin(TestCase):
             AttributeError, "'super' object has no attribute 'dispatch'"
         ):
             # Call the dispatch method with the request
-            self.view.dispatch(self.request)
+            self.mixin.dispatch(self.request)
 
     def test_get_room_working_if_room_found(self) -> None:
         """Test get_room working if room found"""
@@ -86,7 +86,7 @@ class TestRoomBaseMixin(TestCase):
         # Set room id in session
         self.request.session["room_id"] = room.id
 
-        self.assertEqual(self.view.get_room(self.request), room)
+        self.assertEqual(self.mixin.get_room(self.request), room)
 
     def test_get_room_working_if_room_not_found(self) -> None:
         """Test get_room working if room not found"""
@@ -97,7 +97,7 @@ class TestRoomBaseMixin(TestCase):
         # Assert calling get_room should raises Http404 exception
         with self.assertRaisesMessage(Http404, "No Room matches the given query."):
             # Call the get_room method with the request
-            self.view.get_room(self.request)
+            self.mixin.get_room(self.request)
 
 
 class TestRoomRequiredMixin(TestCase):
@@ -119,14 +119,14 @@ class TestRoomRequiredMixin(TestCase):
         # set current user
         self.request.user = self.user
 
-        # Create a view instance with the RoomRequiredMixin
-        self.view = RoomRequiredMixin()
+        # Create an instance with the RoomRequiredMixin
+        self.mixin = RoomRequiredMixin()
 
     def test_redirect_to_room_selection(self) -> None:
         """Test redirect to room selection"""
 
         # Call the dispatch method with the request
-        response = self.view.dispatch(self.request)
+        response = self.mixin.dispatch(self.request)
 
         # Check that the response is a redirect to the room selection page
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -146,7 +146,7 @@ class TestRoomRequiredMixin(TestCase):
             AttributeError, "'super' object has no attribute 'dispatch'"
         ):
             # Call the dispatch method with the request
-            self.view.dispatch(self.request)
+            self.mixin.dispatch(self.request)
 
 
 class TestRoomAdminRequiredMixin(TestCase):
@@ -174,8 +174,8 @@ class TestRoomAdminRequiredMixin(TestCase):
         # Set room id in session
         self.request.session["room_id"] = self.room.id
 
-        # Create a view instance with the RoomAdminRequiredMixin
-        self.view = RoomAdminRequiredMixin()
+        # Create an instance with the RoomAdminRequiredMixin
+        self.mixin = RoomAdminRequiredMixin()
 
     def test_user_is_admin(self):
         """Test user is admin"""
@@ -188,7 +188,7 @@ class TestRoomAdminRequiredMixin(TestCase):
             AttributeError, "'super' object has no attribute 'dispatch'"
         ):
             # Call the dispatch method with the request
-            self.view.dispatch(self.request)
+            self.mixin.dispatch(self.request)
 
     def test_user_is_not_admin(self):
         """Test user is not admin"""
@@ -197,7 +197,7 @@ class TestRoomAdminRequiredMixin(TestCase):
         self.request.user = self.other_user
 
         # Call the dispatch method with the request
-        response = self.view.dispatch(self.request)
+        response = self.mixin.dispatch(self.request)
 
         # Assert access should be denied with Forbidden status code
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
@@ -225,8 +225,8 @@ class TestRoomInvitationTokenMixin(TestCase):
         self.room = Room.objects.create(name="test-room", admin=self.admin)
         self.token_payload = {"id": 1, "room": self.room, "email": self.member.email}
 
-        # Create a view instance with the RoomInvitationTokenMixin
-        self.view = RoomInvitationTokenMixin()
+        # Create an instance with the RoomInvitationTokenMixin
+        self.mixin = RoomInvitationTokenMixin()
 
     @mock.patch(
         "accounts.mixins.RoomInvitationTokenMixin.check_room_invitation_token_valid"
@@ -244,7 +244,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request = self.factory.get("/", data={"token": self.token})
 
         # Call get token method with request
-        token = self.view.get_token(request)
+        token = self.mixin.get_token(request)
 
         # Assert token value
         self.assertEqual(token, self.token)
@@ -271,7 +271,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request = self.factory.post("/", data={"token": self.token})
 
         # Call get token method with request
-        token = self.view.get_token(request)
+        token = self.mixin.get_token(request)
 
         # Assert token value
         self.assertEqual(token, self.token)
@@ -289,7 +289,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request = self.factory.get("/")
 
         # Call get token method with request
-        response = self.view.get_token(request)
+        response = self.mixin.get_token(request)
 
         # Assert response is 404 not found
         self.assertIsInstance(response, HttpResponseNotFound)
@@ -310,7 +310,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request = self.factory.post("/", data={"token": self.token})
 
         # Call get token method with request
-        response = self.view.get_token(request)
+        response = self.mixin.get_token(request)
 
         # Assert response is 400 bad request
         self.assertIsInstance(response, HttpResponseBadRequest)
@@ -335,7 +335,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request = self.factory.post("/")
 
         # Call check room invitation token method with request and token
-        token_validity = self.view.check_room_invitation_token_valid(
+        token_validity = self.mixin.check_room_invitation_token_valid(
             request,
             self.token,
         )
@@ -361,7 +361,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request.user = AnonymousUser()
 
         # Call check room invitation token method with request and token
-        token_validity = self.view.check_room_invitation_token_valid(
+        token_validity = self.mixin.check_room_invitation_token_valid(
             request,
             self.token,
         )
@@ -395,7 +395,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request.user = user
 
         # Call check room invitation token method with request and token
-        token_validity = self.view.check_room_invitation_token_valid(
+        token_validity = self.mixin.check_room_invitation_token_valid(
             request,
             self.token,
         )
@@ -421,7 +421,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request.user = self.member
 
         # Call check room invitation token method with request and token
-        token_validity = self.view.check_room_invitation_token_valid(
+        token_validity = self.mixin.check_room_invitation_token_valid(
             request,
             self.token,
         )
@@ -452,7 +452,7 @@ class TestRoomInvitationTokenMixin(TestCase):
         request.user = self.member
 
         # Call check room invitation token method with request and token
-        token_validity = self.view.check_room_invitation_token_valid(
+        token_validity = self.mixin.check_room_invitation_token_valid(
             request,
             self.token,
         )
