@@ -53,7 +53,7 @@ class RoomExporter:
         """
         Fetches entry for the water filtered by room_id and returns a Pandas DataFrame.
         """
-        entries = Water.objects.filter(room__id=self.room_id).order_by("purchase_date")
+        entries = Water.objects.filter(room_id=self.room_id).order_by("purchase_date")
 
         data = [
             {

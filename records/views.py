@@ -58,7 +58,7 @@ class DashboardTemplateView(RoomRequiredMixin, TemplateView):
         """Returns water context"""
 
         total_quantity = 0
-        waters = Water.objects.filter(room__id=room_id)
+        waters = Water.objects.filter(room_id=room_id)
 
         if waters:
             total_quantity = waters.aggregate(Sum("quantity"))["quantity__sum"]
@@ -68,12 +68,12 @@ class DashboardTemplateView(RoomRequiredMixin, TemplateView):
     def get_room_members_context(self, room_id: int):
         """Returns room members context"""
 
-        room_members = User.objects.filter(room_membership__room__id=room_id)
+        room_members = User.objects.filter(room_membership__room_id=room_id)
         room_members_context = []
 
         for room_member in room_members:
             room_member_records = Record.objects.filter(
-                room__id=room_id,
+                room_id=room_id,
                 purchaser=room_member,
             )
             records_count = room_member_records.count()
@@ -206,10 +206,10 @@ class RecordListView(RoomRequiredMixin, ListView):
         room_id = self.get_room_id(self.request)
         member_id = self.kwargs.get("member_id")
         item_name_query = self.request.GET.get("query")
-        queryset = super().get_queryset().filter(room__id=room_id)
+        queryset = super().get_queryset().filter(room_id=room_id)
 
         if member_id:
-            queryset = queryset.filter(purchaser__id=member_id)
+            queryset = queryset.filter(purchaser_id=member_id)
 
         if item_name_query:
             queryset = queryset.filter(item__icontains=item_name_query)
@@ -243,7 +243,7 @@ class WaterListView(RoomRequiredMixin, ListView):
 
     def get_queryset(self):
         room_id = self.get_room_id(self.request)
-        queryset = super().get_queryset().filter(room__id=room_id)
+        queryset = super().get_queryset().filter(room_id=room_id)
         return queryset
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -264,7 +264,7 @@ class ExportDataView(RoomRequiredMixin, ListView):
 
     def get_queryset(self):
         room_id = self.get_room_id(self.request)
-        queryset = super().get_queryset().filter(room_membership__room__id=room_id)
+        queryset = super().get_queryset().filter(room_membership__room_id=room_id)
         return queryset
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -282,8 +282,8 @@ class RoomReportView(RoomRequiredMixin, View):
         room_id = self.get_room_id(self.request)
         assert room_id
 
-        room_members = User.objects.filter(room_membership__room__id=room_id)
-        room_records = Record.objects.filter(room__id=room_id)
+        room_members = User.objects.filter(room_membership__room_id=room_id)
+        room_records = Record.objects.filter(room_id=room_id)
         room_records_count = room_records.count()
         total_price = room_records.aggregate(Sum("price"))["price__sum"]
         room_total_price = total_price if total_price else 0

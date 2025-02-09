@@ -64,7 +64,7 @@ class RoomRequiredMixin(RoomBaseMixin):
 
         room_id = self.get_room_id(request)
         is_member = RoomMembership.objects.filter(
-            room__id=room_id,
+            room_id=room_id,
             member=request.user,  # type: ignore
         ).exists()
 
