@@ -16,7 +16,7 @@ class RecordForm(forms.ModelForm):
         self.room_id = kwargs.pop("room_id", None)
         super().__init__(*args, **kwargs)
         if self.room_id:
-            room_members = User.objects.filter(room_membership__room__id=self.room_id)
+            room_members = User.objects.filter(room_membership__room_id=self.room_id)
             self.fields["purchaser"].queryset = room_members
 
     class Meta:
