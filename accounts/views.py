@@ -220,18 +220,16 @@ class RoomInvitationListView(RoomRequiredMixin, ListView):
         super().__init__(**kwargs)
         self._cached_room = None
 
-    def get_room(self):
+    def get_cached_room(self):
         """Retrieve and cache the room object."""
 
         if self._cached_room is None:
-            # TODO: use get_room from RoomRequiredMixin
-            room_id = self.get_room_id(self.request)
-            self._cached_room = Room.objects.get(id=room_id)
+            self._cached_room = super().get_room(self.request)
 
         return self._cached_room
 
     def get_queryset(self):
-        room = self.get_room()
+        room = self.get_cached_room()
         queryset = super().get_queryset().filter(room=room)
 
         if room.admin == self.request.user:
@@ -241,7 +239,7 @@ class RoomInvitationListView(RoomRequiredMixin, ListView):
         return queryset.filter(email=self.request.user.email)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        room = self.get_room()
+        room = self.get_cached_room()
         context = super().get_context_data(**kwargs)
 
         if room.admin == self.request.user:

@@ -479,8 +479,12 @@ class TestRoomInvitationListView(TransactionTestCase):
         self.assertEqual(view.template_name, "accounts/room_invitation_list.html")
         self.assertEqual(view.extra_context, {"room_invitation_active": "active"})
 
-    def test_get_room_retrieves_room(self) -> None:
-        """Test that get_room retrieves the room from the database"""
+    @mock.patch("accounts.views.RoomRequiredMixin.get_room")
+    def test_get_cached_room_retrieves_room(self, mock_get_room) -> None:
+        """Test that get_cached_room retrieves the room using get_room"""
+
+        # Set return value
+        mock_get_room.return_value = self.room
 
         # Set up the request factory and view instance
         factory = RequestFactory()
@@ -494,14 +498,23 @@ class TestRoomInvitationListView(TransactionTestCase):
         # Initialize the view with the request
         view.request = request
 
-        # Call get_room and verify the room is retrieved from the database
-        room = view.get_room()
+        # Verify initially cached room is None
+        # pylint: disable=protected-access
+        self.assertEqual(view._cached_room, None)
+
+        # Call get_cached_room and verify it calls get_room
+        room = view.get_cached_room()
         self.assertEqual(room, self.room)
         # pylint: disable=protected-access
         self.assertEqual(view._cached_room, self.room)
+        mock_get_room.assert_called_once_with(request)
 
-    def test_get_room_caches_room(self) -> None:
-        """Test that get_room caches the room object"""
+    @mock.patch("accounts.views.RoomRequiredMixin.get_room")
+    def test_get_cached_room_caches_room(self, mock_get_room) -> None:
+        """Test that get_cached_room caches the room object"""
+
+        # Set return value
+        mock_get_room.return_value = self.room
 
         # Set up the request factory and view instance
         factory = RequestFactory()
@@ -515,19 +528,17 @@ class TestRoomInvitationListView(TransactionTestCase):
         # Initialize the view with the request
         view.request = request
 
-        # Call get_room the first time and verify it retrieves from the database
-        room_first_call = view.get_room()
+        # Call get_cached_room the first time and verify it calls get_room
+        room_first_call = view.get_cached_room()
         self.assertEqual(room_first_call, self.room)
 
-        # Modify the room object to ensure it doesn't hit the database again
-        self.room.name = "modified-room"
-        self.room.save()
-
-        # Call get_room the second time and verify it uses the cached value
-        room_second_call = view.get_room()
-        self.assertEqual(room_second_call.name, "test-room")
         # pylint: disable=protected-access
-        self.assertEqual(view._cached_room.name, "test-room")
+        self.assertEqual(view._cached_room, self.room)
+
+        # Call get_cached_room the second time and verify it uses the cached value
+        room_second_call = view.get_cached_room()
+        self.assertEqual(room_second_call, self.room)
+        mock_get_room.assert_called_once_with(request)
 
     def test_room_invitation_list_view_working_for_admin(self) -> None:
         """Test Room Invitation list view working for admin"""
