@@ -49,6 +49,7 @@ Records
         <tr>
           <th scope="col">S. No.</th>
           <th scope="col">Date</th>
+          <th scope="col">Time</th>
           <th scope="col" class="d-none d-sm-block">Day</th>
           <th scope="col">Item Name</th>
           <th scope="col">Price</th>
@@ -60,8 +61,9 @@ Records
         {% for record in record_list %}
         <tr>
           <th scope="row">{{forloop.counter0|add:page_obj.start_index }}</th>
-          <td>{{record.purchase_date|date:"d M Y"}}</td>
-          <td class="d-none d-sm-block">{{record.purchase_date|date:"D"}}</td>
+          <td>{{record.purchase_datetime|date:"d M Y"}}</td>
+          <td>{{record.purchase_datetime|date:"h:i A"}}</td>
+          <td class="d-none d-sm-block">{{record.purchase_datetime|date:"D"}}</td>
           <td>{{record.item|capfirst}}</td>
           <td>{{record.price}}</td>
           <td>{{record.purchaser}}</td>

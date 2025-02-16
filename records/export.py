@@ -23,7 +23,7 @@ class RoomExporter:
     def get_formatted_time(self, obj: datetime):
         """Returns formatted time for time object"""
 
-        return obj.strftime("%H:%M:%S")
+        return obj.strftime("%I:%M:%S %p")
 
     def get_entry_df(self, model: Type[Electricity | Maid]) -> pd.DataFrame:
         """
@@ -81,12 +81,13 @@ class RoomExporter:
         queryset = Record.objects.filter(room_id=self.room_id)
         if purchaser:
             queryset = queryset.filter(purchaser=purchaser)
-        records = queryset.order_by("purchase_date")
+        records = queryset.order_by("purchase_datetime")
 
         # Prepare all records data
         data = [
             {
-                "Purchase Date": self.get_formatted_date(record.purchase_date),
+                "Purchase Date": self.get_formatted_date(record.purchase_datetime),
+                "Purchase Time": self.get_formatted_time(record.purchase_datetime),
                 "Item Name": record.item,
                 "Price": record.price,
                 "Purchase By": record.purchaser.get_full_name(),
