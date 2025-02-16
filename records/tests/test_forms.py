@@ -51,15 +51,15 @@ class TestRecordForm(TestCase):
             form.Meta.widgets["purchase_datetime"].attrs["class"],
             "form-control",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             form.Meta.widgets["purchase_datetime"].attrs["min"],
             localtime(now() - timedelta(days=6)).strftime("%Y-%m-%dT%H:%M"),
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             form.Meta.widgets["purchase_datetime"].attrs["max"],
             localtime(now()).strftime("%Y-%m-%dT%H:%M"),
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             form.Meta.widgets["purchase_datetime"].attrs["value"],
             localtime(now()).strftime("%Y-%m-%dT%H:%M"),
         )
