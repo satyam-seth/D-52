@@ -1,15 +1,117 @@
 from datetime import datetime, timedelta
+from typing import Optional, Type
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import connection, models
 from django.db.utils import IntegrityError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
-from records.models import Electricity, Maid, Record, Water
+from records.models import BasePurchaseModel, Electricity, Maid, Record, Water
 
 User = get_user_model()
+
+
+class AbstractModelMixinTestCase(TransactionTestCase):
+    """
+    A test case that dynamically creates a model class based on the provided mixin
+    and runs tests with that model
+    """
+
+    # mixin and model can initially be None, but will later be assigned a model class
+    mixin: Optional[Type[models.Model]] = None
+    model: Optional[Type[models.Model]] = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Ensure mixin is not None before attempting to create a model
+        if cls.mixin is None:
+            raise ValueError("Mixin class has not been set.")
+
+        # Dynamically create a model by using the mixin as the base class
+        cls.model = type(
+            "TestModel" + cls.mixin.__name__,
+            (cls.mixin,),  # Use the mixin as the base class
+            {"__module__": cls.mixin.__module__},
+        )
+
+        # Create the model in the database schema
+        with connection.schema_editor() as editor:
+            editor.create_model(cls.model)
+
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super().tearDownClass()
+
+        # Delete the dynamically created model from the schema, if model is not None
+        if cls.model:
+            with connection.schema_editor() as editor:
+                editor.delete_model(cls.model)
+
+        # Close the connection
+        connection.close()
+
+
+class TestBasePurchaseModel(AbstractModelMixinTestCase):
+    """Test Base Purchase Model"""
+
+    mixin = BasePurchaseModel
+
+    def test_base_purchase_model_attributes(self) -> None:
+        """Test base purchase model attributes"""
+
+        self.assertEqual(BasePurchaseModel.max_allowed_past_days, 6)
+
+    def test_base_purchase_model_creation_with_naive_purchase_datetime(self) -> None:
+        """Test base purchase model instance creation with naive purchase datetime"""
+
+        # create base purchase model instance with naive purchase datetime
+        purchase = self.model.objects.create(purchase_datetime=datetime.now())
+
+        # Assert that the datetime is now timezone-aware
+        self.assertTrue(timezone.is_aware(purchase.purchase_datetime))
+
+        # Assert if the timezone is the same as the current timezone
+        self.assertEqual(
+            purchase.purchase_datetime.tzinfo,
+            timezone.get_current_timezone(),
+        )
+
+    def test_base_purchase_model_creation_for_feature_purchase_datetime(self) -> None:
+        """Test base purchase model instance creation for feature purchase datetime"""
+
+        future_datetime = timezone.now() + timedelta(days=1)
+
+        # Create model instance with feature purchase datetime
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase datetime should be within the past 6 days.",
+        ) as cm:
+            self.model.objects.create(purchase_datetime=future_datetime)
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
+
+    def test_base_purchase_model_creation_for_too_far_in_past_purchase_datetime(
+        self,
+    ) -> None:
+        """Test base purchase model  instance creation for too far in past purchase datetime"""
+
+        too_far_in_past_datetime = timezone.now() - timedelta(days=7)
+
+        # Create model instance with too far in past purchase datetime
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase datetime should be within the past 6 days.",
+        ) as cm:
+            self.model.objects.create(purchase_datetime=too_far_in_past_datetime)
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
 
 
 class TestRecordModel(TransactionTestCase):
@@ -32,11 +134,6 @@ class TestRecordModel(TransactionTestCase):
 
         # Create room membership for purchaser
         RoomMembership.objects.create(room=self.room, member=self.purchaser)
-
-    def test_record_model_attributes(self) -> None:
-        """Test record model attributes"""
-
-        self.assertEqual(Record.max_allowed_past_days, 6)
 
     def test_record_creation(self) -> None:
         """Test record model instance creation"""
@@ -157,71 +254,6 @@ class TestRecordModel(TransactionTestCase):
                 purchase_datetime=timezone.now(),
                 room=self.room,
             )
-
-    def test_record_creation_with_naive_purchase_datetime(self) -> None:
-        """Test record model instance creation with naive purchase datetime"""
-
-        # create record instance with naive purchase datetime
-        record = Record.objects.create(
-            item="test-item",
-            price=100,
-            purchaser=self.purchaser,
-            adder=self.adder,
-            purchase_datetime=datetime.now(),
-            room=self.room,
-        )
-
-        # Assert that the datetime is now timezone-aware
-        self.assertTrue(timezone.is_aware(record.purchase_datetime))
-
-        # Assert if the timezone is the same as the current timezone
-        self.assertEqual(
-            record.purchase_datetime.tzinfo, timezone.get_current_timezone()
-        )
-
-    def test_record_creation_for_feature_purchase_datetime(self) -> None:
-        """Test record model instance creation for feature purchase datetime"""
-
-        future_datetime = timezone.now() + timedelta(days=1)
-
-        # Create record instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase datetime should be within the past 6 days.",
-        ) as cm:
-            Record.objects.create(
-                item="item",
-                price=10,
-                purchaser=self.purchaser,
-                adder=self.adder,
-                purchase_datetime=future_datetime,
-                room=self.room,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
-
-    def test_record_creation_for_too_far_in_past_purchase_datetime(self) -> None:
-        """Test record model instance creation for too far in past purchase datetime"""
-
-        too_far_in_past_datetime = timezone.now() - timedelta(days=7)
-
-        # Create record instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase datetime should be within the past 6 days.",
-        ) as cm:
-            Record.objects.create(
-                item="item",
-                price=10,
-                purchaser=self.purchaser,
-                adder=self.adder,
-                purchase_datetime=too_far_in_past_datetime,
-                room=self.room,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
 
 
 class TestWaterModel(TestCase):
