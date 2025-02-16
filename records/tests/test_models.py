@@ -158,8 +158,8 @@ class TestRecordModel(TransactionTestCase):
                 room=self.room,
             )
 
-    def test_record_creation_for_feature_purchaser_datetime(self) -> None:
-        """Test record model instance creation for feature purchaser datetime"""
+    def test_record_creation_for_feature_purchase_datetime(self) -> None:
+        """Test record model instance creation for feature purchase datetime"""
 
         future_datetime = timezone.now() + timedelta(days=1)
 
@@ -180,8 +180,8 @@ class TestRecordModel(TransactionTestCase):
         # Assert the expected error code
         self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
 
-    def test_record_creation_for_too_far_in_past_purchaser_datetime(self) -> None:
-        """Test record model instance creation for too far in past purchaser datetime"""
+    def test_record_creation_for_too_far_in_past_purchase_datetime(self) -> None:
+        """Test record model instance creation for too far in past purchase datetime"""
 
         too_far_in_past_datetime = timezone.now() - timedelta(days=7)
 
