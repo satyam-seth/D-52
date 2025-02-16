@@ -36,7 +36,7 @@ class TestRecordForm(TestCase):
         """Test record form fields"""
 
         # set mock now return value
-        mock_now.return_value = make_aware(datetime.now())
+        mock_now.return_value = make_aware(datetime(2025, 2, 16, 10, 30))
 
         form = RecordForm()
 
