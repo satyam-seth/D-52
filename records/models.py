@@ -16,6 +16,44 @@ from records.validators import (
 # Create your models here.
 
 
+class BasePurchaseModel(models.Model):
+    """Abstract base model to handle purchase datetime logic"""
+
+    max_allowed_past_days = 6
+
+    class Meta:
+        abstract = True
+
+    purchase_datetime = models.DateTimeField(
+        validators=[validate_past_datetime_within_past_6_days]
+    )
+
+    def save(self, *args, **kwargs):
+        # Ensure purchase_datetime is timezone-aware
+        if timezone.is_naive(self.purchase_datetime):
+            # If it's naive, assume it's in the local timezone
+            self.purchase_datetime = timezone.make_aware(
+                self.purchase_datetime, timezone.get_current_timezone()
+            )
+
+        # Ensure that the purchase date is within the last six days
+        now_utc = timezone.now()
+        min_past_datetime_utc = now_utc - timedelta(days=self.max_allowed_past_days)
+        purchase_datetime_utc = self.purchase_datetime.astimezone(timezone.utc)
+
+        if (
+            purchase_datetime_utc > now_utc
+            or purchase_datetime_utc < min_past_datetime_utc
+        ):
+            raise ValidationError(
+                message="Purchase datetime should be within the past "
+                + f"{self.max_allowed_past_days} days.",
+                code="invalid_purchase_datetime",
+            )
+
+        super().save(*args, **kwargs)
+
+
 class Record(models.Model):
     """Model to store purchase details"""
 
