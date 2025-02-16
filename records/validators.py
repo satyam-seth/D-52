@@ -41,3 +41,5 @@ def validate_past_date(value, n_days):
 
 # TODO: Remove the hard-coded 6-day value and get it from a setting or environment variable
 validate_past_date_within_past_6_days = partial(validate_past_date, n_days=6)
+
+validate_past_datetime_within_past_6_days = partial(validate_past_datetime, days=6)
