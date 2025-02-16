@@ -33,6 +33,11 @@ class TestRecordModel(TransactionTestCase):
         # Create room membership for purchaser
         RoomMembership.objects.create(room=self.room, member=self.purchaser)
 
+    def test_record_model_attributes(self) -> None:
+        """Test record model attributes"""
+
+        self.assertEqual(Record.max_allowed_past_days, 6)
+
     def test_record_creation(self) -> None:
         """Test record model instance creation"""
 
