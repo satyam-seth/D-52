@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -157,6 +157,27 @@ class TestRecordModel(TransactionTestCase):
                 purchase_datetime=timezone.now(),
                 room=self.room,
             )
+
+    def test_record_creation_with_naive_purchase_datetime(self) -> None:
+        """Test record model instance creation with naive purchase datetime"""
+
+        # create record instance with naive purchase datetime
+        record = Record.objects.create(
+            item="test-item",
+            price=100,
+            purchaser=self.purchaser,
+            adder=self.adder,
+            purchase_datetime=datetime.now(),
+            room=self.room,
+        )
+
+        # Assert that the datetime is now timezone-aware
+        self.assertTrue(timezone.is_aware(record.purchase_datetime))
+
+        # Assert if the timezone is the same as the current timezone
+        self.assertEqual(
+            record.purchase_datetime.tzinfo, timezone.get_current_timezone()
+        )
 
     def test_record_creation_for_feature_purchase_datetime(self) -> None:
         """Test record model instance creation for feature purchase datetime"""
