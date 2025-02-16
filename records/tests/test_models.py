@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Optional, Type
 
 from django.contrib.auth import get_user_model
@@ -9,7 +9,7 @@ from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
-from records.models import Electricity, Maid, Record, Water
+from records.models import BasePurchaseModel, Electricity, Maid, Record, Water
 
 User = get_user_model()
 
@@ -56,6 +56,64 @@ class AbstractModelMixinTestCase(TransactionTestCase):
         connection.close()
 
 
+class TestBasePurchaseModel(AbstractModelMixinTestCase):
+    """Test Base Purchase Model"""
+
+    mixin = BasePurchaseModel
+
+    def test_base_purchase_model_attributes(self) -> None:
+        """Test base purchase model attributes"""
+
+        self.assertEqual(BasePurchaseModel.max_allowed_past_days, 6)
+
+    def test_base_purchase_model_creation_with_naive_purchase_datetime(self) -> None:
+        """Test base purchase model instance creation with naive purchase datetime"""
+
+        # create base purchase model instance with naive purchase datetime
+        purchase = self.model.objects.create(purchase_datetime=datetime.now())
+
+        # Assert that the datetime is now timezone-aware
+        self.assertTrue(timezone.is_aware(purchase.purchase_datetime))
+
+        # Assert if the timezone is the same as the current timezone
+        self.assertEqual(
+            purchase.purchase_datetime.tzinfo,
+            timezone.get_current_timezone(),
+        )
+
+    def test_base_purchase_model_creation_for_feature_purchase_datetime(self) -> None:
+        """Test base purchase model instance creation for feature purchase datetime"""
+
+        future_datetime = timezone.now() + timedelta(days=1)
+
+        # Create record instance with price grater than 100000
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase datetime should be within the past 6 days.",
+        ) as cm:
+            self.model.objects.create(purchase_datetime=future_datetime)
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
+
+    def test_base_purchase_model_creation_for_too_far_in_past_purchase_datetime(
+        self,
+    ) -> None:
+        """Test base purchase model  instance creation for too far in past purchase datetime"""
+
+        too_far_in_past_datetime = timezone.now() - timedelta(days=7)
+
+        # Create record instance with price grater than 100000
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase datetime should be within the past 6 days.",
+        ) as cm:
+            self.model.objects.create(purchase_datetime=too_far_in_past_datetime)
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
+
+
 class TestRecordModel(TransactionTestCase):
     """Test Record Model"""
 
@@ -76,11 +134,6 @@ class TestRecordModel(TransactionTestCase):
 
         # Create room membership for purchaser
         RoomMembership.objects.create(room=self.room, member=self.purchaser)
-
-    def test_record_model_attributes(self) -> None:
-        """Test record model attributes"""
-
-        self.assertEqual(Record.max_allowed_past_days, 6)
 
     def test_record_creation(self) -> None:
         """Test record model instance creation"""
@@ -201,71 +254,6 @@ class TestRecordModel(TransactionTestCase):
                 purchase_datetime=timezone.now(),
                 room=self.room,
             )
-
-    def test_record_creation_with_naive_purchase_datetime(self) -> None:
-        """Test record model instance creation with naive purchase datetime"""
-
-        # create record instance with naive purchase datetime
-        record = Record.objects.create(
-            item="test-item",
-            price=100,
-            purchaser=self.purchaser,
-            adder=self.adder,
-            purchase_datetime=datetime.now(),
-            room=self.room,
-        )
-
-        # Assert that the datetime is now timezone-aware
-        self.assertTrue(timezone.is_aware(record.purchase_datetime))
-
-        # Assert if the timezone is the same as the current timezone
-        self.assertEqual(
-            record.purchase_datetime.tzinfo, timezone.get_current_timezone()
-        )
-
-    def test_record_creation_for_feature_purchase_datetime(self) -> None:
-        """Test record model instance creation for feature purchase datetime"""
-
-        future_datetime = timezone.now() + timedelta(days=1)
-
-        # Create record instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase datetime should be within the past 6 days.",
-        ) as cm:
-            Record.objects.create(
-                item="item",
-                price=10,
-                purchaser=self.purchaser,
-                adder=self.adder,
-                purchase_datetime=future_datetime,
-                room=self.room,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
-
-    def test_record_creation_for_too_far_in_past_purchase_datetime(self) -> None:
-        """Test record model instance creation for too far in past purchase datetime"""
-
-        too_far_in_past_datetime = timezone.now() - timedelta(days=7)
-
-        # Create record instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase datetime should be within the past 6 days.",
-        ) as cm:
-            Record.objects.create(
-                item="item",
-                price=10,
-                purchaser=self.purchaser,
-                adder=self.adder,
-                purchase_datetime=too_far_in_past_datetime,
-                room=self.room,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
 
 
 class TestWaterModel(TestCase):
