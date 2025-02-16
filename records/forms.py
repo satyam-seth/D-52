@@ -21,16 +21,17 @@ class RecordForm(forms.ModelForm):
 
     class Meta:
         model = Record
-        fields = ["purchase_date", "purchaser", "item", "price"]
+        fields = ["purchase_datetime", "purchaser", "item", "price"]
         widgets = {
-            "purchase_date": forms.DateInput(
+            "purchase_datetime": forms.DateInput(
                 attrs={
-                    "type": "date",
+                    "type": "datetime-local",
                     "class": "form-control",
-                    # TODO: move this validator logic to models
-                    "min": localtime(now() - timedelta(6)).date(),
-                    "max": localtime(now()).date(),
-                    "value": localtime(now()).date(),
+                    "min": localtime(
+                        now() - timedelta(days=model.max_allowed_past_days)
+                    ).strftime("%Y-%m-%dT%H:%M"),
+                    "max": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
+                    "value": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
                 }
             ),
             "purchaser": forms.Select(attrs={"class": "form-control"}),
