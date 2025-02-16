@@ -8,13 +8,18 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
-from records.validators import validate_past_date_within_past_6_days
+from records.validators import (
+    validate_past_date_within_past_6_days,
+    validate_past_datetime_within_past_6_days,
+)
 
 # Create your models here.
 
 
 class Record(models.Model):
     """Model to store purchase details"""
+
+    max_allowed_past_days = 6
 
     class Meta:
         constraints = [
@@ -44,20 +49,33 @@ class Record(models.Model):
         related_name="record_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
-    purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
+    purchase_datetime = models.DateTimeField(
+        validators=[validate_past_datetime_within_past_6_days]
+    )
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Ensure that the purchase date is within the last six days
-        n_days = 6
-        today = timezone.now().date()
-        min_past_date = today - timedelta(days=n_days)
+        # Ensure purchase_datetime is timezone-aware
+        if timezone.is_naive(self.purchase_datetime):
+            # If it's naive, assume it's in the local timezone
+            self.purchase_datetime = timezone.make_aware(
+                self.purchase_datetime, timezone.get_current_timezone()
+            )
 
-        if self.purchase_date > today or self.purchase_date < min_past_date:
+        # Ensure that the purchase date is within the last six days
+        now_utc = timezone.now()
+        min_past_datetime_utc = now_utc - timedelta(days=self.max_allowed_past_days)
+        purchase_datetime_utc = self.purchase_datetime.astimezone(timezone.utc)
+
+        if (
+            purchase_datetime_utc > now_utc
+            or purchase_datetime_utc < min_past_datetime_utc
+        ):
             raise ValidationError(
-                message=f"Purchase date should be within the past {n_days} days.",
-                code="invalid_purchase_date",
+                message="Purchase datetime should be within the past "
+                + f"{self.max_allowed_past_days} days.",
+                code="invalid_purchase_datetime",
             )
 
         # Ensure that purchaser is members of the room
@@ -87,7 +105,7 @@ class Record(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.item} {self.purchaser} {self.purchase_date} {self.room.name}"
+        return f"{self.item} {self.purchaser} {self.purchase_datetime} {self.room.name}"
 
 
 # TODO: Add price field because price of one gallon of water may change in future
