@@ -5,7 +5,6 @@ from unittest import mock
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
@@ -84,27 +83,27 @@ class TestDashboardTemplateView(TestCase):
     def test_get_water_context(self) -> None:
         """Test get water context"""
 
-        today = timezone.now().date()
-        past_date = today - timedelta(days=2)
+        now = timezone.now()
+        past_datetime = now - timedelta(days=2)
 
         # Create water records
         Water.objects.create(
             quantity=5,
             adder=self.user1,
             room=self.room,
-            purchase_date=today,
+            purchase_datetime=now,
         )
         Water.objects.create(
             quantity=2,
             adder=self.user1,
             room=self.room,
-            purchase_date=past_date,
+            purchase_datetime=past_datetime,
         )
         Water.objects.create(
             quantity=1,
             adder=self.user2,
             room=self.room,
-            purchase_date=past_date,
+            purchase_datetime=past_datetime,
         )
 
         # Call get water context
@@ -464,7 +463,7 @@ class TestAddDataView(TestCase):
         """Test post for valid water form data"""
 
         valid_water_form_data = {
-            "purchase_date": timezone.now().date(),
+            "purchase_datetime": timezone.now(),
             "quantity": 1,
             "water_submit": "",
         }
@@ -499,7 +498,9 @@ class TestAddDataView(TestCase):
         self.assertEqual(Water.objects.count(), 1)
         water: Type[Water] = Water.objects.first()  # type: ignore
         self.assertEqual(water.quantity, valid_water_form_data["quantity"])
-        self.assertEqual(water.purchase_date, valid_water_form_data["purchase_date"])
+        self.assertEqual(
+            water.purchase_datetime, valid_water_form_data["purchase_datetime"]
+        )
         self.assertEqual(water.adder, self.user)
 
     def test_post_for_invalid_water_form_data(self) -> None:
@@ -539,18 +540,18 @@ class TestAddDataView(TestCase):
     def test_post_for_invalid_water_form_quantity_data(self) -> None:
         """Test post for invalid water form quantity data"""
 
-        today = timezone.now().date()
+        now = timezone.now()
 
         # Create water records with quantity 5
         Water.objects.create(
             quantity=5,
             adder=self.user,
             room=self.room,
-            purchase_date=today,
+            purchase_datetime=now,
         )
 
         invalid_water_form_data = {
-            "purchase_date": today,
+            "purchase_datetime": now,
             "quantity": 1,
             "water_submit": "",
         }
@@ -929,20 +930,20 @@ class TestWaterListView(TransactionTestCase):
         self.assertEqual(view.model, Water)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
-        self.assertEqual(view.ordering, ["-purchase_date"])
+        self.assertEqual(view.ordering, ["-purchase_datetime"])
 
     def test_water_list_view_working(self) -> None:
         """Test water list view working"""
 
         # Create water records for user 1 room 1
         Water.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             quantity=1,
             room=self.room1,
             adder=self.user1,
         )
         Water.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             quantity=1,
             room=self.room1,
             adder=self.user2,
@@ -950,7 +951,7 @@ class TestWaterListView(TransactionTestCase):
 
         # Create a water record for user 2 room 2
         Water.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             quantity=1,
             room=self.room2,
             adder=self.user2,
@@ -971,7 +972,7 @@ class TestWaterListView(TransactionTestCase):
         # Check that the water records are present in the context
         self.assertQuerysetEqual(
             response.context["water_list"],
-            Water.objects.filter(room=self.room1),
+            Water.objects.filter(room=self.room1).order_by("-purchase_datetime"),
         )
 
 
