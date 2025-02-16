@@ -239,7 +239,7 @@ class WaterListView(RoomRequiredMixin, ListView):
     model = Water
     paginate_by = 20
     paginate_orphans = 10
-    ordering = ["-purchase_date"]
+    ordering = ["-purchase_datetime"]
 
     def get_queryset(self):
         room_id = self.get_room_id(self.request)

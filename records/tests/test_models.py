@@ -269,29 +269,34 @@ class TestWaterModel(TestCase):
 
         self.room = Room.objects.create(name="test-room", admin=self.adder)
 
+    def test_water_model_attributes(self) -> None:
+        """Test water model attributes"""
+
+        self.assertEqual(Water.max_allowed_quality, 5)
+
     def test_water_creation(self) -> None:
         """Test water model instance creation"""
 
         # initialize data
         quantity = 1
-        purchase_date = timezone.now().date()
+        purchase_datetime = timezone.now()
 
         # create water instance
         water = Water.objects.create(
             quantity=quantity,
             adder=self.adder,
             room=self.room,
-            purchase_date=purchase_date,
+            purchase_datetime=purchase_datetime,
         )
 
         # assert field values
         self.assertEqual(water.quantity, quantity)
         self.assertEqual(water.adder, self.adder)
-        self.assertEqual(water.purchase_date, purchase_date)
+        self.assertEqual(water.purchase_datetime, purchase_datetime)
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(water), f"{water.purchase_date} {self.room.name}")
+        self.assertEqual(str(water), f"{water.purchase_datetime} {self.room.name}")
 
     def test_water_creation_for_invalid_adder(self) -> None:
         """Test water model instance creation for invalid adder"""
@@ -313,7 +318,7 @@ class TestWaterModel(TestCase):
                 quantity=1,
                 adder=user,
                 room=self.room,
-                purchase_date=timezone.now().date(),
+                purchase_datetime=timezone.now(),
             )
 
         # Assert the expected error code
@@ -322,7 +327,7 @@ class TestWaterModel(TestCase):
     def test_water_creation_exceeds_max_quantity(self) -> None:
         """Test record model instance creation exceeds max quantity"""
 
-        today = timezone.now().date()
+        now = timezone.now()
 
         # Create record instance with quantity 6
         with self.assertRaisesMessage(
@@ -333,7 +338,7 @@ class TestWaterModel(TestCase):
                 quantity=6,
                 adder=self.adder,
                 room=self.room,
-                purchase_date=today,
+                purchase_datetime=now,
             )
 
         # Assert the expected error code
@@ -344,7 +349,7 @@ class TestWaterModel(TestCase):
             quantity=5,
             adder=self.adder,
             room=self.room,
-            purchase_date=today,
+            purchase_datetime=now,
         )
 
         # Create record instance with quantity 5
@@ -356,51 +361,11 @@ class TestWaterModel(TestCase):
                 quantity=1,
                 adder=self.adder,
                 room=self.room,
-                purchase_date=today,
+                purchase_datetime=now,
             )
 
         # Assert the expected error code
         self.assertEqual(cm2.exception.code, "exceeds_max_quantity")
-
-    def test_water_creation_for_feature_purchaser_date(self) -> None:
-        """Test water model instance creation for feature purchaser date"""
-
-        future_date = timezone.now().date() + timedelta(days=1)
-
-        # Create water instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase date should be within the past 6 days.",
-        ) as cm:
-            Water.objects.create(
-                quantity=1,
-                adder=self.adder,
-                room=self.room,
-                purchase_date=future_date,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_date")
-
-    def test_water_creation_for_too_far_in_past_purchaser_date(self) -> None:
-        """Test water model instance creation for too far in past purchaser date"""
-
-        too_far_in_past_date = timezone.now().date() - timedelta(days=7)
-
-        # Create water instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase date should be within the past 6 days.",
-        ) as cm:
-            Water.objects.create(
-                quantity=1,
-                adder=self.adder,
-                room=self.room,
-                purchase_date=too_far_in_past_date,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_date")
 
 
 class TestElectricityModel(TestCase):
