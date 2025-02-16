@@ -8,10 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
-from records.validators import (
-    validate_past_date_within_past_6_days,
-    validate_past_datetime_within_past_6_days,
-)
+from records.validators import validate_past_datetime_within_past_6_days
 
 # Create your models here.
 
@@ -122,7 +119,7 @@ class Record(BasePurchaseModel):
 
 
 # TODO: Add price field because price of one gallon of water may change in future
-class Water(models.Model):
+class Water(BasePurchaseModel):
     """Model to store water purchase details"""
 
     max_allowed_quality = 5
@@ -140,29 +137,17 @@ class Water(models.Model):
         related_name="water_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="waters")
-    purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Ensure that the purchase date is within the last six days
-        n_days = 6
-        today = timezone.now().date()
-        min_past_date = today - timedelta(days=n_days)
-
-        if self.purchase_date > today or self.purchase_date < min_past_date:
-            raise ValidationError(
-                message=f"Purchase date should be within the past {n_days} days.",
-                code="invalid_purchase_date",
-            )
-
         # Ensure that maximum `max_allowed_quality` quantity allowed per day
         total_water_quantity = self.quantity
 
         if total_water_quantity <= self.max_allowed_quality:
             water_entires = Water.objects.filter(
                 room=self.room,
-                purchase_date=self.purchase_date,
+                purchase_datetime=self.purchase_datetime,
             )
 
             if water_entires.count() > 0:
@@ -192,7 +177,7 @@ class Water(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.purchase_date} {self.room.name}"
+        return f"{self.purchase_datetime} {self.room.name}"
 
 
 # TODO: Add room info
