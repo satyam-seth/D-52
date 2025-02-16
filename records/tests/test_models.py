@@ -269,6 +269,11 @@ class TestWaterModel(TestCase):
 
         self.room = Room.objects.create(name="test-room", admin=self.adder)
 
+    def test_water_model_attributes(self) -> None:
+        """Test water model attributes"""
+
+        self.assertEqual(Water.max_allowed_quality, 5)
+
     def test_water_creation(self) -> None:
         """Test water model instance creation"""
 
