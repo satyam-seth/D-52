@@ -23,7 +23,7 @@ class RoomExporter:
     def get_formatted_time(self, obj: datetime):
         """Returns formatted time for time object"""
 
-        return obj.strftime("%H:%M:%S")
+        return obj.strftime("%I:%M:%S %p")
 
     def get_entry_df(self, model: Type[Electricity | Maid]) -> pd.DataFrame:
         """
