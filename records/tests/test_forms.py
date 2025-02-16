@@ -1,9 +1,10 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
-from django.utils.timezone import localtime, now
+from django.utils.timezone import localtime, make_aware, now
 
 from accounts.models import Room
 from records.forms import RecordForm, WaterForm
@@ -30,8 +31,12 @@ class TestRecordForm(TestCase):
         )
         self.room = Room.objects.create(name="test-room", admin=self.user1)
 
-    def test_record_form_fields(self):
-        """Test water form fields"""
+    @patch("django.utils.timezone.now")
+    def test_record_form_fields(self, mock_now):
+        """Test record form fields"""
+
+        # set mock now return value
+        mock_now.return_value = make_aware(datetime.now())
 
         form = RecordForm()
 
@@ -51,15 +56,15 @@ class TestRecordForm(TestCase):
             form.Meta.widgets["purchase_datetime"].attrs["class"],
             "form-control",
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["min"],
             localtime(now() - timedelta(days=6)).strftime("%Y-%m-%dT%H:%M"),
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["max"],
             localtime(now()).strftime("%Y-%m-%dT%H:%M"),
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["value"],
             localtime(now()).strftime("%Y-%m-%dT%H:%M"),
         )
