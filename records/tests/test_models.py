@@ -86,7 +86,7 @@ class TestBasePurchaseModel(AbstractModelMixinTestCase):
 
         future_datetime = timezone.now() + timedelta(days=1)
 
-        # Create record instance with price grater than 100000
+        # Create model instance with feature purchase datetime
         with self.assertRaisesMessage(
             ValidationError,
             "Purchase datetime should be within the past 6 days.",
@@ -103,7 +103,7 @@ class TestBasePurchaseModel(AbstractModelMixinTestCase):
 
         too_far_in_past_datetime = timezone.now() - timedelta(days=7)
 
-        # Create record instance with price grater than 100000
+        # Create model instance with too far in past purchase datetime
         with self.assertRaisesMessage(
             ValidationError,
             "Purchase datetime should be within the past 6 days.",
