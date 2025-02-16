@@ -41,10 +41,10 @@
     {% csrf_token %}
     <div class="row mb-3">
       <div class="form-group col-md-6">
-        {{record_form.purchase_date.label_tag}}
-        {{record_form.purchase_date}}
-        <small class="text-danger">{{record_form.purchase_date.errors|striptags}}</small>
-        <small class="text-secondary">{{ record_form.purchase_date.help_text|safe }}</small>
+        {{record_form.purchase_datetime.label_tag}}
+        {{record_form.purchase_datetime}}
+        <small class="text-danger">{{record_form.purchase_datetime.errors|striptags}}</small>
+        <small class="text-secondary">{{ record_form.purchase_datetime.help_text|safe }}</small>
       </div>
       <div class="form-group col-md-6">
         {{record_form.purchaser.label_tag}}
