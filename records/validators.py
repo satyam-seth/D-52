@@ -16,11 +16,11 @@ def validate_past_datetime(value: datetime, days: int) -> None:
 
     # Check if the value is in the future
     if value > now:
-        raise ValidationError("The date cannot be in the future.")
+        raise ValidationError("The date and time cannot be in the future.")
 
     # Check if the value is more than n days ago
     if value < n_days_ago:
-        raise ValidationError(f"The date must be within the last {days} days.")
+        raise ValidationError(f"The date and time must be within the last {days} days.")
 
 
 # TODO: Remove it
