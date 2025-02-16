@@ -73,7 +73,7 @@ class WaterForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "min": 1,
-                    "max": 5,
+                    "max": model.max_allowed_quality,
                 }
             ),
         }
