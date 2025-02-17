@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='record',
             name='purchase_date',
-            field=models.DateField(validators=[functools.partial(records.validators.validate_past_date, *(), **{'n_days': 6})]),
+            field=models.DateField(),
         ),
         migrations.AddConstraint(
             model_name='record',
