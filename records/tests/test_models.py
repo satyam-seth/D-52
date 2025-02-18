@@ -376,21 +376,21 @@ class TestElectricityModel(TestCase):
 
         # initialize data
         price = 1234
-        due_date = timezone.now().date()
+        due_datetime = timezone.now()
 
         # create electricity instance
         electricity = Electricity.objects.create(
             price=price,
-            due_date=due_date,
+            due_datetime=due_datetime,
         )
 
         # assert field values
         self.assertEqual(electricity.price, price)
-        self.assertEqual(electricity.due_date, due_date)
+        self.assertEqual(electricity.due_datetime, due_datetime)
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(electricity), str(electricity.due_date))
+        self.assertEqual(str(electricity), str(electricity.due_datetime))
 
 
 class TestMaidModel(TestCase):
@@ -401,18 +401,18 @@ class TestMaidModel(TestCase):
 
         # initialize data
         price = 5678
-        due_date = timezone.now().date()
+        due_datetime = timezone.now()
 
         # create maid instance
         maid = Maid.objects.create(
             price=price,
-            due_date=due_date,
+            due_datetime=due_datetime,
         )
 
         # assert field values
         self.assertEqual(maid.price, price)
-        self.assertEqual(maid.due_date, due_date)
+        self.assertEqual(maid.due_datetime, due_datetime)
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(maid), str(maid.due_date))
+        self.assertEqual(str(maid), str(maid.due_datetime))
