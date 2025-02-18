@@ -187,8 +187,8 @@ class Electricity(models.Model):
     """Model to store electricity bill details"""
 
     # TODO: add field to store bill and paid invoice image, and status paid or not
-    # TODO: add paid_on date field
-    due_date = models.DateField()
+    # TODO: add paid_on datetime field
+    due_datetime = models.DateTimeField()
     price = models.DecimalField(
         decimal_places=2,
         max_digits=7,
@@ -197,7 +197,7 @@ class Electricity(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return str(self.due_date)
+        return str(self.due_datetime)
 
 
 # TODO: Add room info
@@ -205,8 +205,8 @@ class Electricity(models.Model):
 class Maid(models.Model):
     """Model to store maid salary details"""
 
-    # TODO: add paid_on date field
-    due_date = models.DateField()
+    # TODO: add paid_on datetime field
+    due_datetime = models.DateTimeField()
     price = models.DecimalField(
         decimal_places=2,
         max_digits=7,
@@ -215,4 +215,4 @@ class Maid(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return str(self.due_date)
+        return str(self.due_datetime)
