@@ -43,7 +43,7 @@ class ElectricityAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "due_date",
+        "due_datetime",
         "price",
         "created_on",
         "modified_on",
@@ -56,7 +56,7 @@ class MaidAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "due_date",
+        "due_datetime",
         "price",
         "created_on",
         "modified_on",
