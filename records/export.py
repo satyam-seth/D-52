@@ -31,11 +31,12 @@ class RoomExporter:
         """
 
         # TODO: Filter the current room data once maid has room information
-        entries = model.objects.all().order_by("due_date")
+        entries = model.objects.all().order_by("due_datetime")
 
         data = [
             {
-                "Date": self.get_formatted_date(entry.due_date),
+                "Date": self.get_formatted_date(entry.due_datetime),
+                "Time": self.get_formatted_time(entry.due_datetime),
                 "Price": entry.price,
                 "Entry ID": entry.id,
                 "Entry Date": self.get_formatted_date(entry.created_on),
