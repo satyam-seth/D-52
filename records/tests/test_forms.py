@@ -43,7 +43,8 @@ class TestRecordForm(TestCase):
         # assert meta class
         self.assertEqual(form.Meta.model, Record)
         self.assertEqual(
-            form.Meta.fields, ["purchase_datetime", "purchaser", "item", "price"]
+            form.Meta.fields,
+            ["purchase_datetime", "purchaser", "item", "price"],
         )
 
         # assert purchase_date field
@@ -58,7 +59,9 @@ class TestRecordForm(TestCase):
         )
         self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["min"],
-            localtime(now() - timedelta(days=6)).strftime("%Y-%m-%dT%H:%M"),
+            localtime(
+                now() - timedelta(days=form.Meta.model.max_allowed_past_days)
+            ).strftime("%Y-%m-%dT%H:%M"),
         )
         self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["max"],
@@ -283,7 +286,9 @@ class TestWaterForm(TestCase):
         )
         self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["min"],
-            localtime(now() - timedelta(days=6)).strftime("%Y-%m-%dT%H:%M"),
+            localtime(
+                now() - timedelta(days=form.Meta.model.max_allowed_past_days)
+            ).strftime("%Y-%m-%dT%H:%M"),
         )
         self.assertEqual(
             form.Meta.widgets["purchase_datetime"].attrs["max"],
