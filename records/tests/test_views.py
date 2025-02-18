@@ -5,7 +5,6 @@ from unittest import mock
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
@@ -84,27 +83,27 @@ class TestDashboardTemplateView(TestCase):
     def test_get_water_context(self) -> None:
         """Test get water context"""
 
-        today = timezone.now().date()
-        past_date = today - timedelta(days=2)
+        now = timezone.now()
+        past_datetime = now - timedelta(days=2)
 
         # Create water records
         Water.objects.create(
             quantity=5,
             adder=self.user1,
             room=self.room,
-            purchase_date=today,
+            purchase_datetime=now,
         )
         Water.objects.create(
             quantity=2,
             adder=self.user1,
             room=self.room,
-            purchase_date=past_date,
+            purchase_datetime=past_datetime,
         )
         Water.objects.create(
             quantity=1,
             adder=self.user2,
             room=self.room,
-            purchase_date=past_date,
+            purchase_datetime=past_datetime,
         )
 
         # Call get water context
@@ -131,21 +130,21 @@ class TestDashboardTemplateView(TestCase):
 
         # Create records
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             purchaser=self.user1,
             adder=self.user1,
             price=120,
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             purchaser=self.user1,
             adder=self.user1,
             price=80,
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             purchaser=self.user2,
             adder=self.user2,
             price=100,
@@ -382,7 +381,7 @@ class TestAddDataView(TestCase):
         """Test post for valid record form data"""
 
         valid_record_form_data = {
-            "purchase_date": timezone.now().date(),
+            "purchase_datetime": timezone.now(),
             "item": "Test Item",
             "price": 123.45,
             "purchaser": self.user.pk,
@@ -421,7 +420,9 @@ class TestAddDataView(TestCase):
         self.assertEqual(record.item, valid_record_form_data["item"])
         self.assertEqual(float(str(record.price)), valid_record_form_data["price"])
         self.assertEqual(record.purchaser, self.user)
-        self.assertEqual(record.purchase_date, valid_record_form_data["purchase_date"])
+        self.assertEqual(
+            record.purchase_datetime, valid_record_form_data["purchase_datetime"]
+        )
         self.assertEqual(record.adder, self.user)
 
     def test_post_for_invalid_record_form_data(self) -> None:
@@ -462,7 +463,7 @@ class TestAddDataView(TestCase):
         """Test post for valid water form data"""
 
         valid_water_form_data = {
-            "purchase_date": timezone.now().date(),
+            "purchase_datetime": timezone.now(),
             "quantity": 1,
             "water_submit": "",
         }
@@ -497,7 +498,9 @@ class TestAddDataView(TestCase):
         self.assertEqual(Water.objects.count(), 1)
         water: Type[Water] = Water.objects.first()  # type: ignore
         self.assertEqual(water.quantity, valid_water_form_data["quantity"])
-        self.assertEqual(water.purchase_date, valid_water_form_data["purchase_date"])
+        self.assertEqual(
+            water.purchase_datetime, valid_water_form_data["purchase_datetime"]
+        )
         self.assertEqual(water.adder, self.user)
 
     def test_post_for_invalid_water_form_data(self) -> None:
@@ -537,18 +540,18 @@ class TestAddDataView(TestCase):
     def test_post_for_invalid_water_form_quantity_data(self) -> None:
         """Test post for invalid water form quantity data"""
 
-        today = timezone.now().date()
+        now = timezone.now()
 
         # Create water records with quantity 5
         Water.objects.create(
             quantity=5,
             adder=self.user,
             room=self.room,
-            purchase_date=today,
+            purchase_datetime=now,
         )
 
         invalid_water_form_data = {
-            "purchase_date": today,
+            "purchase_datetime": now,
             "quantity": 1,
             "water_submit": "",
         }
@@ -654,14 +657,14 @@ class TestRecordListView(TransactionTestCase):
         self.assertEqual(view.model, Record)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
-        self.assertEqual(view.ordering, ["-purchase_date"])
+        self.assertEqual(view.ordering, ["-purchase_datetime"])
 
     def test_record_list_view_working_for_room_records(self) -> None:
         """Test record list view working for room records"""
 
         # Create a record for user 1 room 1
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
@@ -670,7 +673,7 @@ class TestRecordListView(TransactionTestCase):
         )
         # Create a record for user 2 room 1
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 2",
             price=123.45,
             purchaser=self.user1,
@@ -680,7 +683,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create a record for room 2
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 3",
             price=123.45,
             purchaser=self.user2,
@@ -703,7 +706,8 @@ class TestRecordListView(TransactionTestCase):
 
         # Check that only room 1 records are present in the context
         self.assertQuerysetEqual(
-            response.context["record_list"], Record.objects.filter(room=self.room1)
+            response.context["record_list"],
+            Record.objects.filter(room=self.room1).order_by("-purchase_datetime"),
         )
 
     def test_record_list_view_working_for_search_room_records(self) -> None:
@@ -711,7 +715,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create records for room 1
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
@@ -719,7 +723,7 @@ class TestRecordListView(TransactionTestCase):
             room=self.room1,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item Good",
             price=123.45,
             purchaser=self.user1,
@@ -729,7 +733,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create a record for room 2
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item",
             price=123.45,
             purchaser=self.user2,
@@ -764,7 +768,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create a record for user 1 room 1
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
@@ -774,7 +778,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create a record for user 2 room  1
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 2",
             price=123.45,
             purchaser=self.user2,
@@ -784,7 +788,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create a record for user 2 room  2
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 3",
             price=123.45,
             purchaser=self.user2,
@@ -819,7 +823,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create records for room 1
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 1",
             price=123.45,
             purchaser=self.user1,
@@ -827,7 +831,7 @@ class TestRecordListView(TransactionTestCase):
             room=self.room1,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item Good 2",
             price=123.45,
             purchaser=self.user1,
@@ -837,7 +841,7 @@ class TestRecordListView(TransactionTestCase):
 
         # Create records for room 2
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item 3",
             price=123.45,
             purchaser=self.user2,
@@ -845,7 +849,7 @@ class TestRecordListView(TransactionTestCase):
             room=self.room2,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             item="Test Item Good 4",
             price=123.45,
             purchaser=self.user2,
@@ -926,20 +930,20 @@ class TestWaterListView(TransactionTestCase):
         self.assertEqual(view.model, Water)
         self.assertEqual(view.paginate_by, 20)
         self.assertEqual(view.paginate_orphans, 10)
-        self.assertEqual(view.ordering, ["-purchase_date"])
+        self.assertEqual(view.ordering, ["-purchase_datetime"])
 
     def test_water_list_view_working(self) -> None:
         """Test water list view working"""
 
         # Create water records for user 1 room 1
         Water.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             quantity=1,
             room=self.room1,
             adder=self.user1,
         )
         Water.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             quantity=1,
             room=self.room1,
             adder=self.user2,
@@ -947,7 +951,7 @@ class TestWaterListView(TransactionTestCase):
 
         # Create a water record for user 2 room 2
         Water.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             quantity=1,
             room=self.room2,
             adder=self.user2,
@@ -968,7 +972,7 @@ class TestWaterListView(TransactionTestCase):
         # Check that the water records are present in the context
         self.assertQuerysetEqual(
             response.context["water_list"],
-            Water.objects.filter(room=self.room1),
+            Water.objects.filter(room=self.room1).order_by("-purchase_datetime"),
         )
 
 
@@ -1079,21 +1083,21 @@ class TestRoomReportView(TestCase):
 
         # Create some test records
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             purchaser=self.user1,
             adder=self.user1,
             price=120,
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             purchaser=self.user1,
             adder=self.user1,
             price=80,
             room=self.room,
         )
         Record.objects.create(
-            purchase_date=timezone.now().date(),
+            purchase_datetime=timezone.now(),
             purchaser=self.user2,
             adder=self.user2,
             price=100,

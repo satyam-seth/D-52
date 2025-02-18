@@ -23,7 +23,7 @@ class RoomExporter:
     def get_formatted_time(self, obj: datetime):
         """Returns formatted time for time object"""
 
-        return obj.strftime("%H:%M:%S")
+        return obj.strftime("%I:%M:%S %p")
 
     def get_entry_df(self, model: Type[Electricity | Maid]) -> pd.DataFrame:
         """
@@ -31,11 +31,12 @@ class RoomExporter:
         """
 
         # TODO: Filter the current room data once maid has room information
-        entries = model.objects.all().order_by("due_date")
+        entries = model.objects.all().order_by("due_datetime")
 
         data = [
             {
-                "Date": self.get_formatted_date(entry.due_date),
+                "Date": self.get_formatted_date(entry.due_datetime),
+                "Time": self.get_formatted_time(entry.due_datetime),
                 "Price": entry.price,
                 "Entry ID": entry.id,
                 "Entry Date": self.get_formatted_date(entry.created_on),
@@ -53,11 +54,14 @@ class RoomExporter:
         """
         Fetches entry for the water filtered by room_id and returns a Pandas DataFrame.
         """
-        entries = Water.objects.filter(room_id=self.room_id).order_by("purchase_date")
+        entries = Water.objects.filter(room_id=self.room_id).order_by(
+            "purchase_datetime"
+        )
 
         data = [
             {
-                "Date": self.get_formatted_date(entry.purchase_date),
+                "Date": self.get_formatted_date(entry.purchase_datetime),
+                "Time": self.get_formatted_time(entry.purchase_datetime),
                 "Quantity": entry.quantity,
                 "Entry ID": entry.id,
                 "Entry Date": self.get_formatted_date(entry.created_on),
@@ -81,12 +85,13 @@ class RoomExporter:
         queryset = Record.objects.filter(room_id=self.room_id)
         if purchaser:
             queryset = queryset.filter(purchaser=purchaser)
-        records = queryset.order_by("purchase_date")
+        records = queryset.order_by("purchase_datetime")
 
         # Prepare all records data
         data = [
             {
-                "Purchase Date": self.get_formatted_date(record.purchase_date),
+                "Purchase Date": self.get_formatted_date(record.purchase_datetime),
+                "Purchase Time": self.get_formatted_time(record.purchase_datetime),
                 "Item Name": record.item,
                 "Price": record.price,
                 "Purchase By": record.purchaser.get_full_name(),

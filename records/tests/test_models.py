@@ -1,15 +1,117 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Optional, Type
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import connection, models
 from django.db.utils import IntegrityError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
-from records.models import Electricity, Maid, Record, Water
+from records.models import BasePurchaseModel, Electricity, Maid, Record, Water
 
 User = get_user_model()
+
+
+class AbstractModelMixinTestCase(TransactionTestCase):
+    """
+    A test case that dynamically creates a model class based on the provided mixin
+    and runs tests with that model
+    """
+
+    # mixin and model can initially be None, but will later be assigned a model class
+    mixin: Optional[Type[models.Model]] = None
+    model: Optional[Type[models.Model]] = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Ensure mixin is not None before attempting to create a model
+        if cls.mixin is None:
+            raise ValueError("Mixin class has not been set.")
+
+        # Dynamically create a model by using the mixin as the base class
+        cls.model = type(
+            "TestModel" + cls.mixin.__name__,
+            (cls.mixin,),  # Use the mixin as the base class
+            {"__module__": cls.mixin.__module__},
+        )
+
+        # Create the model in the database schema
+        with connection.schema_editor() as editor:
+            editor.create_model(cls.model)
+
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super().tearDownClass()
+
+        # Delete the dynamically created model from the schema, if model is not None
+        if cls.model:
+            with connection.schema_editor() as editor:
+                editor.delete_model(cls.model)
+
+        # Close the connection
+        connection.close()
+
+
+class TestBasePurchaseModel(AbstractModelMixinTestCase):
+    """Test Base Purchase Model"""
+
+    mixin = BasePurchaseModel
+
+    def test_base_purchase_model_attributes(self) -> None:
+        """Test base purchase model attributes"""
+
+        self.assertEqual(BasePurchaseModel.max_allowed_past_days, 6)
+
+    def test_base_purchase_model_creation_with_naive_purchase_datetime(self) -> None:
+        """Test base purchase model instance creation with naive purchase datetime"""
+
+        # create base purchase model instance with naive purchase datetime
+        purchase = self.model.objects.create(purchase_datetime=datetime.now())
+
+        # Assert that the datetime is now timezone-aware
+        self.assertTrue(timezone.is_aware(purchase.purchase_datetime))
+
+        # Assert if the timezone is the same as the current timezone
+        self.assertEqual(
+            purchase.purchase_datetime.tzinfo,
+            timezone.get_current_timezone(),
+        )
+
+    def test_base_purchase_model_creation_for_feature_purchase_datetime(self) -> None:
+        """Test base purchase model instance creation for feature purchase datetime"""
+
+        future_datetime = timezone.now() + timedelta(days=1)
+
+        # Create model instance with feature purchase datetime
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase datetime should be within the past 6 days.",
+        ) as cm:
+            self.model.objects.create(purchase_datetime=future_datetime)
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
+
+    def test_base_purchase_model_creation_for_too_far_in_past_purchase_datetime(
+        self,
+    ) -> None:
+        """Test base purchase model  instance creation for too far in past purchase datetime"""
+
+        too_far_in_past_datetime = timezone.now() - timedelta(days=7)
+
+        # Create model instance with too far in past purchase datetime
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Purchase datetime should be within the past 6 days.",
+        ) as cm:
+            self.model.objects.create(purchase_datetime=too_far_in_past_datetime)
+
+        # Assert the expected error code
+        self.assertEqual(cm.exception.code, "invalid_purchase_datetime")
 
 
 class TestRecordModel(TransactionTestCase):
@@ -39,7 +141,7 @@ class TestRecordModel(TransactionTestCase):
         # initialize data
         item = "test-item"
         price = 99.99
-        purchase_date = timezone.now().date()
+        purchase_datetime = timezone.now()
 
         # create record instance
         record = Record.objects.create(
@@ -47,7 +149,7 @@ class TestRecordModel(TransactionTestCase):
             price=price,
             purchaser=self.purchaser,
             adder=self.adder,
-            purchase_date=purchase_date,
+            purchase_datetime=purchase_datetime,
             room=self.room,
         )
 
@@ -56,14 +158,14 @@ class TestRecordModel(TransactionTestCase):
         self.assertEqual(record.price, price)
         self.assertEqual(record.purchaser, self.purchaser)
         self.assertEqual(record.adder, self.adder)
-        self.assertEqual(record.purchase_date, purchase_date)
+        self.assertEqual(record.purchase_datetime, purchase_datetime)
         # TODO: add assertion for modified_on field and created_on
         # self.assertEqual(record.created_on, timezone.now())
 
         # assert string representation
         self.assertEqual(
             str(record),
-            f"{record.item} {record.purchaser} {record.purchase_date} {self.room.name}",
+            f"{record.item} {record.purchaser} {record.purchase_datetime} {self.room.name}",
         )
 
     def test_record_creation_for_invalid_purchaser(self) -> None:
@@ -87,7 +189,7 @@ class TestRecordModel(TransactionTestCase):
                 price=99.99,
                 purchaser=user,
                 adder=self.adder,
-                purchase_date=timezone.now().date(),
+                purchase_datetime=timezone.now(),
                 room=self.room,
             )
 
@@ -115,7 +217,7 @@ class TestRecordModel(TransactionTestCase):
                 price=99.99,
                 purchaser=self.purchaser,
                 adder=user,
-                purchase_date=timezone.now().date(),
+                purchase_datetime=timezone.now(),
                 room=self.room,
             )
 
@@ -135,7 +237,7 @@ class TestRecordModel(TransactionTestCase):
                 price=-1,
                 purchaser=self.purchaser,
                 adder=self.adder,
-                purchase_date=timezone.now().date(),
+                purchase_datetime=timezone.now(),
                 room=self.room,
             )
 
@@ -149,53 +251,9 @@ class TestRecordModel(TransactionTestCase):
                 price=2000000,
                 purchaser=self.purchaser,
                 adder=self.adder,
-                purchase_date=timezone.now().date(),
+                purchase_datetime=timezone.now(),
                 room=self.room,
             )
-
-    def test_record_creation_for_feature_purchaser_date(self) -> None:
-        """Test record model instance creation for feature purchaser date"""
-
-        future_date = timezone.now().date() + timedelta(days=1)
-
-        # Create record instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase date should be within the past 6 days.",
-        ) as cm:
-            Record.objects.create(
-                item="item",
-                price=10,
-                purchaser=self.purchaser,
-                adder=self.adder,
-                purchase_date=future_date,
-                room=self.room,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_date")
-
-    def test_record_creation_for_too_far_in_past_purchaser_date(self) -> None:
-        """Test record model instance creation for too far in past purchaser date"""
-
-        too_far_in_past_date = timezone.now().date() - timedelta(days=7)
-
-        # Create record instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase date should be within the past 6 days.",
-        ) as cm:
-            Record.objects.create(
-                item="item",
-                price=10,
-                purchaser=self.purchaser,
-                adder=self.adder,
-                purchase_date=too_far_in_past_date,
-                room=self.room,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_date")
 
 
 class TestWaterModel(TestCase):
@@ -211,29 +269,34 @@ class TestWaterModel(TestCase):
 
         self.room = Room.objects.create(name="test-room", admin=self.adder)
 
+    def test_water_model_attributes(self) -> None:
+        """Test water model attributes"""
+
+        self.assertEqual(Water.max_allowed_quality, 5)
+
     def test_water_creation(self) -> None:
         """Test water model instance creation"""
 
         # initialize data
         quantity = 1
-        purchase_date = timezone.now().date()
+        purchase_datetime = timezone.now()
 
         # create water instance
         water = Water.objects.create(
             quantity=quantity,
             adder=self.adder,
             room=self.room,
-            purchase_date=purchase_date,
+            purchase_datetime=purchase_datetime,
         )
 
         # assert field values
         self.assertEqual(water.quantity, quantity)
         self.assertEqual(water.adder, self.adder)
-        self.assertEqual(water.purchase_date, purchase_date)
+        self.assertEqual(water.purchase_datetime, purchase_datetime)
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(water), f"{water.purchase_date} {self.room.name}")
+        self.assertEqual(str(water), f"{water.purchase_datetime} {self.room.name}")
 
     def test_water_creation_for_invalid_adder(self) -> None:
         """Test water model instance creation for invalid adder"""
@@ -255,7 +318,7 @@ class TestWaterModel(TestCase):
                 quantity=1,
                 adder=user,
                 room=self.room,
-                purchase_date=timezone.now().date(),
+                purchase_datetime=timezone.now(),
             )
 
         # Assert the expected error code
@@ -264,7 +327,7 @@ class TestWaterModel(TestCase):
     def test_water_creation_exceeds_max_quantity(self) -> None:
         """Test record model instance creation exceeds max quantity"""
 
-        today = timezone.now().date()
+        now = timezone.now()
 
         # Create record instance with quantity 6
         with self.assertRaisesMessage(
@@ -275,7 +338,7 @@ class TestWaterModel(TestCase):
                 quantity=6,
                 adder=self.adder,
                 room=self.room,
-                purchase_date=today,
+                purchase_datetime=now,
             )
 
         # Assert the expected error code
@@ -286,7 +349,7 @@ class TestWaterModel(TestCase):
             quantity=5,
             adder=self.adder,
             room=self.room,
-            purchase_date=today,
+            purchase_datetime=now,
         )
 
         # Create record instance with quantity 5
@@ -298,51 +361,11 @@ class TestWaterModel(TestCase):
                 quantity=1,
                 adder=self.adder,
                 room=self.room,
-                purchase_date=today,
+                purchase_datetime=now,
             )
 
         # Assert the expected error code
         self.assertEqual(cm2.exception.code, "exceeds_max_quantity")
-
-    def test_water_creation_for_feature_purchaser_date(self) -> None:
-        """Test water model instance creation for feature purchaser date"""
-
-        future_date = timezone.now().date() + timedelta(days=1)
-
-        # Create water instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase date should be within the past 6 days.",
-        ) as cm:
-            Water.objects.create(
-                quantity=1,
-                adder=self.adder,
-                room=self.room,
-                purchase_date=future_date,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_date")
-
-    def test_water_creation_for_too_far_in_past_purchaser_date(self) -> None:
-        """Test water model instance creation for too far in past purchaser date"""
-
-        too_far_in_past_date = timezone.now().date() - timedelta(days=7)
-
-        # Create water instance with price grater than 100000
-        with self.assertRaisesMessage(
-            ValidationError,
-            "Purchase date should be within the past 6 days.",
-        ) as cm:
-            Water.objects.create(
-                quantity=1,
-                adder=self.adder,
-                room=self.room,
-                purchase_date=too_far_in_past_date,
-            )
-
-        # Assert the expected error code
-        self.assertEqual(cm.exception.code, "invalid_purchase_date")
 
 
 class TestElectricityModel(TestCase):
@@ -353,21 +376,21 @@ class TestElectricityModel(TestCase):
 
         # initialize data
         price = 1234
-        due_date = timezone.now().date()
+        due_datetime = timezone.now()
 
         # create electricity instance
         electricity = Electricity.objects.create(
             price=price,
-            due_date=due_date,
+            due_datetime=due_datetime,
         )
 
         # assert field values
         self.assertEqual(electricity.price, price)
-        self.assertEqual(electricity.due_date, due_date)
+        self.assertEqual(electricity.due_datetime, due_datetime)
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(electricity), str(electricity.due_date))
+        self.assertEqual(str(electricity), str(electricity.due_datetime))
 
 
 class TestMaidModel(TestCase):
@@ -378,18 +401,18 @@ class TestMaidModel(TestCase):
 
         # initialize data
         price = 5678
-        due_date = timezone.now().date()
+        due_datetime = timezone.now()
 
         # create maid instance
         maid = Maid.objects.create(
             price=price,
-            due_date=due_date,
+            due_datetime=due_datetime,
         )
 
         # assert field values
         self.assertEqual(maid.price, price)
-        self.assertEqual(maid.due_date, due_date)
+        self.assertEqual(maid.due_datetime, due_datetime)
         # TODO: add assertion for modified_on field and created_on
 
         # assert string representation
-        self.assertEqual(str(maid), str(maid.due_date))
+        self.assertEqual(str(maid), str(maid.due_datetime))

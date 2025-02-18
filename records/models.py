@@ -8,13 +8,53 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
-from records.validators import validate_past_date_within_past_6_days
+from records.validators import validate_past_datetime_within_past_6_days
 
 # Create your models here.
 
 
-class Record(models.Model):
+class BasePurchaseModel(models.Model):
+    """Abstract base model to handle purchase datetime logic"""
+
+    max_allowed_past_days = 6
+
+    class Meta:
+        abstract = True
+
+    purchase_datetime = models.DateTimeField(
+        validators=[validate_past_datetime_within_past_6_days]
+    )
+
+    def save(self, *args, **kwargs):
+        # Ensure purchase_datetime is timezone-aware
+        if timezone.is_naive(self.purchase_datetime):
+            # If it's naive, assume it's in the local timezone
+            self.purchase_datetime = timezone.make_aware(
+                self.purchase_datetime, timezone.get_current_timezone()
+            )
+
+        # Ensure that the purchase date is within the last six days
+        now_utc = timezone.now()
+        min_past_datetime_utc = now_utc - timedelta(days=self.max_allowed_past_days)
+        purchase_datetime_utc = self.purchase_datetime.astimezone(timezone.utc)
+
+        if (
+            purchase_datetime_utc > now_utc
+            or purchase_datetime_utc < min_past_datetime_utc
+        ):
+            raise ValidationError(
+                message="Purchase datetime should be within the past "
+                + f"{self.max_allowed_past_days} days.",
+                code="invalid_purchase_datetime",
+            )
+
+        super().save(*args, **kwargs)
+
+
+class Record(BasePurchaseModel):
     """Model to store purchase details"""
+
+    max_allowed_past_days = 6
 
     class Meta:
         constraints = [
@@ -44,22 +84,10 @@ class Record(models.Model):
         related_name="record_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
-    purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Ensure that the purchase date is within the last six days
-        n_days = 6
-        today = timezone.now().date()
-        min_past_date = today - timedelta(days=n_days)
-
-        if self.purchase_date > today or self.purchase_date < min_past_date:
-            raise ValidationError(
-                message=f"Purchase date should be within the past {n_days} days.",
-                code="invalid_purchase_date",
-            )
-
         # Ensure that purchaser is members of the room
         purchaser_room_membership = RoomMembership.objects.filter(
             room=self.room,
@@ -87,11 +115,11 @@ class Record(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.item} {self.purchaser} {self.purchase_date} {self.room.name}"
+        return f"{self.item} {self.purchaser} {self.purchase_datetime} {self.room.name}"
 
 
 # TODO: Add price field because price of one gallon of water may change in future
-class Water(models.Model):
+class Water(BasePurchaseModel):
     """Model to store water purchase details"""
 
     max_allowed_quality = 5
@@ -109,29 +137,17 @@ class Water(models.Model):
         related_name="water_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="waters")
-    purchase_date = models.DateField(validators=[validate_past_date_within_past_6_days])
     modified_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Ensure that the purchase date is within the last six days
-        n_days = 6
-        today = timezone.now().date()
-        min_past_date = today - timedelta(days=n_days)
-
-        if self.purchase_date > today or self.purchase_date < min_past_date:
-            raise ValidationError(
-                message=f"Purchase date should be within the past {n_days} days.",
-                code="invalid_purchase_date",
-            )
-
         # Ensure that maximum `max_allowed_quality` quantity allowed per day
         total_water_quantity = self.quantity
 
         if total_water_quantity <= self.max_allowed_quality:
             water_entires = Water.objects.filter(
                 room=self.room,
-                purchase_date=self.purchase_date,
+                purchase_datetime=self.purchase_datetime,
             )
 
             if water_entires.count() > 0:
@@ -161,7 +177,7 @@ class Water(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.purchase_date} {self.room.name}"
+        return f"{self.purchase_datetime} {self.room.name}"
 
 
 # TODO: Add room info
@@ -171,8 +187,8 @@ class Electricity(models.Model):
     """Model to store electricity bill details"""
 
     # TODO: add field to store bill and paid invoice image, and status paid or not
-    # TODO: add paid_on date field
-    due_date = models.DateField()
+    # TODO: add paid_on datetime field
+    due_datetime = models.DateTimeField()
     price = models.DecimalField(
         decimal_places=2,
         max_digits=7,
@@ -181,7 +197,7 @@ class Electricity(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return str(self.due_date)
+        return str(self.due_datetime)
 
 
 # TODO: Add room info
@@ -189,8 +205,8 @@ class Electricity(models.Model):
 class Maid(models.Model):
     """Model to store maid salary details"""
 
-    # TODO: add paid_on date field
-    due_date = models.DateField()
+    # TODO: add paid_on datetime field
+    due_datetime = models.DateTimeField()
     price = models.DecimalField(
         decimal_places=2,
         max_digits=7,
@@ -199,4 +215,4 @@ class Maid(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return str(self.due_date)
+        return str(self.due_datetime)

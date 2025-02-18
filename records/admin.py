@@ -16,7 +16,7 @@ class RecordAdmin(admin.ModelAdmin):
         "purchaser",
         "adder",
         "room",
-        "purchase_date",
+        "purchase_datetime",
         "created_on",
         "modified_on",
     )
@@ -31,7 +31,7 @@ class WaterAdmin(admin.ModelAdmin):
         "quantity",
         "adder",
         "room",
-        "purchase_date",
+        "purchase_datetime",
         "created_on",
         "modified_on",
     )
@@ -43,7 +43,7 @@ class ElectricityAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "due_date",
+        "due_datetime",
         "price",
         "created_on",
         "modified_on",
@@ -56,7 +56,7 @@ class MaidAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "due_date",
+        "due_datetime",
         "price",
         "created_on",
         "modified_on",

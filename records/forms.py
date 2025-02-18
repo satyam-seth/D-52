@@ -21,16 +21,17 @@ class RecordForm(forms.ModelForm):
 
     class Meta:
         model = Record
-        fields = ["purchase_date", "purchaser", "item", "price"]
+        fields = ["purchase_datetime", "purchaser", "item", "price"]
         widgets = {
-            "purchase_date": forms.DateInput(
+            "purchase_datetime": forms.DateTimeInput(
                 attrs={
-                    "type": "date",
+                    "type": "datetime-local",
                     "class": "form-control",
-                    # TODO: move this validator logic to models
-                    "min": localtime(now() - timedelta(6)).date(),
-                    "max": localtime(now()).date(),
-                    "value": localtime(now()).date(),
+                    "min": localtime(
+                        now() - timedelta(days=model.max_allowed_past_days)
+                    ).strftime("%Y-%m-%dT%H:%M"),
+                    "max": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
+                    "value": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
                 }
             ),
             "purchaser": forms.Select(attrs={"class": "form-control"}),
@@ -53,16 +54,17 @@ class WaterForm(forms.ModelForm):
 
     class Meta:
         model = Water
-        fields = ["purchase_date", "quantity"]
+        fields = ["purchase_datetime", "quantity"]
         widgets = {
-            # TODO: find out right way to infer max value from model validators if possible
-            "purchase_date": forms.DateInput(
+            "purchase_datetime": forms.DateTimeInput(
                 attrs={
-                    "type": "date",
+                    "type": "datetime-local",
                     "class": "form-control",
-                    "min": localtime(now() - timedelta(20)).date(),
-                    "max": localtime(now()).date(),
-                    "value": localtime(now()).date(),
+                    "min": localtime(
+                        now() - timedelta(days=model.max_allowed_past_days)
+                    ).strftime("%Y-%m-%dT%H:%M"),
+                    "max": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
+                    "value": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
                 }
             ),
             "quantity": forms.NumberInput(
@@ -71,7 +73,7 @@ class WaterForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "min": 1,
-                    "max": 5,
+                    "max": model.max_allowed_quality,
                 }
             ),
         }
