@@ -1,7 +1,8 @@
-from datetime import date, datetime
+from datetime import datetime
 from typing import Optional, Type
 
 import pandas as pd
+from django.utils.timezone import localtime
 
 from accounts.models import User
 from records.models import Electricity, Maid, Record, Water
@@ -15,15 +16,15 @@ class RoomExporter:
     def __init__(self, room_id: int):
         self.room_id = room_id
 
-    def get_formatted_date(self, obj: date):
+    def get_formatted_date(self, obj: datetime):
         """Returns formatted date for date object"""
 
-        return obj.strftime("%d-%m-%Y")
+        return localtime(obj).strftime("%d-%m-%Y")
 
     def get_formatted_time(self, obj: datetime):
         """Returns formatted time for time object"""
 
-        return obj.strftime("%I:%M:%S %p")
+        return localtime(obj).strftime("%I:%M:%S %p")
 
     def get_entry_df(self, model: Type[Electricity | Maid]) -> pd.DataFrame:
         """
