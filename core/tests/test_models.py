@@ -1,6 +1,37 @@
-from django.test import TestCase
+from datetime import timedelta
 
-from core.models import Feedback
+from django.test import TestCase
+from django.utils import timezone
+
+from core.models import BaseCreatedModifiedModel, Feedback
+from core.tests.mixin import AbstractModelMixinTestCase
+
+
+class TestBaseCreatedModifiedModel(AbstractModelMixinTestCase):
+    """Test Base created modified Model"""
+
+    mixin = BaseCreatedModifiedModel
+
+    def test_instance_creation(self) -> None:
+        """Test creation of a model instance"""
+
+        # Get current datetime
+        now = timezone.now()
+
+        # create model instance
+        instance = self.model.objects.create()
+
+        # Assert timestamps are close to the current time
+        self.assertAlmostEqual(
+            instance.created_on,
+            now,
+            delta=timedelta(milliseconds=500),
+        )
+        self.assertAlmostEqual(
+            instance.modified_on,
+            now,
+            delta=timedelta(milliseconds=500),
+        )
 
 
 class TestFeedbackModel(TestCase):
