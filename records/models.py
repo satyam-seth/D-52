@@ -8,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.models import Room, RoomMembership
+from core.models import BaseCreatedModifiedModel
 from records.validators import validate_past_datetime_within_past_6_days
 
 # Create your models here.
@@ -51,7 +52,7 @@ class BasePurchaseModel(models.Model):
         super().save(*args, **kwargs)
 
 
-class Record(BasePurchaseModel):
+class Record(BaseCreatedModifiedModel, BasePurchaseModel):
     """Model to store purchase details"""
 
     max_allowed_past_days = 6
@@ -84,8 +85,6 @@ class Record(BasePurchaseModel):
         related_name="record_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="records")
-    modified_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         # Ensure that purchaser is members of the room
@@ -119,7 +118,7 @@ class Record(BasePurchaseModel):
 
 
 # TODO: Add price field because price of one gallon of water may change in future
-class Water(BasePurchaseModel):
+class Water(BaseCreatedModifiedModel, BasePurchaseModel):
     """Model to store water purchase details"""
 
     max_allowed_quality = 5
@@ -137,8 +136,6 @@ class Water(BasePurchaseModel):
         related_name="water_adder",
     )
     room = models.ForeignKey(to=Room, on_delete=models.CASCADE, related_name="waters")
-    modified_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         # Ensure that maximum `max_allowed_quality` quantity allowed per day
@@ -183,7 +180,7 @@ class Water(BasePurchaseModel):
 # TODO: Add room info
 # TODO: Create a common model to store electricity and maid data
 # TODO: fix this model
-class Electricity(models.Model):
+class Electricity(BaseCreatedModifiedModel):
     """Model to store electricity bill details"""
 
     # TODO: add field to store bill and paid invoice image, and status paid or not
@@ -193,8 +190,6 @@ class Electricity(models.Model):
         decimal_places=2,
         max_digits=7,
     )
-    modified_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return str(self.due_datetime)
@@ -202,7 +197,7 @@ class Electricity(models.Model):
 
 # TODO: Add room info
 # TODO: fix this model
-class Maid(models.Model):
+class Maid(BaseCreatedModifiedModel):
     """Model to store maid salary details"""
 
     # TODO: add paid_on datetime field
@@ -211,8 +206,6 @@ class Maid(models.Model):
         decimal_places=2,
         max_digits=7,
     )
-    modified_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return str(self.due_datetime)
