@@ -116,8 +116,16 @@ class TestRecordModel(TransactionTestCase):
         self.assertEqual(record.purchaser, self.purchaser)
         self.assertEqual(record.adder, self.adder)
         self.assertEqual(record.purchase_datetime, purchase_datetime)
-        # TODO: add assertion for modified_on field and created_on
-        # self.assertEqual(record.created_on, timezone.now())
+        self.assertAlmostEqual(
+            record.created_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
+        self.assertAlmostEqual(
+            record.modified_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
 
         # assert string representation
         self.assertEqual(
@@ -250,7 +258,16 @@ class TestWaterModel(TestCase):
         self.assertEqual(water.quantity, quantity)
         self.assertEqual(water.adder, self.adder)
         self.assertEqual(water.purchase_datetime, purchase_datetime)
-        # TODO: add assertion for modified_on field and created_on
+        self.assertAlmostEqual(
+            water.created_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
+        self.assertAlmostEqual(
+            water.modified_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
 
         # assert string representation
         self.assertEqual(str(water), f"{water.purchase_datetime} {self.room.name}")
@@ -344,7 +361,16 @@ class TestElectricityModel(TestCase):
         # assert field values
         self.assertEqual(electricity.price, price)
         self.assertEqual(electricity.due_datetime, due_datetime)
-        # TODO: add assertion for modified_on field and created_on
+        self.assertAlmostEqual(
+            electricity.created_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
+        self.assertAlmostEqual(
+            electricity.modified_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
 
         # assert string representation
         self.assertEqual(str(electricity), str(electricity.due_datetime))
@@ -369,7 +395,16 @@ class TestMaidModel(TestCase):
         # assert field values
         self.assertEqual(maid.price, price)
         self.assertEqual(maid.due_datetime, due_datetime)
-        # TODO: add assertion for modified_on field and created_on
+        self.assertAlmostEqual(
+            maid.created_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
+        self.assertAlmostEqual(
+            maid.modified_on,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
 
         # assert string representation
         self.assertEqual(str(maid), str(maid.due_datetime))
