@@ -52,8 +52,11 @@ class TestFeedbackModel(TestCase):
         self.assertEqual(feedback.name, name)
         self.assertEqual(feedback.problem, problem)
         self.assertEqual(feedback.message, message)
-        # TODO: fix this assertion
-        # self.assertEqual(feedback.datetime, timezone.now())
+        self.assertAlmostEqual(
+            feedback.datetime,
+            timezone.now(),
+            delta=timedelta(milliseconds=500),
+        )
 
         # assert string representation
         self.assertEqual(str(feedback), feedback.problem)
