@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from core.models import BaseCreatedModifiedModel
+
 from .managers import RoomInvitationManager, UserManager
 
 
@@ -62,7 +64,7 @@ class Room(models.Model):
         return self.name
 
 
-class RoomMembership(models.Model):
+class RoomMembership(BaseCreatedModifiedModel):
     """Model to store room membership"""
 
     member = models.ForeignKey(
@@ -71,8 +73,6 @@ class RoomMembership(models.Model):
         related_name="room_membership",
     )
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="memberships")
-    modified_on = models.DateTimeField(auto_now=True)
-    created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("member", "room")
