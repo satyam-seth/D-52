@@ -31,7 +31,7 @@ class TestRecordForm(TestCase):
         )
         self.room = Room.objects.create(name="test-room", admin=self.user1)
 
-    @patch("django.utils.timezone.now")
+    @patch("records.forms.now")
     def test_record_form_fields(self, mock_now):
         """Test record form fields"""
 
@@ -265,8 +265,12 @@ class TestRecordForm(TestCase):
 class TestWaterForm(TestCase):
     """Test Water Form"""
 
-    def test_water_form_fields(self):
+    @patch("records.forms.now")
+    def test_water_form_fields(self, mock_now):
         """Test water form fields"""
+
+        # set mock now return value
+        mock_now.return_value = make_aware(datetime(2025, 2, 16, 10, 30))
 
         form = WaterForm()
 
