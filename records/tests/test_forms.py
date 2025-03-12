@@ -275,10 +275,15 @@ class TestWaterForm(TestCase):
     def test_water_form_fields(self, mock_now):
         """Test water form fields"""
 
+        now = make_aware(datetime(2025, 2, 16, 10, 30))
+
         # set mock now return value
-        mock_now.return_value = make_aware(datetime(2025, 2, 16, 10, 30))
+        mock_now.return_value = now
 
         form = WaterForm()
+
+        # assert attributes
+        self.assertEqual(form.now, now)
 
         # assert meta class
         self.assertEqual(form.Meta.model, Water)
@@ -295,18 +300,18 @@ class TestWaterForm(TestCase):
             "form-control",
         )
         self.assertEqual(
-            form.Meta.widgets["purchase_datetime"].attrs["min"],
-            localtime(
-                now() - timedelta(days=form.Meta.model.max_allowed_past_days)
-            ).strftime("%Y-%m-%dT%H:%M"),
+            form.fields["purchase_datetime"].widget.attrs["min"],
+            (localtime(now) - timedelta(days=Water.max_allowed_past_days)).strftime(
+                "%Y-%m-%dT%H:%M"
+            ),
         )
         self.assertEqual(
-            form.Meta.widgets["purchase_datetime"].attrs["max"],
-            localtime(now()).strftime("%Y-%m-%dT%H:%M"),
+            form.fields["purchase_datetime"].widget.attrs["max"],
+            localtime(now).strftime("%Y-%m-%dT%H:%M"),
         )
         self.assertEqual(
-            form.Meta.widgets["purchase_datetime"].attrs["value"],
-            localtime(now()).strftime("%Y-%m-%dT%H:%M"),
+            form.fields["purchase_datetime"].widget.attrs["value"],
+            localtime(now).strftime("%Y-%m-%dT%H:%M"),
         )
 
         # assert quantity field
