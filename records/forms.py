@@ -16,11 +16,11 @@ class RecordForm(forms.ModelForm):
         self.now = localtime(now())
         self.room_id = kwargs.pop("room_id", None)
         super().__init__(*args, **kwargs)
+
         if self.room_id:
             room_members = User.objects.filter(room_membership__room_id=self.room_id)
             self.fields["purchaser"].queryset = room_members
 
-        # Update the datetime widget dynamically based on current time
         self.fields["purchase_datetime"].widget.attrs.update(
             {
                 "min": (
@@ -39,11 +39,6 @@ class RecordForm(forms.ModelForm):
                 attrs={
                     "type": "datetime-local",
                     "class": "form-control",
-                    # "min": localtime(
-                    #     now() - timedelta(days=model.max_allowed_past_days)
-                    # ).strftime("%Y-%m-%dT%H:%M"),
-                    # "max": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
-                    # "value": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
                 }
             ),
             "purchaser": forms.Select(attrs={"class": "form-control"}),
@@ -64,6 +59,20 @@ class RecordForm(forms.ModelForm):
 class WaterForm(forms.ModelForm):
     """Form for water purchase"""
 
+    def __init__(self, *args, **kwargs):
+        self.now = localtime(now())
+        super().__init__(*args, **kwargs)
+
+        self.fields["purchase_datetime"].widget.attrs.update(
+            {
+                "min": (
+                    self.now - timedelta(days=Water.max_allowed_past_days)
+                ).strftime("%Y-%m-%dT%H:%M"),
+                "max": self.now.strftime("%Y-%m-%dT%H:%M"),
+                "value": self.now.strftime("%Y-%m-%dT%H:%M"),
+            }
+        )
+
     class Meta:
         model = Water
         fields = ["purchase_datetime", "quantity"]
@@ -72,11 +81,6 @@ class WaterForm(forms.ModelForm):
                 attrs={
                     "type": "datetime-local",
                     "class": "form-control",
-                    "min": localtime(
-                        now() - timedelta(days=model.max_allowed_past_days)
-                    ).strftime("%Y-%m-%dT%H:%M"),
-                    "max": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
-                    "value": localtime(now()).strftime("%Y-%m-%dT%H:%M"),
                 }
             ),
             "quantity": forms.NumberInput(
