@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.utils.timezone import make_aware
 
 from records.export import RoomExporter
-from records.models import Electricity
+from records.models import Electricity, Maid
 
 
 class RoomExporterTest(TestCase):
@@ -14,6 +14,7 @@ class RoomExporterTest(TestCase):
 
     def setUp(self):
         self.room_id = 1
+        self.mock_df = pd.DataFrame([{"Mock": "Data"}])
         self.exporter = RoomExporter(room_id=self.room_id)
 
     def test_attribute(self):
@@ -36,12 +37,27 @@ class RoomExporterTest(TestCase):
         self.assertEqual(formatted_time, "02:30:00 PM")
 
     @patch("records.export.RoomExporter.get_entry_df")
+    def test_get_maid_df(self, mock_get_entry_df: MagicMock):
+        """Mock test for get maid df"""
+
+        # Prepare mock DataFrame
+        mock_get_entry_df.return_value = self.mock_df
+
+        # Call the method you're testing
+        df = self.exporter.get_maid_df()
+
+        # Assert that get_entry_df was called with Maid as an argument
+        mock_get_entry_df.assert_called_with(Maid)
+
+        # Assert the DataFrame returned is as expected
+        self.assertTrue(df.equals(self.mock_df))
+
+    @patch("records.export.RoomExporter.get_entry_df")
     def test_get_electricity_df(self, mock_get_entry_df: MagicMock):
         """Mock test for get electricity df"""
 
         # Prepare mock DataFrame
-        mock_df = pd.DataFrame([{"Mock": "Data"}])
-        mock_get_entry_df.return_value = mock_df
+        mock_get_entry_df.return_value = self.mock_df
 
         # Call the method you're testing
         df = self.exporter.get_electricity_df()
@@ -50,4 +66,4 @@ class RoomExporterTest(TestCase):
         mock_get_entry_df.assert_called_with(Electricity)
 
         # Assert the DataFrame returned is as expected
-        self.assertTrue(df.equals(mock_df))
+        self.assertTrue(df.equals(self.mock_df))
