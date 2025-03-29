@@ -10,9 +10,7 @@ class RoomExporterTest(TestCase):
     """Unit tests for RoomExporter class"""
 
     def setUp(self):
-        """Set up test data."""
         self.room_id = 1
-
         self.exporter = RoomExporter(room_id=self.room_id)
 
     def test_attribute(self):
@@ -28,7 +26,7 @@ class RoomExporterTest(TestCase):
         self.assertEqual(formatted_date, "18-02-2025")
 
     def test_get_formatted_time(self):
-        """Test time formatting"""
+        """Test get formatted time"""
 
         test_time = make_aware(datetime(2025, 2, 18, 14, 30))
         formatted_time = self.exporter.get_formatted_time(test_time)
