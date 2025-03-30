@@ -21,6 +21,15 @@ class RoomExporterTest(TestCase):
         self.mock_df = pd.DataFrame([{"Mock": "Data"}])
         self.exporter = RoomExporter(room_id=self.room_id)
 
+        self.user = User.objects.create_user(
+            email="test@user.com",
+            password="test-password",
+            first_name="test",
+            last_name="user",
+        )
+
+        self.room = Room.objects.create(name="test-room", admin=self.user)
+
     def test_attribute(self):
         """Test attribute"""
 
@@ -115,6 +124,59 @@ class RoomExporterTest(TestCase):
         self.assertEqual(df.iloc[1]["Date"], formatted_due_date1)
         self.assertEqual(df.iloc[1]["Time"], formatted_due_time1)
         self.assertEqual(df.iloc[1]["Price"], price1)
+        self.assertEqual(df.iloc[1]["Entry ID"], 1)
+        self.assertEqual(df.iloc[1]["Entry Date"], formatted_current_date)
+        self.assertEqual(df.iloc[1]["Entry Time"], formatted_current_time)
+        self.assertEqual(df.iloc[1]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df.iloc[1]["Last Modified Time"], formatted_current_time)
+
+    def test_get_water_df(self):
+        """Test get water df"""
+
+        quantity1 = 1
+        quantity2 = 2
+
+        current_datetime = timezone.now()
+        purchase_datetime1 = current_datetime
+        purchase_datetime2 = current_datetime - timedelta(days=1)
+
+        formatted_current_date = localtime(current_datetime).strftime("%d-%m-%Y")
+        formatted_purchase_date1 = localtime(purchase_datetime1).strftime("%d-%m-%Y")
+        formatted_purchase_date2 = localtime(purchase_datetime2).strftime("%d-%m-%Y")
+
+        formatted_current_time = localtime(current_datetime).strftime("%I:%M:%S %p")
+        formatted_purchase_time1 = localtime(purchase_datetime1).strftime("%I:%M:%S %p")
+        formatted_purchase_time2 = localtime(purchase_datetime2).strftime("%I:%M:%S %p")
+
+        Water.objects.create(
+            quantity=quantity1,
+            adder=self.user,
+            room=self.room,
+            purchase_datetime=purchase_datetime1,
+        )
+
+        Water.objects.create(
+            quantity=quantity2,
+            adder=self.user,
+            room=self.room,
+            purchase_datetime=purchase_datetime2,
+        )
+
+        df = self.exporter.get_water_df()
+
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEqual(len(df), 2)
+        self.assertEqual(df.iloc[0]["Date"], formatted_purchase_date2)
+        self.assertEqual(df.iloc[0]["Time"], formatted_purchase_time2)
+        self.assertEqual(df.iloc[0]["Quantity"], quantity2)
+        self.assertEqual(df.iloc[0]["Entry ID"], 2)
+        self.assertEqual(df.iloc[0]["Entry Date"], formatted_current_date)
+        self.assertEqual(df.iloc[0]["Entry Time"], formatted_current_time)
+        self.assertEqual(df.iloc[0]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df.iloc[0]["Last Modified Time"], formatted_current_time)
+        self.assertEqual(df.iloc[1]["Date"], formatted_purchase_date1)
+        self.assertEqual(df.iloc[1]["Time"], formatted_purchase_time1)
+        self.assertEqual(df.iloc[1]["Quantity"], quantity1)
         self.assertEqual(df.iloc[1]["Entry ID"], 1)
         self.assertEqual(df.iloc[1]["Entry Date"], formatted_current_date)
         self.assertEqual(df.iloc[1]["Entry Time"], formatted_current_time)
