@@ -130,6 +130,7 @@ class RoomExporterTest(TestCase):
         self.assertEqual(df.iloc[0]["Entry Time"], formatted_current_time)
         self.assertEqual(df.iloc[0]["Last Modified Date"], formatted_current_date)
         self.assertEqual(df.iloc[0]["Last Modified Time"], formatted_current_time)
+
         self.assertEqual(df.iloc[1]["Date"], formatted_due_date1)
         self.assertEqual(df.iloc[1]["Time"], formatted_due_time1)
         self.assertEqual(df.iloc[1]["Price"], price1)
@@ -183,6 +184,7 @@ class RoomExporterTest(TestCase):
         self.assertEqual(df.iloc[0]["Entry Time"], formatted_current_time)
         self.assertEqual(df.iloc[0]["Last Modified Date"], formatted_current_date)
         self.assertEqual(df.iloc[0]["Last Modified Time"], formatted_current_time)
+
         self.assertEqual(df.iloc[1]["Date"], formatted_purchase_date1)
         self.assertEqual(df.iloc[1]["Time"], formatted_purchase_time1)
         self.assertEqual(df.iloc[1]["Quantity"], quantity1)
@@ -191,3 +193,123 @@ class RoomExporterTest(TestCase):
         self.assertEqual(df.iloc[1]["Entry Time"], formatted_current_time)
         self.assertEqual(df.iloc[1]["Last Modified Date"], formatted_current_date)
         self.assertEqual(df.iloc[1]["Last Modified Time"], formatted_current_time)
+
+    def test_get_record_df(self):
+        """Test get record df"""
+
+        price1 = 10
+        price2 = 20
+        price3 = 30
+
+        item1 = "item 1"
+        item2 = "item 2"
+        item3 = "item 3"
+
+        current_datetime = timezone.now()
+        purchase_datetime1 = current_datetime
+        purchase_datetime2 = current_datetime - timedelta(days=1)
+        purchase_datetime3 = current_datetime - timedelta(days=2)
+
+        formatted_current_date = localtime(current_datetime).strftime("%d-%m-%Y")
+        formatted_purchase_date1 = localtime(purchase_datetime1).strftime("%d-%m-%Y")
+        formatted_purchase_date2 = localtime(purchase_datetime2).strftime("%d-%m-%Y")
+        formatted_purchase_date3 = localtime(purchase_datetime3).strftime("%d-%m-%Y")
+
+        formatted_current_time = localtime(current_datetime).strftime("%I:%M:%S %p")
+        formatted_purchase_time1 = localtime(purchase_datetime1).strftime("%I:%M:%S %p")
+        formatted_purchase_time2 = localtime(purchase_datetime2).strftime("%I:%M:%S %p")
+        formatted_purchase_time3 = localtime(purchase_datetime3).strftime("%I:%M:%S %p")
+
+        Record.objects.create(
+            item=item1,
+            price=price1,
+            purchaser=self.admin,
+            adder=self.admin,
+            purchase_datetime=purchase_datetime1,
+            room=self.room,
+        )
+
+        Record.objects.create(
+            item=item2,
+            price=price2,
+            purchaser=self.member,
+            adder=self.member,
+            purchase_datetime=purchase_datetime2,
+            room=self.room,
+        )
+
+        Record.objects.create(
+            item=item3,
+            price=price3,
+            purchaser=self.member,
+            adder=self.admin,
+            purchase_datetime=purchase_datetime3,
+            room=self.room,
+        )
+
+        df1 = self.exporter.get_record_df()
+        df2 = self.exporter.get_record_df(self.member)
+
+        self.assertIsInstance(df1, pd.DataFrame)
+        self.assertEqual(len(df1), 3)
+        self.assertEqual(df1.iloc[0]["Purchase Date"], formatted_purchase_date3)
+        self.assertEqual(df1.iloc[0]["Purchase Time"], formatted_purchase_time3)
+        self.assertEqual(df1.iloc[0]["Item Name"], item3)
+        self.assertEqual(df1.iloc[0]["Price"], price3)
+        self.assertEqual(df1.iloc[0]["Purchase By"], self.member.get_full_name())
+        self.assertEqual(df1.iloc[0]["Entry ID"], 3)
+        self.assertEqual(df1.iloc[0]["Entry Date"], formatted_current_date)
+        self.assertEqual(df1.iloc[0]["Entry Time"], formatted_current_time)
+        self.assertEqual(df1.iloc[0]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df1.iloc[0]["Last Modified Time"], formatted_current_time)
+        self.assertEqual(df1.iloc[0]["Added By"], self.admin.get_full_name())
+
+        self.assertEqual(df1.iloc[1]["Purchase Date"], formatted_purchase_date2)
+        self.assertEqual(df1.iloc[1]["Purchase Time"], formatted_purchase_time2)
+        self.assertEqual(df1.iloc[1]["Item Name"], item2)
+        self.assertEqual(df1.iloc[1]["Price"], price2)
+        self.assertEqual(df1.iloc[1]["Purchase By"], self.member.get_full_name())
+        self.assertEqual(df1.iloc[1]["Entry ID"], 2)
+        self.assertEqual(df1.iloc[1]["Entry Date"], formatted_current_date)
+        self.assertEqual(df1.iloc[1]["Entry Time"], formatted_current_time)
+        self.assertEqual(df1.iloc[1]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df1.iloc[1]["Last Modified Time"], formatted_current_time)
+        self.assertEqual(df1.iloc[1]["Added By"], self.member.get_full_name())
+
+        self.assertEqual(df1.iloc[2]["Purchase Date"], formatted_purchase_date1)
+        self.assertEqual(df1.iloc[2]["Purchase Time"], formatted_purchase_time1)
+        self.assertEqual(df1.iloc[2]["Item Name"], item1)
+        self.assertEqual(df1.iloc[2]["Price"], price1)
+        self.assertEqual(df1.iloc[2]["Purchase By"], self.admin.get_full_name())
+        self.assertEqual(df1.iloc[2]["Entry ID"], 1)
+        self.assertEqual(df1.iloc[2]["Entry Date"], formatted_current_date)
+        self.assertEqual(df1.iloc[2]["Entry Time"], formatted_current_time)
+        self.assertEqual(df1.iloc[2]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df1.iloc[2]["Last Modified Time"], formatted_current_time)
+        self.assertEqual(df1.iloc[0]["Added By"], self.admin.get_full_name())
+
+        self.assertIsInstance(df2, pd.DataFrame)
+        self.assertEqual(len(df2), 2)
+        self.assertEqual(df2.iloc[0]["Purchase Date"], formatted_purchase_date3)
+        self.assertEqual(df2.iloc[0]["Purchase Time"], formatted_purchase_time3)
+        self.assertEqual(df2.iloc[0]["Item Name"], item3)
+        self.assertEqual(df2.iloc[0]["Price"], price3)
+        self.assertEqual(df2.iloc[0]["Purchase By"], self.member.get_full_name())
+        self.assertEqual(df2.iloc[0]["Entry ID"], 3)
+        self.assertEqual(df2.iloc[0]["Entry Date"], formatted_current_date)
+        self.assertEqual(df2.iloc[0]["Entry Time"], formatted_current_time)
+        self.assertEqual(df2.iloc[0]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df2.iloc[0]["Last Modified Time"], formatted_current_time)
+        self.assertEqual(df2.iloc[0]["Added By"], self.admin.get_full_name())
+
+        self.assertEqual(df2.iloc[1]["Purchase Date"], formatted_purchase_date2)
+        self.assertEqual(df2.iloc[1]["Purchase Time"], formatted_purchase_time2)
+        self.assertEqual(df2.iloc[1]["Item Name"], item2)
+        self.assertEqual(df2.iloc[1]["Price"], price2)
+        self.assertEqual(df2.iloc[1]["Purchase By"], self.member.get_full_name())
+        self.assertEqual(df2.iloc[1]["Entry ID"], 2)
+        self.assertEqual(df2.iloc[1]["Entry Date"], formatted_current_date)
+        self.assertEqual(df2.iloc[1]["Entry Time"], formatted_current_time)
+        self.assertEqual(df2.iloc[1]["Last Modified Date"], formatted_current_date)
+        self.assertEqual(df2.iloc[1]["Last Modified Time"], formatted_current_time)
+        self.assertEqual(df2.iloc[1]["Added By"], self.member.get_full_name())
