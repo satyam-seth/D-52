@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
+from accounts.models import RoomMembership
 from records.export import RoomExporter
 from records.models import Electricity, Maid, Record, Room, Water
 
@@ -21,14 +22,22 @@ class RoomExporterTest(TestCase):
         self.mock_df = pd.DataFrame([{"Mock": "Data"}])
         self.exporter = RoomExporter(room_id=self.room_id)
 
-        self.user = User.objects.create_user(
-            email="test@user.com",
+        self.admin = User.objects.create_user(
+            email="admin@user.com",
             password="test-password",
-            first_name="test",
+            first_name="admin",
             last_name="user",
         )
 
-        self.room = Room.objects.create(name="test-room", admin=self.user)
+        self.member = User.objects.create_user(
+            email="member@user.com",
+            password="test-password",
+            first_name="member",
+            last_name="user",
+        )
+
+        self.room = Room.objects.create(name="test-room", admin=self.admin)
+        RoomMembership.objects.create(room=self.room, member=self.member)
 
     def test_attribute(self):
         """Test attribute"""
@@ -150,14 +159,14 @@ class RoomExporterTest(TestCase):
 
         Water.objects.create(
             quantity=quantity1,
-            adder=self.user,
+            adder=self.admin,
             room=self.room,
             purchase_datetime=purchase_datetime1,
         )
 
         Water.objects.create(
             quantity=quantity2,
-            adder=self.user,
+            adder=self.member,
             room=self.room,
             purchase_datetime=purchase_datetime2,
         )
