@@ -1,13 +1,16 @@
 from datetime import timedelta
 from http import HTTPStatus
+from io import BytesIO
 from typing import Type
 from unittest import mock
 
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
+from django.http import HttpResponse
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -15,10 +18,12 @@ from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
+from records.export import RoomExporter
 from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
 from records.views import (
     AddDataView,
+    BaseExportView,
     DashboardTemplateView,
     ExportDataView,
     RecordListView,
@@ -1172,6 +1177,177 @@ class TestRoomReportView(TestCase):
         self.assertEqual(room_members_report[2]["total_spent"], 0)
         self.assertEqual(room_members_report[2]["price_diff"], 0)
         self.assertEqual(room_members_report[2]["records_count"], 0)
+
+
+class TestBaseExportView(TestCase):
+    """Test base export view"""
+
+    def setUp(self) -> None:
+        self.export_view = BaseExportView()
+
+    @mock.patch.object(pd.DataFrame, "to_excel")
+    def test_write_to_sheet_working(self, mock_to_excel) -> None:
+        """Test write to sheet working"""
+
+        # Create a mock Excel writer
+        mock_writer = mock.MagicMock()
+
+        sheet_name = "test-sheet"
+
+        # Create a sample DataFrame
+        data = pd.DataFrame({"Column1": [1, 2], "Column2": ["A", "B"]})
+
+        # Call the write_to_sheet method
+        self.export_view.write_to_sheet(mock_writer, sheet_name, data)
+
+        # Check that to_excel was called once with the correct arguments
+        mock_to_excel.assert_called_once_with(
+            mock_writer, sheet_name=sheet_name, index=False
+        )
+
+    @mock.patch("records.views.RoomExporter")
+    @mock.patch.object(BaseExportView, "get_room")
+    def test_get_room_and_export_instance(
+        self, mock_get_room, mock_room_exporter
+    ) -> None:
+        """Test get room and export instance working"""
+
+        # Create a mock request object
+        mock_request = mock.MagicMock()
+
+        # Create a mock Room object
+        mock_room = mock.MagicMock(spec=Room)
+        mock_room.id = 123
+
+        # Create a mock RoomExporter object
+        mock_exporter = mock.MagicMock(spec=RoomExporter)
+
+        # Set up the mocks
+        mock_get_room.return_value = mock_room
+        mock_room_exporter.return_value = mock_exporter
+
+        # Set base export view instance request object
+        self.export_view.request = mock_request
+
+        # Call the method to test
+        room, exporter = self.export_view.get_room_and_export_instance()
+
+        # Check that get_room was called with the correct arguments
+        mock_get_room.assert_called_once_with(mock_request)
+
+        # Check that RoomExporter was initialized with the correct room ID
+        mock_room_exporter.assert_called_once_with(mock_room.id)
+
+        # Check the return values are correct
+        self.assertEqual(room, mock_room)
+        self.assertEqual(exporter, mock_exporter)
+
+    @mock.patch("pandas.ExcelWriter")
+    @mock.patch.object(BaseExportView, "write_to_sheet")
+    def test_generate_excel_buffer_working(
+        self, mock_write_to_sheet, mock_excel_writer
+    ) -> None:
+        """Test generate excel buffer working"""
+
+        # Mock the ExcelWriter
+        mock_writer = mock.MagicMock()
+        mock_excel_writer.return_value.__enter__.return_value = mock_writer
+
+        # Sample data to pass into the function
+        data = [
+            ("Sheet1", pd.DataFrame({"A": [1, 2], "B": [3, 4]})),
+            ("Sheet2", pd.DataFrame({"X": [5, 6], "Y": [7, 8]})),
+        ]
+
+        # Call the method to test
+        buffer = self.export_view.generate_excel_buffer(data)
+
+        # Ensure ExcelWriter was called with the correct buffer and engine
+        mock_excel_writer.assert_called_once_with(buffer, engine="xlsxwriter")
+
+        # Check that write_to_sheet was called for each sheet with correct arguments
+        self.assertEqual(mock_write_to_sheet.call_count, len(data))
+
+        # Verify that write_to_sheet was called with the correct arguments for each sheet
+        for i, (sheet_name, df) in enumerate(data):
+            mock_write_to_sheet.assert_any_call(mock_writer, sheet_name, df)
+
+        # Ensure the buffer is a BytesIO instance
+        self.assertIsInstance(buffer, BytesIO)
+
+        # Check if the buffer's seek position is at 0
+        self.assertEqual(buffer.tell(), 0)
+
+    def test_generate_excel_response_working(self) -> None:
+        """Test generate excel response working"""
+
+        # Create a mock io.BytesIO buffer to simulate an Excel file
+        mock_buffer = mock.MagicMock(spec=BytesIO)
+        mocked_excel_data = b"mocked-excel-data"
+        mock_buffer.getvalue.return_value = mocked_excel_data
+
+        # Define the file name
+        file_name = "test-excel-file"
+
+        # Call the method to test
+        response = self.export_view.generate_excel_response(file_name, mock_buffer)
+
+        # Check that HttpResponse is returned
+        self.assertIsInstance(response, HttpResponse)
+
+        # Verify that the response content type is correct
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        # Verify that the Content-Disposition header is set correctly for attachment
+        self.assertEqual(
+            response["Content-Disposition"],
+            f"attachment; filename={file_name}.xlsx",
+        )
+
+        # Check that the response content is set to the value returned by the buffer
+        self.assertEqual(response.content, mocked_excel_data)
+
+        # Check that the buffer's getvalue method was called
+        mock_buffer.getvalue.assert_called_once()
+
+    @mock.patch.object(BaseExportView, "generate_excel_buffer")
+    @mock.patch.object(BaseExportView, "generate_excel_response")
+    def test_get_file_response(
+        self, mock_generate_excel_response, mock_generate_excel_buffer
+    ) -> None:
+        """Test get file response working"""
+
+        # Prepare test data: list of tuples (sheet_name, DataFrame)
+        data = [
+            ("Sheet1", pd.DataFrame({"A": [1, 2], "B": [3, 4]})),
+            ("Sheet2", pd.DataFrame({"X": [5, 6], "Y": [7, 8]})),
+        ]
+        file_name = "test-excel-file"
+
+        # Create mock buffer for generate_excel_buffer
+        mock_buffer = mock.MagicMock(spec=BytesIO)
+
+        # Create mock HttpResponse for generate_excel_response
+        mock_response = mock.MagicMock(spec=HttpResponse)
+
+        # Mock the return values of the methods
+        mock_generate_excel_buffer.return_value = mock_buffer
+        mock_generate_excel_response.return_value = mock_response
+
+        # Call the method
+        response = self.export_view.get_file_response(file_name, data)
+
+        # Verify that generate_excel_buffer was called with the correct data
+        mock_generate_excel_buffer.assert_called_once_with(data)
+
+        # Verify that generate_excel_response was called with the correct file_name and buffer
+        mock_generate_excel_response.assert_called_once_with(file_name, mock_buffer)
+
+        # Check that the returned response is the mock response
+        self.assertEqual(response, mock_response)
 
 
 # TODO: Update it
