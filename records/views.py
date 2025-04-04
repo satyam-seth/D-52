@@ -329,7 +329,7 @@ class BaseExportView(RoomRequiredMixin, View):
         # TODO: Add sheet styling
         data.to_excel(writer, sheet_name=sheet_name, index=False)
 
-    def get_room_and_export_instance(self, request) -> tuple:
+    def get_room_and_export_instance(self) -> tuple:
         """Fetch room details and initialize RoomExportData."""
 
         room = self.get_room(self.request)
@@ -383,7 +383,7 @@ class ExportAllView(BaseExportView):
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room all data"""
 
-        room, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance()
 
         # Prepare room members data
         room_members_data = []
@@ -412,7 +412,7 @@ class ExportAllRecordView(BaseExportView):
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room all record data"""
 
-        room, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance()
         data = [("All Records", exporter.get_record_df())]
 
         file_name = f"{room.name}_all_records_data"
@@ -425,7 +425,7 @@ class ExportMemberRecordView(BaseExportView):
     def post(self, request: HttpRequest, member_id: int) -> HttpResponse:
         """Handles POST requests to export room member records data"""
 
-        room, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance()
         room_member = get_object_or_404(User, pk=member_id)
 
         member_name = room_member.get_full_name()
@@ -442,7 +442,7 @@ class ExportWaterView(BaseExportView):
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room water data"""
 
-        room, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance()
         data = [("Water Records", exporter.get_water_df())]
 
         file_name = f"{room.name}_water_data"
@@ -455,7 +455,7 @@ class ExportMaidView(BaseExportView):
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room maid data"""
 
-        room, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance()
         data = [("Maid Records", exporter.get_maid_df())]
 
         file_name = f"{room.name}_maid_data"
@@ -468,7 +468,7 @@ class ExportElectricityView(BaseExportView):
     def post(self, request: HttpRequest) -> HttpResponse:
         """Handles POST requests to export room electricity data"""
 
-        room, exporter = self.get_room_and_export_instance(request)
+        room, exporter = self.get_room_and_export_instance()
         data = [("Electricity Records", exporter.get_electricity_df())]
 
         file_name = f"{room.name}_electricity_data"
