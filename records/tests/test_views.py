@@ -1246,7 +1246,7 @@ class TestBaseExportView(TestCase):
     @mock.patch.object(BaseExportView, "write_to_sheet")
     def test_generate_excel_buffer_working(
         self, mock_write_to_sheet, mock_excel_writer
-    ):
+    ) -> None:
         """Test generate excel buffer working"""
 
         # Mock the ExcelWriter
@@ -1278,11 +1278,7 @@ class TestBaseExportView(TestCase):
         # Check if the buffer's seek position is at 0
         self.assertEqual(buffer.tell(), 0)
 
-    @mock.patch("pandas.ExcelWriter")
-    @mock.patch.object(BaseExportView, "write_to_sheet")
-    def test_generate_excel_response_working(
-        self, mock_write_to_sheet, mock_excel_writer
-    ):
+    def test_generate_excel_response_working(self) -> None:
         """Test generate excel response working"""
 
         # Create a mock io.BytesIO buffer to simulate an Excel file
@@ -1316,6 +1312,42 @@ class TestBaseExportView(TestCase):
 
         # Check that the buffer's getvalue method was called
         mock_buffer.getvalue.assert_called_once()
+
+    @mock.patch.object(BaseExportView, "generate_excel_buffer")
+    @mock.patch.object(BaseExportView, "generate_excel_response")
+    def test_get_file_response(
+        self, mock_generate_excel_response, mock_generate_excel_buffer
+    ) -> None:
+        """Test get file response working"""
+
+        # Prepare test data: list of tuples (sheet_name, DataFrame)
+        data = [
+            ("Sheet1", pd.DataFrame({"A": [1, 2], "B": [3, 4]})),
+            ("Sheet2", pd.DataFrame({"X": [5, 6], "Y": [7, 8]})),
+        ]
+        file_name = "test-excel-file"
+
+        # Create mock buffer for generate_excel_buffer
+        mock_buffer = mock.MagicMock(spec=BytesIO)
+
+        # Create mock HttpResponse for generate_excel_response
+        mock_response = mock.MagicMock(spec=HttpResponse)
+
+        # Mock the return values of the methods
+        mock_generate_excel_buffer.return_value = mock_buffer
+        mock_generate_excel_response.return_value = mock_response
+
+        # Call the method
+        response = self.export_view.get_file_response(file_name, data)
+
+        # Verify that generate_excel_buffer was called with the correct data
+        mock_generate_excel_buffer.assert_called_once_with(data)
+
+        # Verify that generate_excel_response was called with the correct file_name and buffer
+        mock_generate_excel_response.assert_called_once_with(file_name, mock_buffer)
+
+        # Check that the returned response is the mock response
+        self.assertEqual(response, mock_response)
 
 
 # TODO: Update it
