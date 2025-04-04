@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
+from django.http import HttpResponse
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -1276,6 +1277,45 @@ class TestBaseExportView(TestCase):
 
         # Check if the buffer's seek position is at 0
         self.assertEqual(buffer.tell(), 0)
+
+    @mock.patch("pandas.ExcelWriter")
+    @mock.patch.object(BaseExportView, "write_to_sheet")
+    def test_generate_excel_response_working(
+        self, mock_write_to_sheet, mock_excel_writer
+    ):
+        """Test generate excel response working"""
+
+        # Create a mock io.BytesIO buffer to simulate an Excel file
+        mock_buffer = mock.MagicMock(spec=BytesIO)
+        mocked_excel_data = b"mocked-excel-data"
+        mock_buffer.getvalue.return_value = mocked_excel_data
+
+        # Define the file name
+        file_name = "test-excel-file"
+
+        # Call the method to test
+        response = self.export_view.generate_excel_response(file_name, mock_buffer)
+
+        # Check that HttpResponse is returned
+        self.assertIsInstance(response, HttpResponse)
+
+        # Verify that the response content type is correct
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        # Verify that the Content-Disposition header is set correctly for attachment
+        self.assertEqual(
+            response["Content-Disposition"],
+            f"attachment; filename={file_name}.xlsx",
+        )
+
+        # Check that the response content is set to the value returned by the buffer
+        self.assertEqual(response.content, mocked_excel_data)
+
+        # Check that the buffer's getvalue method was called
+        mock_buffer.getvalue.assert_called_once()
 
 
 # TODO: Update it
