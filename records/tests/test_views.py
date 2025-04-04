@@ -3,6 +3,7 @@ from http import HTTPStatus
 from typing import Type
 from unittest import mock
 
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
@@ -15,10 +16,12 @@ from django.views.generic import ListView, TemplateView, View
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
+from records.export import RoomExporter
 from records.forms import RecordForm, WaterForm
 from records.models import Record, Water
 from records.views import (
     AddDataView,
+    BaseExportView,
     DashboardTemplateView,
     ExportDataView,
     RecordListView,
@@ -1172,6 +1175,32 @@ class TestRoomReportView(TestCase):
         self.assertEqual(room_members_report[2]["total_spent"], 0)
         self.assertEqual(room_members_report[2]["price_diff"], 0)
         self.assertEqual(room_members_report[2]["records_count"], 0)
+
+
+class TestBaseExportView(TestCase):
+    """Test base export view"""
+
+    @mock.patch.object(pd.DataFrame, "to_excel")
+    def test_write_to_sheet_working(self, mock_to_excel) -> None:
+        """Test write to sheet working"""
+
+        # Create a mock Excel writer
+        mock_writer = mock.MagicMock()
+
+        sheet_name = "test-sheet"
+
+        # Create a sample DataFrame
+        data = pd.DataFrame({"Column1": [1, 2], "Column2": ["A", "B"]})
+
+        export_view = BaseExportView()
+
+        # Call the write_to_sheet method
+        export_view.write_to_sheet(mock_writer, sheet_name, data)
+
+        # Check that to_excel was called once with the correct arguments
+        mock_to_excel.assert_called_once_with(
+            mock_writer, sheet_name=sheet_name, index=False
+        )
 
 
 # TODO: Update it
