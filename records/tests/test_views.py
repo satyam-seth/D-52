@@ -1202,6 +1202,44 @@ class TestBaseExportView(TestCase):
             mock_writer, sheet_name=sheet_name, index=False
         )
 
+    @mock.patch("records.views.RoomExporter")
+    @mock.patch.object(BaseExportView, "get_room")
+    def test_get_room_and_export_instance(
+        self, mock_get_room, mock_room_exporter
+    ) -> None:
+        """Test get room and export instance working"""
+
+        # Create a mock request object
+        mock_request = mock.MagicMock()
+
+        # Create a mock Room object
+        mock_room = mock.MagicMock(spec=Room)
+        mock_room.id = 123
+
+        # Create a mock RoomExporter object
+        mock_exporter = mock.MagicMock(spec=RoomExporter)
+
+        # Set up the mocks
+        mock_get_room.return_value = mock_room
+        mock_room_exporter.return_value = mock_exporter
+
+        # Create base export view instance
+        export_view = BaseExportView()
+        export_view.request = mock_request
+
+        # Call the method to test
+        room, exporter = export_view.get_room_and_export_instance()
+
+        # Check that get_room was called with the correct arguments
+        mock_get_room.assert_called_once_with(mock_request)
+
+        # Check that RoomExporter was initialized with the correct room ID
+        mock_room_exporter.assert_called_once_with(mock_room.id)
+
+        # Check the return values are correct
+        self.assertEqual(room, mock_room)
+        self.assertEqual(exporter, mock_exporter)
+
 
 # TODO: Update it
 # class TestOverallXlsView(TestCase):
