@@ -25,6 +25,7 @@ from records.views import (
     AddDataView,
     BaseExportView,
     DashboardTemplateView,
+    ExportAllView,
     ExportDataView,
     RecordListView,
     RoomReportView,
@@ -1354,6 +1355,16 @@ class TestBaseExportView(TestCase):
 
         # Check that the returned response is the mock response
         self.assertEqual(response, mock_response)
+
+
+class TestExportAllView(TestCase):
+    """Test export all view"""
+
+    def test_export_all_view_attributes(self) -> None:
+        "Test export all view attributes"
+
+        view = ExportAllView()
+        self.assertIsInstance(view, BaseExportView)
 
 
 # TODO: Update it
