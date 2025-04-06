@@ -29,6 +29,7 @@ from records.views import (
     ExportAllRecordView,
     ExportAllView,
     ExportDataView,
+    ExportElectricityView,
     ExportMaidView,
     ExportMemberRecordView,
     ExportWaterView,
@@ -1739,6 +1740,18 @@ class TestExportMaidView(TestCase):
         ):
             self.assertEqual(label, called_label)  # Compare label names
             assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
+
+
+class TestExportElectricityView(TestCase):
+    """Test export electricity view"""
+
+    def setUp(self) -> None:
+        self.export_view = ExportElectricityView()
+
+    def test_export_electricity_view_attributes(self) -> None:
+        "Test export electricity view attributes"
+
+        self.assertIsInstance(self.export_view, BaseExportView)
 
 
 # TODO: Update it
