@@ -26,6 +26,7 @@ from records.views import (
     AddDataView,
     BaseExportView,
     DashboardTemplateView,
+    ExportAllRecordView,
     ExportAllView,
     ExportDataView,
     RecordListView,
@@ -1445,6 +1446,18 @@ class TestExportAllView(TestCase):
         ):
             self.assertEqual(label, called_label)  # Compare label names
             assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
+
+
+class TestExportAllRecordView(TestCase):
+    """Test export all record view"""
+
+    def setUp(self) -> None:
+        self.export_view = ExportAllRecordView()
+
+    def test_export_all_record_view_attributes(self) -> None:
+        "Test export all record view attributes"
+
+        self.assertIsInstance(self.export_view, BaseExportView)
 
 
 # TODO: Update it
