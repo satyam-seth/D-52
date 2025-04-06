@@ -1185,6 +1185,12 @@ class TestBaseExportView(TestCase):
     def setUp(self) -> None:
         self.export_view = BaseExportView()
 
+    def test_base_export_view_attributes(self) -> None:
+        "Test base export view attributes"
+
+        self.assertIsInstance(self.export_view, RoomRequiredMixin)
+        self.assertIsInstance(self.export_view, View)
+
     @mock.patch.object(pd.DataFrame, "to_excel")
     def test_write_to_sheet_working(self, mock_to_excel) -> None:
         """Test write to sheet working"""
