@@ -29,6 +29,7 @@ from records.views import (
     ExportAllRecordView,
     ExportAllView,
     ExportDataView,
+    ExportMaidView,
     ExportMemberRecordView,
     ExportWaterView,
     RecordListView,
@@ -1674,36 +1675,70 @@ class TestExportWaterView(TestCase):
             assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
 
 
-# TODO: Update it
-# class TestMaidXlsView(TestCase):
-#     """Test maid xls view"""
+class TestExportMaidView(TestCase):
+    """Test export maid view"""
 
-#     def setUp(self) -> None:
-#         self.client = Client()
-#         self.url = reverse("records:maid_xls")
+    def setUp(self) -> None:
+        self.export_view = ExportMaidView()
 
-#     @mock.patch("records.views.get_excel")
-#     def test_maid_xls_view_working(self, mock_get_excel) -> None:
-#         """Test maid xls view working"""
+    def test_export_water_view_attributes(self) -> None:
+        "Test export water view attributes"
 
-#         # Send a GET request to the view
-#         response = self.client.get(self.url)
+        self.assertIsInstance(self.export_view, BaseExportView)
 
-#         # Assert that get_excel function is called once
-#         mock_get_excel.assert_called_once()
+    @mock.patch("records.views.BaseExportView.get_room_and_export_instance")
+    @mock.patch.object(ExportMaidView, "get_file_response")
+    def test_export_maid_view_post_working(
+        self,
+        mock_get_file_response,
+        mock_get_room_and_export_instance,
+    ):
+        """Test export maid view post working"""
 
-#         # Assert that the response status code is 200 (OK)
-#         self.assertEqual(response.status_code, HTTPStatus.OK)
+        # Mock Room instance and Exporter instance
+        mock_room = mock.MagicMock(spec=Room)
+        mock_exporter = mock.MagicMock()
+        mock_response = mock.MagicMock(spec=HttpResponse)
+        mock_get_file_response.return_value = mock_response
+        mock_get_room_and_export_instance.return_value = (mock_room, mock_exporter)
 
-#         # Assert that the content type of the response is application/ms-excel
-#         self.assertEqual(response["Content-Type"], "application/ms-excel")
+        # Mock room name
+        mock_room_name = "test-room"
+        mock_room.name = mock_room_name
 
-#         # Assert that the content disposition is correctly set
-#         expected_filename = "Maid Salary Records.xls"
-#         self.assertEqual(
-#             response["Content-Disposition"],
-#             f"attachment; filename={expected_filename}",
-#         )
+        # Mocking the exporter's data method for maid records
+        mock_exporter.get_maid_df.return_value = pd.DataFrame({"maid": [1, 2, 3]})
+
+        # Mock request instance
+        request = mock.MagicMock(spec=HttpRequest)
+
+        # Call the post method
+        response = self.export_view.post(request)
+
+        # Assert that the response is the expected mock response
+        self.assertEqual(response, mock_response)
+
+        # Assert that get_file_response was called with the correct file name and data
+        expected_file_name = f"{mock_room_name}_maid_data"
+        expected_data = [
+            ("Maid Records", pd.DataFrame({"maid": [1, 2, 3]})),
+        ]
+
+        # Check that the get_file_response method was called once
+        mock_get_file_response.assert_called_once()
+
+        # Compare the file name passed to the method
+        self.assertEqual(mock_get_file_response.call_args[0][0], expected_file_name)
+
+        # Mocked response's call args (the data passed to get_file_response)
+        called_args = mock_get_file_response.call_args[0][1]
+
+        # Compare DataFrames in expected_data and the ones passed in the call_args
+        for (label, expected_df), (called_label, called_df) in zip(
+            expected_data, called_args
+        ):
+            self.assertEqual(label, called_label)  # Compare label names
+            assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
 
 
 # TODO: Update it
