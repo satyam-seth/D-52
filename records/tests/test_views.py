@@ -10,11 +10,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import ListView, TemplateView, View
+from pandas.testing import assert_frame_equal
 
 from accounts.mixins import RoomRequiredMixin
 from accounts.models import Room, RoomMembership
@@ -1360,11 +1361,90 @@ class TestBaseExportView(TestCase):
 class TestExportAllView(TestCase):
     """Test export all view"""
 
+    def setUp(self) -> None:
+        self.export_view = ExportAllView()
+
     def test_export_all_view_attributes(self) -> None:
         "Test export all view attributes"
 
-        view = ExportAllView()
-        self.assertIsInstance(view, BaseExportView)
+        self.assertIsInstance(self.export_view, BaseExportView)
+
+    @mock.patch("records.views.User.objects.filter")
+    @mock.patch("records.views.BaseExportView.get_room_and_export_instance")
+    @mock.patch.object(ExportAllView, "get_file_response")
+    def test_export_all_view_post_working(
+        self,
+        mock_get_file_response,
+        mock_get_room_and_export_instance,
+        mock_user_filter,
+    ):
+        """Test export all view post working"""
+
+        # Mock Room instance and Exporter instance
+        mock_room = mock.MagicMock(spec=Room)
+        mock_exporter = mock.MagicMock()
+        mock_response = mock.MagicMock(spec=HttpResponse)
+        mock_get_file_response.return_value = mock_response
+        mock_get_room_and_export_instance.return_value = (mock_room, mock_exporter)
+
+        # Mock room name
+        mock_room_name = "test-room"
+        mock_room.name = mock_room_name
+
+        # Mocking the User.objects.filter to return mock users
+        user1_get_full_name = "user-one"
+        mock_user1 = mock.MagicMock(spec=User)
+        mock_user1.get_full_name.return_value = user1_get_full_name
+
+        user2_get_full_name = "user-two"
+        mock_user2 = mock.MagicMock(spec=User)
+        mock_user2.get_full_name.return_value = user2_get_full_name
+
+        mock_user_filter.return_value = [mock_user1, mock_user2]
+
+        # Mocking the exporter's data methods
+        mock_exporter.get_record_df.return_value = pd.DataFrame({"data": [1, 2, 3]})
+        mock_exporter.get_water_df.return_value = pd.DataFrame({"water": [4, 5, 6]})
+        mock_exporter.get_maid_df.return_value = pd.DataFrame({"maid": [7, 8, 9]})
+        mock_exporter.get_electricity_df.return_value = pd.DataFrame(
+            {"electricity": [10, 11, 12]}
+        )
+
+        # Mock request instance
+        request = mock.MagicMock(spec=HttpRequest)
+
+        # Call the post method
+        response = self.export_view.post(request)
+
+        # Assert that the response is the expected mock response
+        self.assertEqual(response, mock_response)
+
+        # Assert that get_file_response was called with the correct file name and data
+        expected_file_name = f"{mock_room_name}_all_data"
+        expected_data = [
+            ("All Records", pd.DataFrame({"data": [1, 2, 3]})),
+            (user1_get_full_name, pd.DataFrame({"data": [1, 2, 3]})),
+            (user2_get_full_name, pd.DataFrame({"data": [1, 2, 3]})),
+            ("Water Records", pd.DataFrame({"water": [4, 5, 6]})),
+            ("Maid Records", pd.DataFrame({"maid": [7, 8, 9]})),
+            ("Electricity Records", pd.DataFrame({"electricity": [10, 11, 12]})),
+        ]
+
+        # Check that the get_file_response method was called once
+        mock_get_file_response.assert_called_once()
+
+        # Compare the file name passed to the method
+        self.assertEqual(mock_get_file_response.call_args[0][0], expected_file_name)
+
+        # Mocked response's call args (the data passed to get_file_response)
+        called_args = mock_get_file_response.call_args[0][1]
+
+        # Compare DataFrames in expected_data and the ones passed in the call_args
+        for (label, expected_df), (called_label, called_df) in zip(
+            expected_data, called_args
+        ):
+            self.assertEqual(label, called_label)  # Compare label names
+            assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
 
 
 # TODO: Update it
