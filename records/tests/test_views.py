@@ -29,6 +29,7 @@ from records.views import (
     ExportAllRecordView,
     ExportAllView,
     ExportDataView,
+    ExportMemberRecordView,
     RecordListView,
     RoomReportView,
     WaterListView,
@@ -1527,42 +1528,83 @@ class TestExportAllRecordView(TestCase):
             assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
 
 
-# TODO: Update it
-# class TestUserXlsView(TestCase):
-#     """Test user xls view"""
+class TestExportMemberRecordView(TestCase):
+    """Test export member record view"""
 
-#     def setUp(self) -> None:
-#         self.client = Client()
-#         self.user = User.objects.create_user(
-#             email="test@user.com",
-#             password="test-password",
-#             first_name="test",
-#             last_name="user",
-#         )
-#         self.url = reverse("records:user_xls", kwargs={"user_id": self.user.pk})
+    def setUp(self) -> None:
+        self.export_view = ExportMemberRecordView()
 
-#     @mock.patch("records.views.get_excel")
-#     def test_user_xls_view_working(self, mock_get_excel) -> None:
-#         """Test user xls view working"""
+    def test_export_member_record_view_attributes(self) -> None:
+        "Test export member record view attributes"
 
-#         # Send a GET request to the view
-#         response = self.client.get(self.url)
+        self.assertIsInstance(self.export_view, BaseExportView)
 
-#         # Assert that get_excel function is called once
-#         mock_get_excel.assert_called_once()
+    @mock.patch("records.views.get_object_or_404")
+    @mock.patch("records.views.BaseExportView.get_room_and_export_instance")
+    @mock.patch.object(ExportMemberRecordView, "get_file_response")
+    def test_export_member_record_view_post_working(
+        self,
+        mock_get_file_response,
+        mock_get_room_and_export_instance,
+        mock_get_object_or_404,
+    ):
+        """Test export member record view post working"""
 
-#         # Assert that the response status code is 200 (OK)
-#         self.assertEqual(response.status_code, HTTPStatus.OK)
+        # Mock Room instance and Exporter instance
+        mock_room = mock.MagicMock(spec=Room)
+        mock_exporter = mock.MagicMock()
+        mock_response = mock.MagicMock(spec=HttpResponse)
+        mock_get_file_response.return_value = mock_response
+        mock_get_room_and_export_instance.return_value = (mock_room, mock_exporter)
 
-#         # Assert that the content type of the response is application/ms-excel
-#         self.assertEqual(response["Content-Type"], "application/ms-excel")
+        # Mock room name
+        mock_room_name = "test-room"
+        mock_room.name = mock_room_name
 
-#         # Assert that the content disposition is correctly set
-#         expected_filename = f"{self.user.get_full_name()} Items Records.xls"
-#         self.assertEqual(
-#             response["Content-Disposition"],
-#             f"attachment; filename={expected_filename}",
-#         )
+        # Mocking the User model to return a specific user when querying for a member by ID
+        mock_member_id = 123
+        mock_user = mock.MagicMock(spec=User)
+        mock_user.get_full_name.return_value = "user-one"
+        mock_get_object_or_404.return_value = mock_user
+
+        # Mocking the exporter's data method for the member
+        mock_exporter.get_record_df.return_value = pd.DataFrame({"data": [1, 2, 3]})
+
+        # Mock request instance
+        request = mock.MagicMock(spec=HttpRequest)
+
+        # Call the post method
+        response = self.export_view.post(request, member_id=mock_member_id)
+
+        # Assert that the response is the expected mock response
+        self.assertEqual(response, mock_response)
+
+        # Assert that the get_object_or_404 method was called with correct args
+        mock_get_object_or_404.assert_called_once_with(User, pk=mock_member_id)
+
+        # Assert that get_file_response was called with the correct file name and data
+        expected_file_name = (
+            f"{mock_room_name}_user-one_records_data"  # Correct file name
+        )
+        expected_data = [
+            ("user-one", pd.DataFrame({"data": [1, 2, 3]})),
+        ]
+
+        # Check that the get_file_response method was called once
+        mock_get_file_response.assert_called_once()
+
+        # Compare the file name passed to the method
+        self.assertEqual(mock_get_file_response.call_args[0][0], expected_file_name)
+
+        # Mocked response's call args (the data passed to get_file_response)
+        called_args = mock_get_file_response.call_args[0][1]
+
+        # Compare DataFrames in expected_data and the ones passed in the call_args
+        for (label, expected_df), (called_label, called_df) in zip(
+            expected_data, called_args
+        ):
+            self.assertEqual(label, called_label)  # Compare label names
+            assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
 
 
 # TODO: Update it
