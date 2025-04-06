@@ -1686,6 +1686,60 @@ class TestExportMaidView(TestCase):
 
         self.assertIsInstance(self.export_view, BaseExportView)
 
+    @mock.patch("records.views.BaseExportView.get_room_and_export_instance")
+    @mock.patch.object(ExportMaidView, "get_file_response")
+    def test_export_maid_view_post_working(
+        self,
+        mock_get_file_response,
+        mock_get_room_and_export_instance,
+    ):
+        """Test export maid view post working"""
+
+        # Mock Room instance and Exporter instance
+        mock_room = mock.MagicMock(spec=Room)
+        mock_exporter = mock.MagicMock()
+        mock_response = mock.MagicMock(spec=HttpResponse)
+        mock_get_file_response.return_value = mock_response
+        mock_get_room_and_export_instance.return_value = (mock_room, mock_exporter)
+
+        # Mock room name
+        mock_room_name = "test-room"
+        mock_room.name = mock_room_name
+
+        # Mocking the exporter's data method for maid records
+        mock_exporter.get_maid_df.return_value = pd.DataFrame({"maid": [1, 2, 3]})
+
+        # Mock request instance
+        request = mock.MagicMock(spec=HttpRequest)
+
+        # Call the post method
+        response = self.export_view.post(request)
+
+        # Assert that the response is the expected mock response
+        self.assertEqual(response, mock_response)
+
+        # Assert that get_file_response was called with the correct file name and data
+        expected_file_name = f"{mock_room_name}_maid_data"
+        expected_data = [
+            ("Maid Records", pd.DataFrame({"maid": [1, 2, 3]})),
+        ]
+
+        # Check that the get_file_response method was called once
+        mock_get_file_response.assert_called_once()
+
+        # Compare the file name passed to the method
+        self.assertEqual(mock_get_file_response.call_args[0][0], expected_file_name)
+
+        # Mocked response's call args (the data passed to get_file_response)
+        called_args = mock_get_file_response.call_args[0][1]
+
+        # Compare DataFrames in expected_data and the ones passed in the call_args
+        for (label, expected_df), (called_label, called_df) in zip(
+            expected_data, called_args
+        ):
+            self.assertEqual(label, called_label)  # Compare label names
+            assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
+
 
 # TODO: Update it
 # class TestMaidXlsView(TestCase):
