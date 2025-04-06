@@ -30,6 +30,7 @@ from records.views import (
     ExportAllView,
     ExportDataView,
     ExportMemberRecordView,
+    ExportWaterView,
     RecordListView,
     RoomReportView,
     WaterListView,
@@ -1605,6 +1606,18 @@ class TestExportMemberRecordView(TestCase):
         ):
             self.assertEqual(label, called_label)  # Compare label names
             assert_frame_equal(called_df, expected_df)  # Compare DataFrame contents
+
+
+class TestExportWaterView(TestCase):
+    """Test export water view"""
+
+    def setUp(self) -> None:
+        self.export_view = ExportWaterView()
+
+    def test_export_water_view_attributes(self) -> None:
+        "Test export water view attributes"
+
+        self.assertIsInstance(self.export_view, BaseExportView)
 
 
 # TODO: Update it
