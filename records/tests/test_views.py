@@ -1681,8 +1681,8 @@ class TestExportMaidView(TestCase):
     def setUp(self) -> None:
         self.export_view = ExportMaidView()
 
-    def test_export_water_view_attributes(self) -> None:
-        "Test export water view attributes"
+    def test_export_maid_view_attributes(self) -> None:
+        "Test export maid view attributes"
 
         self.assertIsInstance(self.export_view, BaseExportView)
 
