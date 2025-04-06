@@ -1608,44 +1608,6 @@ class TestExportMemberRecordView(TestCase):
 
 
 # TODO: Update it
-# class TestUserXlsView(TestCase):
-#     """Test user xls view"""
-
-#     def setUp(self) -> None:
-#         self.client = Client()
-#         self.user = User.objects.create_user(
-#             email="test@user.com",
-#             password="test-password",
-#             first_name="test",
-#             last_name="user",
-#         )
-#         self.url = reverse("records:user_xls", kwargs={"user_id": self.user.pk})
-
-#     @mock.patch("records.views.get_excel")
-#     def test_user_xls_view_working(self, mock_get_excel) -> None:
-#         """Test user xls view working"""
-
-#         # Send a GET request to the view
-#         response = self.client.get(self.url)
-
-#         # Assert that get_excel function is called once
-#         mock_get_excel.assert_called_once()
-
-#         # Assert that the response status code is 200 (OK)
-#         self.assertEqual(response.status_code, HTTPStatus.OK)
-
-#         # Assert that the content type of the response is application/ms-excel
-#         self.assertEqual(response["Content-Type"], "application/ms-excel")
-
-#         # Assert that the content disposition is correctly set
-#         expected_filename = f"{self.user.get_full_name()} Items Records.xls"
-#         self.assertEqual(
-#             response["Content-Disposition"],
-#             f"attachment; filename={expected_filename}",
-#         )
-
-
-# TODO: Update it
 # class TestWaterXlsView(TestCase):
 #     """Test water xls view"""
 
