@@ -1,0 +1,36 @@
+# Code formatting tool
+black==23.12.1
+
+# Test coverage tool
+coverage==7.5.1
+
+# Django framework
+Django==4.2.0
+
+# MyPy type stubs for Django
+django-stubs==4.2.7
+
+# Tool for optimizing import statements
+isort==5.13.2
+
+# Typing checks
+mypy==1.8.0
+
+# Library for image manipulation
+Pillow==9.4.0
+
+# Linting tool
+pylint==3.0.3
+
+# Pylint plugin for Django projects
+pylint-django==2.5.5
+
+# Data manipulation library (used for exporting to Excel)
+pandas==2.2.3
+
+# MyPy type stubs for pandas
+pandas-stubs==2.2.3.241126
+
+# Engine for handling Excel files (used by pandas)
+# We can use openpyxl
+XlsxWriter==3.2.2

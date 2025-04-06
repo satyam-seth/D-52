@@ -1,0 +1,137 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 About{% endblock title %}
+{% block content %}
+<div class="container-fluid py-5 about my-5">
+    <div class="container text-light my-5">
+        <div>
+            <h1 class="display-2">About,</h1>
+            <h1 class="display-4">How to use?</h1>
+        </div>
+        <div class="lead">
+            <p>We are here to help you.</p>
+        </div>
+    </div>
+</div>
+<div class="container mb-5">
+    <div class="accordion shadow-lg" id="about-accordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="addDataOpen">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#addDataCollapse" aria-expanded="true" aria-controls="addDataCollapse">
+                    How to add data?
+                </button>
+            </h2>
+            <div id="addDataCollapse" class="accordion-collapse collapse show" aria-labelledby="addDataOpen"
+                data-bs-parent="#about-accordion">
+                <div class="accordion-body">
+                    <ol>
+                        <li class="h5">Go to <b>Add Data</b> page from the navigation bar. It will show there if you are
+                            already logged in.</li>
+                        <li class="h5">If you want to add a new record for the item, then follow the following steps and
+                            fill the <b>Add Item Record</b> form-
+                            <ul class="mt-2">
+                                <li class="h6">Select <b>Date</b>.</li>
+                                <li class="h6">Select <b>your name</b>.</li>
+                                <li class="h6">Enter <b>item name</b>.</li>
+                                <li class="h6">Enter <b>item price</b>.</li>
+                                <li class="h6">Click <b>Add</b> button.</li>
+                                <li class="h6">You will get a message that <q><i><b>Your item record successfully
+                                                added</b></i></q>.</li>
+                            </ul>
+                        </li>
+                        <li class="h5">If you want to add a new record for the water, then follow the following steps
+                            and fill the <b>Add Water Record</b> form-
+                            <ul class="mt-2">
+                                <li class="h6">Select <b>Date</b>.</li>
+                                <li class="h6">Select <b>quantity</b>.</li>
+                                <li class="h6">Click <b>Add</b> button.</li>
+                                <li class="h6">You will get a message that <q><i><b>Water record successfully
+                                                added</b></i></q>.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="seeRecordsOpen">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#seeRecordsCollapse" aria-expanded="false" aria-controls="seeRecordsCollapse">
+                    How to see records?
+                </button>
+            </h2>
+            <div id="seeRecordsCollapse" class="accordion-collapse collapse" aria-labelledby="seeRecordsOpen"
+                data-bs-parent="#about-accordion">
+                <div class="accordion-body">
+                    <ol>
+                        <li class="h5">If you want to see all items records, then go to <b>See Records</b> page from the
+                            navigation bar.</li>
+                        <li class="h5">If you want to see any person's personal items records, then press the
+                            <b>Detailed View</b> button which is on the home page.
+                        </li>
+                        <li class="h5">If you want to see water records, then press the <b>Detailed View</b> button
+                            which is on the home page.</li>
+                        <li class="h5">Apart from this, if you want, you can write the name of an item in the <b>Search
+                                Bar</b> and see all the records related to that item.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="progressReportOpen">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#progressReportCollapse" aria-expanded="false"
+                    aria-controls="progressReportCollapse">
+                    How to see progress report?
+                </button>
+            </h2>
+            <div id="progressReportCollapse" class="accordion-collapse collapse" aria-labelledby="progressReportOpen" data-bs-parent="#about-accordion">
+                <div class="accordion-body">
+                    <div class="ps-3 h5">If you want to see all progress reports, then go to <b>Progress Reports</b>
+                        page from the navigation bar.</div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="downloadExcelSheetOpen">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#downloadExcelSheetCollapse" aria-expanded="false"
+                    aria-controls="downloadExcelSheetCollapse">
+                    How to download Excel Sheet?
+                </button>
+            </h2>
+            <div id="downloadExcelSheetCollapse" class="accordion-collapse collapse"
+                aria-labelledby="downloadExcelSheetOpen" data-bs-parent="#about-accordion">
+                <div class="accordion-body">
+                    <div class="ps-3 h5">If you want to download the excel file of records, then go to <b>Download Excel
+                            Sheet</b> page in <b>More</b> section of the navigation bar and press <b>Download</b> button
+                        of that record.</div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="feedbackOpen">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#feedbackCollapse" aria-expanded="false" aria-controls="feedbackCollapse">
+                    How to give feedback or suggestion?
+                </button>
+            </h2>
+            <div id="feedbackCollapse" class="accordion-collapse collapse" aria-labelledby="feedbackOpen"
+                data-bs-parent="#about-accordion">
+                <div class="accordion-body">
+                    <div class="ps-3 h5">Go to <b>Feedback</b> page in <b>More</b> section from the navigation bar then
+                        follow the following steps and fill the <b>Suggestion</b> form-
+                        <ul class="mt-2">
+                            <li class="h6">Enter <b>your name</b>.</li>
+                            <li class="h6">Enter <b>problem topic</b> or <b>suggestion topic</b>.</li>
+                            <li class="h6">Enter <b>problem message</b> or <b>suggestion message</b>.</li>
+                            <li class="h6">Click <b>Submit</b> button.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

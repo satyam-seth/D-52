@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'records/css/style.css' %}">
+{% endblock %}
+{% block title %}{{room.name|title}} - Room Report{% endblock title %}
+{% block content %}
+<div class="container-fluid py-5 room-report my-5">
+    <div class="container py-5 text-light">
+        <div>
+            <h1 class="display-2">{{room.name|title}} Room Reports</h1>
+        </div>
+        <div class="lead">
+            <p>See all reports carefully.</p>
+        </div>
+    </div>
+</div>
+<div class="card shadow-lg m-3">
+    <div class="row no-gutters">
+        <div class="col-md-6">
+            <img src="{% static 'records/images/total-report.jpg' %}" class="card-img" alt="water">
+        </div>
+        <div class="col-md-6">
+            <div class="card-body text-center pt-4">
+                <h4 class="alert alert-secondary">Total Report</h4>
+                <h2>Total <span class="text-danger">{{room_records_count}}</span> Items <i
+                        class="fas fa-cart-arrow-down"></i></h2>
+                <h2>Total
+                    <i class="fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{room_total_price|stringformat:".2f"}}/-</span>
+                </h2>
+                <h3>({{per_member_price|stringformat:".2f"}} per person)</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% for member_report in room_members_report %}
+<div class="card shadow-lg m-3">
+    <div class="row no-gutters">
+        <div class="col-md-6">
+            <img src="{{member_report.room_member.profile.cover_photo.url}}" class="card-img"
+                alt="{{member_report.room_member}}">
+        </div>
+        <div class="col-md-6">
+            <div class="card-body text-center pt-4">
+                <h4 class="alert alert-secondary">{{member_report.room_member|title}} Report</h4>
+                <h2>Total <span class="text-danger">{{member_report.records_count}}</span> Items <i
+                        class="fas fa-cart-arrow-down"></i>
+                </h2>
+                <h2>Spent
+                    <i class="fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{member_report.total_spent|stringformat:".2f"}}/-</span>
+                </h2>
+                {% if member_report.price_diff > 0 %}
+                <h2>Due
+                    <i class="ps-1 fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{member_report.price_diff|stringformat:".2f"}}/-</span>
+                </h2>
+                {% elif member_report.price_diff < 0 %}
+                <h2>Extra
+                    <i class="ps-1 fas fa-rupee-sign"></i>
+                    <span class="text-danger">{{member_report.price_diff|stringformat:".2f"|slice:"1:"}}/-</span>
+                </h2>
+                {% else %}
+                <h2>Cleared <i class="ps-1 fas fa-user-check"></i>
+                </h2>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock content %}

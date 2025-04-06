@@ -1,0 +1,146 @@
+<div class="container-fluid">
+    <nav class="navbar navbar-expand-lg py-2 navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+            <i class="fas fa-house-user fa-2x text-white me-2"></i>
+            <a class="navbar-brand" href="{% url 'core:home' %}">The Split</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if room %}
+                        <li class="nav-item">
+                            <a class="nav-link {{dashboard_active}}" href="{% url 'records:dashboard' %}">Dashboard <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {{home_active}}" href="{% url 'core:home' %}">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% endif %}
+                    {% if request.user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Room
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            {% if room %}
+                                <li>
+                                    <a class="dropdown-item {{add_active}}" href="{% url 'records:add_data' %}">Add Data</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{records_active}}" href="{% url 'records:records' %}">See Records</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{waters_active}}" href="{% url 'records:waters' %}">See Waters</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{room_reports_active}}" href="{% url 'records:room_reports' %}">Room Reports</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{export_data_active}}" href="{% url 'records:export_data' %}">Export Data</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:room_invitation' %}">Room Invitations</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                {% if room_count > 1 %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:room_selection' %}">Change Room ({{ room.name }})</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                {% endif %}
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:room_create' %}">Create New Room</a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Account
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            {% if request.user.is_authenticated %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a class="dropdown-item {{login_active}}" href="{% url 'accounts:login' %}">Login</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{signup_active}}" href="{% url 'accounts:signup' %}">Sign Up</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            More
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li>
+                                <a class="dropdown-item {{feedback_active}}" href="{% url 'core:feedback' %}">Feedback</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% if request.user.is_superuser %}
+                            <li>
+                                <a class="dropdown-item" target="_blank" href="/admin">Admin Panel</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item {{about_active}}" href="{% url 'core:about' %}">About</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                {% if request.user.is_authenticated %}
+                <div class="mx-md-2 my-sm-2 d-flex align-items-center gap-2">
+                    <!-- TODO: user bootstrap tooltip for title  -->
+                    <img src="{{ request.user.profile.avatar.url }}" class="border border-success rounded-circle" style="width: 40px; height: 40px;"
+                        alt="{{ request.user.get_full_name }}" title="{{request.user.get_full_name}} - {{request.user.email}}" />
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</div>

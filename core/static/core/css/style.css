@@ -1,0 +1,34 @@
+.home {
+  background-image: url("../images/home.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.about {
+  background-image: url("../images/about.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.feed {
+  background-image: url("../images/feedback.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.login,
+.sign-up {
+  height: 100vh;
+  background: url("../images/login.jpg") no-repeat center center fixed;
+  background-color: #EACDCF;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}

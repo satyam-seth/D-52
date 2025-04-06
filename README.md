@@ -22,3 +22,16 @@ visit-https://satyam1998.pythonanywhere.com/
 ## Demo Video- https://youtu.be/aYk2E7_8dlc
 
 ![Demo GIF](https://github.com/satyam-seth/D-52/blob/master/demo.gif)
+
+
+
+# Project Structure 
+
+## accounts app
+responsible for all authentication and user profile management
+
+## core app 
+responsible for common templates, forms, views and helper utility functions
+
+## records app 
+responsible for store and manage records

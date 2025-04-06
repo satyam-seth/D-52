@@ -1,0 +1,35 @@
+{# TODO: add on click once handlers once ready #}
+{% if room.admin == request.user %}
+    {% if invitation.status == 'pending' %}
+    <form action="{% url 'accounts:room_invitation_cancel' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="invitation_id" value="{{ invitation.id }}">
+        <button type="submit" class="btn btn-sm btn-warning">Cancel</button>
+    </form>
+    {% elif invitation.status == 'accepted'  %}
+    <button class="btn btn-sm btn-success" disabled>
+        Joined
+    </button>
+    {% else %}
+    <button class="btn btn-sm btn-secondary" disabled>
+        Re-Invite
+    </button>
+    {% endif %}
+{% else %}
+    {% if invitation.status == 'pending' %}
+        <button class="btn btn-sm btn-success" disabled>Accept</button>
+        <button class="btn btn-sm btn-warning" disabled>Reject</button>
+    {% elif invitation.status == 'accepted'  %}
+    <button class="btn btn-sm btn-success" disabled>
+        Joined
+    </button>
+    {% elif invitation.status == 'rejected'  %}
+    <button class="btn btn-sm btn-secondary" disabled>
+        Rejected by You
+    </button>
+    {% elif invitation.status == 'canceled'  %}
+    <button class="btn btn-sm btn-secondary" disabled>
+        Canceled by Admin
+    </button>
+    {% endif %}
+{% endif %}

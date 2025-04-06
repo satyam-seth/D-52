@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}D-52 Room Invitation{% endblock title %}
+{% block content %}
+<div class="container-fluid py-5 bg-info min-vh-100">
+  <div class="container-fluid my-5">
+    {% if messages %}
+    {% for message in messages %}
+    <div 
+      {% if message.tags %} class="alert alert-{{message.tags}} alert-dismissible fade show" {% endif %}
+      role="alert">
+      <strong>{{message}}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </div>
+  <div class="container bg-white shadow-lg p-4 rounded border">
+    <div class="row">
+      {% if form and room.admin == request.user %}
+      <div class="col-md-6">
+        <h2 class="text-center alert alert-secondary my-3 shadow">
+          {% block form_heading %}Room Invite Form{% endblock form_heading %}
+        </h2>
+        <form method="POST" action="{% url 'accounts:room_invite' %}">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+          {% for error in form.non_field_errors %}
+          <p class="text-center shadow alert alert-warning my-3">{{error}}</p>
+          {% endfor %}
+          {% endif %}
+          {% for field in form %}
+          <div class="form-group">
+            {{field.label_tag}} {{field}} <small class="shadow text-danger">{{field.errors|striptags}}</small>
+            {% if field.help_text %}
+            {% endif %}
+            <small class="shadow text-secondary">{{ field.help_text|safe }}</small>
+          </div>
+          {% endfor %}
+          <div class="my-3">
+            <input type="reset" value="Reset" class="btn btn-primary shadow">
+            <input type="submit" value="Submit" class="btn btn-success shadow">
+          </div>
+        </form>
+      </div>
+      <div class="col-md-6">
+      {% else %}
+      <div class="col">
+      {% endif %}
+        <h2 class="text-center alert alert-secondary my-3 shadow" role="alert">
+          Room Invitations
+        </h2>
+        {% if room_invitation_list %}
+        <div class="table-responsive text-center">
+          <table class="table table-hover table-striped border">
+            <thead>
+              <tr>
+                <th scope="col">S. No.</th>
+                <th scope="col">Room</th>
+                <th scope="col">Email</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for invitation in room_invitation_list %}
+              <tr>
+                <th scope="row">{{forloop.counter0|add:page_obj.start_index }}</th>
+                <td>{{invitation.room.name}}</td>
+                <td>{{invitation.email}}</td>
+                <td>{{invitation.status|upper}}</td>
+                <td>
+                  {% include 'accounts/room_invitation_action_btn.html' %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div>
+            {% include 'core/pagination.html' %}
+          </div>
+        </div>
+        {% else %}
+        <h4 class="text-center alert alert-warning">No Invitation Found</h4>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

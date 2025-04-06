@@ -1,0 +1,63 @@
+from django.contrib import admin
+
+from records.models import Electricity, Maid, Record, Water
+
+# Register your models here.
+
+
+@admin.register(Record)
+class RecordAdmin(admin.ModelAdmin):
+    """Admin configuration for the Record model."""
+
+    list_display = (
+        "id",
+        "item",
+        "price",
+        "purchaser",
+        "adder",
+        "room",
+        "purchase_datetime",
+        "created_on",
+        "modified_on",
+    )
+
+
+@admin.register(Water)
+class WaterAdmin(admin.ModelAdmin):
+    """Admin configuration for the Water model."""
+
+    list_display = (
+        "id",
+        "quantity",
+        "adder",
+        "room",
+        "purchase_datetime",
+        "created_on",
+        "modified_on",
+    )
+
+
+@admin.register(Electricity)
+class ElectricityAdmin(admin.ModelAdmin):
+    """Admin configuration for the Electricity model."""
+
+    list_display = (
+        "id",
+        "due_datetime",
+        "price",
+        "created_on",
+        "modified_on",
+    )
+
+
+@admin.register(Maid)
+class MaidAdmin(admin.ModelAdmin):
+    """Admin configuration for the Maid model."""
+
+    list_display = (
+        "id",
+        "due_datetime",
+        "price",
+        "created_on",
+        "modified_on",
+    )

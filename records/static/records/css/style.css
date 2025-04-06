@@ -1,0 +1,64 @@
+/* TODO: add common class for top jumbotron */
+.dashboard {
+  background-image: url("../images/dashboard.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.add {
+  background-image: url("../images/add.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  color: rgb(245, 156, 115);
+  text-shadow: 1px 1px black;
+}
+
+.records {
+  background-image: url("../images/records.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.search {
+  background-image: url("../images/search.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 1px 1px gray;
+}
+
+.room-report {
+  background-image: url("../images/room-report.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.export-data {
+  background-image: url("../images/export-data.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 1px 1px black;
+}
+
+.water {
+  background-image: url("../images/water.jpg");
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
+
+.detail-jumbotron {
+  background-color: dimgrey;
+  background-size: cover;
+  height: 100%;
+  text-shadow: 2px 2px black;
+}
